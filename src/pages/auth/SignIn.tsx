@@ -7,12 +7,10 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useCustomToast } from '@/components/ui/custom-toast';
 import { Lock, Mail } from 'lucide-react';
-import { Checkbox } from '@/components/ui/checkbox';
 
 interface SignInForm {
   email: string;
   password: string;
-  rememberMe: boolean;
 }
 
 export default function SignIn() {
@@ -28,12 +26,11 @@ export default function SignIn() {
     setError('');
     try {
       await signIn(data.email, data.password);
-      toast.success("Login successfully!");
+      toast.success("Login successful!");
       navigate('/dashboard');
-
     } catch (error) {
       console.error(error);
-      toast.error('Invalid email or password')
+      toast.error('Invalid email or password');
       setError('Invalid email or password');
     } finally {
       setIsLoading(false);
@@ -41,23 +38,23 @@ export default function SignIn() {
   };
 
   return (
-    <div className="min-h-screen flex">
+    <div className="min-h-screen flex flex-col lg:flex-row">
       {/* Left side - Form */}
-      <div className="w-1/2 flex flex-col p-8">
-        <div className="flex justify-between items-center mb-16">
-          <h1 className="text-2xl font-bold">
+      <div className="w-full lg:w-1/2 flex flex-col p-4 sm:p-8">
+        <div className="flex justify-between items-center mb-8 lg:mb-16">
+          <h1 className="text-xl sm:text-2xl font-bold">
             Swift<span className="text-[#40B093]">cargo</span>.
           </h1>
         </div>
 
-        <div className="flex-1 flex items-center justify-center">
-          <div className="space-y-12 w-full max-w-2xl">
+        <div className="flex-1 mt-52 lg:mt-0 flex items-center justify-center">
+          <div className="space-y-8 lg:space-y-12 w-full max-w-md lg:max-w-2xl">
             {/* Text section */}
-            <div className="space-y-4 max-w-2xl mx-auto">
-              <h1 className="text-5xl font-bold tracking-tight leading-tight">
+            <div className="space-y-2 sm:space-y-4 max-w-2xl mx-auto text-center">
+              <h1 className="text-3xl sm:text-3xl lg:text-5xl font-bold tracking-tight leading-tight">
                 WELCOME TO SWIFTCARGO
               </h1>
-              <p className="text-gray-500 text-lg text-center">
+              <p className="text-gray-500 text-base sm:text-lg">
                 Welcome to Swiftcargo dashboard system
               </p>
             </div>
@@ -68,49 +65,34 @@ export default function SignIn() {
             )}
 
             {/* Form section */}
-            <div className="max-w-xl mx-auto">
-
-              <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
-                <div className="space-y-6">
+            <div className="max-w-sm sm:max-w-md lg:max-w-xl mx-auto">
+              <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+                <div className="space-y-4">
                   <div className="relative">
-                    <Mail className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
+                    <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
                     <Input
                       {...register('email')}
                       type="email"
                       placeholder="Email"
-                      className="pl-10 h-12 text-lg"
+                      className="pl-10 h-12 text-base sm:text-lg w-full"
                       required
                     />
                   </div>
                   <div className="relative">
-                    <Lock className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
+                    <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
                     <Input
                       {...register('password')}
                       type="password"
                       placeholder="Password"
-                      className="pl-10 h-12 text-lg"
+                      className="pl-10 h-12 text-base sm:text-lg w-full"
                       required
                     />
                   </div>
                 </div>
 
-                {/* <div className="flex items-center">
-                  <Checkbox
-                    {...register('rememberMe')}
-                    id="remember"
-                    className="h-5 w-5 rounded border-gray-300"
-                  />
-                  <label
-                    htmlFor="remember"
-                    className="ml-3 block text-sm text-gray-600"
-                  >
-                    Remember me
-                  </label>
-                </div> */}
-
                 <Button
                   type="submit"
-                  className="w-full rounded-full h-12 text-lg text-black"
+                  className="w-full rounded-full h-12 text-base sm:text-lg text-black"
                   disabled={isLoading}
                   style={{
                     background:
@@ -133,6 +115,6 @@ export default function SignIn() {
         }}
       />
     </div>
-
   );
 }
+

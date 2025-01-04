@@ -12,14 +12,18 @@ import InvoicePage from './pages/invoice/InvoicePage';
 import NotificationsPage from './pages/notifcation/Notification';
 import Dashboard from './pages/dashboard/Dashboard';
 import ProfilePage from './pages/profile/Profile';
+import { useState } from 'react';
+
 
 function DashboardLayout({ children }: { children: React.ReactNode }) {
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+
   return (
     <div className="flex h-screen bg-gray-50">
-      <Sidebar />
+      <Sidebar open={sidebarOpen} setOpen={setSidebarOpen} />
       <div className="flex-1 flex flex-col overflow-hidden">
-        <Header />
-        <main className="flex-1 overflow-y-auto">
+        <Header toggleSidebar={() => setSidebarOpen(!sidebarOpen)} />
+        <main className="flex-1 overflow-y-auto p-4">
           {children}
         </main>
       </div>
