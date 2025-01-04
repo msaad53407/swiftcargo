@@ -1,0 +1,246 @@
+"use client"
+
+import { useEffect, useState } from "react"
+import { MoreHorizontal, ChevronLeft, ChevronRight, Search, Settings2 } from 'lucide-react'
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table"
+import { Button } from "@/components/ui/button"
+import { Checkbox } from "@/components/ui/checkbox"
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select"
+import { db } from "../../firebase/config.js"
+import { fetchInvoicesWithPagination } from "@/utils/invoiceUtils"
+import Loader from "../Loader.js"
+
+interface Payment {
+    packageId: string;
+    invoiceNo: string;
+    status: string;
+    receiverName: string;
+    paymentStatus: string;
+    amount: {
+        total: number;
+        pending: number;
+    };
+    createdAt: string;
+    updatedAt: string;
+}
+
+
+
+export function PaymentTable() {
+    const [selectedPayments, setSelectedPayments] = useState<string[]>([])
+    const [currentPage, setCurrentPage] = useState(1);
+    const [totalPages, setTotalPages] = useState(1);
+    const [loading, setLoading] = useState<boolean>(true);
+    const [payments, setPayments] = useState<Payment[]>([]);
+    const [error, setError] = useState<string | null>(null);
+
+    const loadInvoices = async (page: number = currentPage) => {
+        try {
+            setLoading(true);
+            const result = await fetchInvoicesWithPagination(db, page);
+
+            setPayments(result.invoices);
+
+            setTotalPages(result.totalPages);
+            setCurrentPage(result.currentPage);
+            setError(null);
+        } catch (err) {
+            setError(err instanceof Error ? err.message : 'An error occurred while fetching packages');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        loadInvoices();
+    }, []);
+    const handlePageChange = (page: number) => {
+        if (page >= 1 && page <= totalPages) {
+            loadInvoices(page);
+        }
+    };
+
+    // Generate pagination array
+    const getPaginationArray = () => {
+        const delta = 2;
+        const range = [];
+        const rangeWithDots = [];
+        let l;
+
+        for (let i = 1; i <= totalPages; i++) {
+            if (i === 1 || i === totalPages || (i >= currentPage - delta && i <= currentPage + delta)) {
+                range.push(i);
+            }
+        }
+
+        for (let i of range) {
+            if (l) {
+                if (i - l === 2) {
+                    rangeWithDots.push(l + 1);
+                } else if (i - l !== 1) {
+                    rangeWithDots.push('...');
+                }
+            }
+            rangeWithDots.push(i);
+            l = i;
+        }
+
+        return rangeWithDots;
+    };
+
+
+
+    const handleSelectAll = (checked: boolean) => {
+        if (checked) {
+            setSelectedPayments(payments.map((payment) => payment.id))
+        } else {
+            setSelectedPayments([])
+        }
+    }
+
+    const handleSelect = (id: string) => {
+        if (selectedPayments.includes(id)) {
+            setSelectedPayments(selectedPayments.filter((paymentId) => paymentId !== id))
+        } else {
+            setSelectedPayments([...selectedPayments, id])
+        }
+    }
+
+    const getStatusColor = (status: Payment["status"]) => {
+        switch (status) {
+            case "Delivered":
+                return "text-green-600"
+            case "on Hold":
+                return "text-yellow-600"
+            case "on the way":
+                return "text-blue-600"
+            default:
+                return "text-gray-600"
+        }
+    }
+
+    const getStatusDot = (status: Payment["status"]) => {
+        switch (status) {
+            case "Delivered":
+                return "bg-green-600"
+            case "on Hold":
+                return "bg-yellow-600"
+            case "on the way":
+                return "bg-blue-600"
+            default:
+                return "bg-gray-600"
+        }
+    }
+    if (loading) {
+        return <Loader />
+    }
+    return (
+        <div className="space-y-4">
+            {/* <div className="flex items-center justify-between">
+                <h2 className="text-lg font-semibold">Payment Detail Report</h2>
+                <div className="flex items-center gap-2">
+                    <Button variant="ghost" size="icon">
+                        <Search className="h-4 w-4" />
+                    </Button>
+                    <Button variant="ghost" size="icon">
+                        <Settings2 className="h-4 w-4" />
+                    </Button>
+                </div>
+            </div> */}
+
+            <div className="rounded-lg border">
+                <Table>
+                    <TableHeader>
+                        <TableRow className="bg-muted/50">
+                            <TableHead className="w-[50px]">
+                                <Checkbox
+                                    checked={selectedPayments.length === payments.length}
+                                    onCheckedChange={(checked) => handleSelectAll(checked as boolean)}
+                                />
+                            </TableHead>
+                            <TableHead>Package id</TableHead>
+                            <TableHead>Date</TableHead>
+                            <TableHead>Status</TableHead>
+                            <TableHead>Customer</TableHead>
+                            <TableHead>Payment Detail</TableHead>
+                            <TableHead>Total</TableHead>
+                            <TableHead className="w-[50px]">Action</TableHead>
+                        </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                        {payments.map((payment) => (
+                            <TableRow key={payment.packageId}>
+                                <TableCell>
+                                    <Checkbox
+                                        checked={selectedPayments.includes(payment.packageId)}
+                                        onCheckedChange={() => handleSelect(payment.packageId)}
+                                    />
+                                </TableCell>
+                                <TableCell className="font-medium">{payment.packageId}</TableCell>
+                                <TableCell>{payment.createdAt}</TableCell>
+                                <TableCell>
+                                    <div className="flex items-center gap-2">
+                                        <div className={`h-2 w-2 rounded-full ${getStatusDot(payment.status)}`} />
+                                        <span className={getStatusColor(payment.status)}>{payment.status}</span>
+                                    </div>
+                                </TableCell>
+                                <TableCell>{payment.receiverName}</TableCell>
+                                <TableCell>{payment.paymentStatus}</TableCell>
+                                <TableCell>$ {payment.amount.total}</TableCell>
+                                <TableCell>
+                                    <Button variant="ghost" size="icon" className="h-8 w-8">
+                                        <MoreHorizontal className="h-4 w-4" />
+                                    </Button>
+                                </TableCell>
+                            </TableRow>
+                        ))}
+                    </TableBody>
+                </Table>
+
+                <div className="flex items-center justify-between border-t px-4 py-4">
+                    <Button
+                        variant="outline"
+                        size="sm"
+                        className="flex items-center gap-2"
+                        onClick={() => handlePageChange(currentPage - 1)}
+                        disabled={currentPage === 1}
+                    >
+                        <ChevronLeft className="h-4 w-4" />
+                        Previous
+                    </Button>
+                    <div className="flex items-center gap-1">
+                        {getPaginationArray().map((page, i) => (
+                            <Button
+                                key={i}
+                                variant={page === currentPage ? "default" : "ghost"}
+                                size="icon"
+                                className={`h-8 w-8 ${typeof page !== "number" ? "cursor-default" : ""}`}
+                                disabled={typeof page !== "number"}
+                                onClick={() => typeof page === "number" && handlePageChange(page)}
+                            >
+                                {page}
+                            </Button>
+                        ))}
+                    </div>
+                    <Button
+                        variant="outline"
+                        size="sm"
+                        className="flex items-center gap-2"
+                        onClick={() => handlePageChange(currentPage + 1)}
+                        disabled={currentPage === totalPages}
+                    >
+                        Next
+                        <ChevronRight className="h-4 w-4" />
+                    </Button>
+                </div>
+            </div>
+        </div>
+    )
+}
+
