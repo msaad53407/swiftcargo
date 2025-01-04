@@ -92,12 +92,12 @@ export default function SignIn() {
 
                 <Button
                   type="submit"
-                  className="w-full rounded-full h-12 text-base sm:text-lg text-black"
+                  className="w-full rounded-full bg-[#49B698] h-12 text-base sm:text-lg text-white"
                   disabled={isLoading}
-                  style={{
-                    background:
-                      "linear-gradient(129.49deg, #FFEEAD 0%, #C8B056 97.89%)",
-                  }}
+                // style={{
+                //   background:
+                //     "linear-gradient(129.49deg, #FFEEAD 0%, #C8B056 97.89%)",
+                // }}
                 >
                   {isLoading ? "Signing in..." : "Log in"}
                 </Button>
