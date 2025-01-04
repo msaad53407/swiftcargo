@@ -86,8 +86,10 @@ export function PackageTable({ packageAdded, setPackageAdded, download, setDownl
     loadPackages();
   }, []);
   useEffect(() => {
+
     if (packageAdded === true) {
       loadPackages()
+
       setPackageAdded(false)
     }
   }, [packageAdded])
@@ -120,7 +122,7 @@ export function PackageTable({ packageAdded, setPackageAdded, download, setDownl
 
       // Filter by payment status
       if (activeFilters.paymentStatus.paid || activeFilters.paymentStatus.pending) {
-        console.log("active payemn", activeFilters.paymentStatus)
+
         result = result.filter((pkg) => {
           // If both checkboxes are checked, show all
           if (activeFilters.paymentStatus.paid && activeFilters.paymentStatus.pending) {
@@ -140,13 +142,13 @@ export function PackageTable({ packageAdded, setPackageAdded, download, setDownl
       }
     }
 
-    console.log("result", result)
+
 
     setFilteredPackages(result)
   }, [searchQuery, activeFilters, packages])
 
   const handleApplyFilter = (filters: FilterValues) => {
-    console.log("filte", filters)
+
     setActiveFilters(filters)
   }
 
@@ -235,7 +237,7 @@ export function PackageTable({ packageAdded, setPackageAdded, download, setDownl
   const [selectedPackageId, setSelectedPackageId] = useState<string | null>(null);
 
   const handleViewDetails = (packageId: string) => {
-    console.log("packge id", packageId)
+
     setSelectedPackageId(packageId);
   };
 
@@ -305,13 +307,20 @@ export function PackageTable({ packageAdded, setPackageAdded, download, setDownl
         {currentUser?.userType === 'admin' ? (
           <div className="flex items-center gap-2">
             <Select onValueChange={handleBulkAction}>
-              <SelectTrigger className="w-[130px]">
+              <SelectTrigger className="w-[230px]">
                 <SelectValue placeholder="Bulk Action" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="delete">Delete Selected</SelectItem>
-                <SelectItem value="mark-paid">Mark as Paid</SelectItem>
-                <SelectItem value="mark-pending">Mark as Pending</SelectItem>
+                <SelectItem
+                  value="delete"
+                  className="text-red-500"
+                >
+                  <div className="flex items-center gap-2">
+                    <Trash2 className="h-4 w-4 text-red-500" />
+                    <span className="text-red-500">Delete Selected</span>
+                  </div>
+                </SelectItem>
+
               </SelectContent>
             </Select>
             <Button variant="outline" size="sm" onClick={() => handleBulkAction('delete')}>
@@ -432,6 +441,42 @@ export function PackageTable({ packageAdded, setPackageAdded, download, setDownl
             ))}
           </TableBody>
         </Table>
+        <div className="flex items-center justify-between border-t px-4 py-4">
+          <Button
+            variant="outline"
+            size="sm"
+            className="flex items-center gap-2"
+            onClick={() => handlePageChange(currentPage - 1)}
+            disabled={currentPage === 1}
+          >
+            <ChevronLeft className="h-4 w-4" />
+            Previous
+          </Button>
+          <div className="flex items-center gap-1">
+            {getPaginationArray().map((page, i) => (
+              <Button
+                key={i}
+                variant={page === currentPage ? "default" : "ghost"}
+                size="icon"
+                className={`h-8 w-8 ${typeof page !== "number" ? "cursor-default" : ""}`}
+                disabled={typeof page !== "number"}
+                onClick={() => typeof page === "number" && handlePageChange(page)}
+              >
+                {page}
+              </Button>
+            ))}
+          </div>
+          <Button
+            variant="outline"
+            size="sm"
+            className="flex items-center gap-2"
+            onClick={() => handlePageChange(currentPage + 1)}
+            disabled={currentPage === totalPages}
+          >
+            Next
+            <ChevronRight className="h-4 w-4" />
+          </Button>
+        </div>
       </div>
 
       {/* Mobile view */}
@@ -473,42 +518,6 @@ export function PackageTable({ packageAdded, setPackageAdded, download, setDownl
         ))}
       </div>
 
-      <div className="flex items-center justify-between border-t px-4 py-4">
-        <Button
-          variant="outline"
-          size="sm"
-          className="flex items-center gap-2"
-          onClick={() => handlePageChange(currentPage - 1)}
-          disabled={currentPage === 1}
-        >
-          <ChevronLeft className="h-4 w-4" />
-          Previous
-        </Button>
-        <div className="flex items-center gap-1">
-          {getPaginationArray().map((page, i) => (
-            <Button
-              key={i}
-              variant={page === currentPage ? "default" : "ghost"}
-              size="icon"
-              className={`h-8 w-8 ${typeof page !== "number" ? "cursor-default" : ""}`}
-              disabled={typeof page !== "number"}
-              onClick={() => typeof page === "number" && handlePageChange(page)}
-            >
-              {page}
-            </Button>
-          ))}
-        </div>
-        <Button
-          variant="outline"
-          size="sm"
-          className="flex items-center gap-2"
-          onClick={() => handlePageChange(currentPage + 1)}
-          disabled={currentPage === totalPages}
-        >
-          Next
-          <ChevronRight className="h-4 w-4" />
-        </Button>
-      </div>
     </div>
   )
 }

@@ -145,7 +145,7 @@ export function EmployeeTable({ employeeAdded, setEmployeeAdded }) {
     // Apply filters
     if (activeFilters) {
       if (activeFilters.department) {
-        console.log("active", activeFilters.department)
+
         result = result.filter(
           (employee) =>
             employee.department.toLowerCase() === activeFilters.department.toLowerCase()

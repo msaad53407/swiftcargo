@@ -46,8 +46,6 @@ export const createOrReactivateEmployee = async (
     const querySnapshot = await getDocs(q);
     const userExists = !querySnapshot.empty;
 
-    console.log("userExists", userExists, employeeData);
-
     if (userExists) {
       const existingManagerDoc = querySnapshot.docs[0];
       const existingManagerId = existingManagerDoc.id;

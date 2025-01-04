@@ -16,7 +16,7 @@ function PackageManagment() {
     const { currentUser, loading } = useAuth();
     const [packageAdded, setPackageAdded] = useState(false)
     const handleAddPackage = async (data: typeof formData) => {
-        console.log("data", data)
+
         setIsLoading(true);
         try {
             await createPackageWithInvoice(data, db);
