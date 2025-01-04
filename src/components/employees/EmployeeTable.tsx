@@ -18,11 +18,12 @@ import { Input } from "@/components/ui/input"
 import { FilterPopover, type FilterValues } from "./filter-popover"
 //import { FilterDialog, type FilterValues } from "./filter-dialog"
 import { fetchManagers, type Manager } from "@/utils/manager"
-import { useCustomToast } from "../ui/custom-toast"
+
 import { deleteUserAccount, suspendUserAccount } from "@/utils/deleteEmployee"
 import TableSkeleton from "../SkeltonTable"
 import Loader from "../Loader"
 import { useAuth } from "@/contexts/AuthContext"
+import { toast } from "sonner"
 
 interface Employee {
   id: string
@@ -40,7 +41,7 @@ interface Employee {
 
 export function EmployeeTable({ employeeAdded, setEmployeeAdded }) {
   const { currentUser } = useAuth()
-  const toast = useCustomToast()
+
   const [employees, setEmployees] = useState<Manager[]>([])
   const [filteredEmployees, setFilteredEmployees] = useState<Manager[]>([])
   const [isLoading, setIsLoading] = useState(true)
@@ -255,7 +256,7 @@ export function EmployeeTable({ employeeAdded, setEmployeeAdded }) {
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         {currentUser?.userType === 'admin' ? (
           <div className="flex items-center gap-2">
             <Select value={bulkAction} onValueChange={setBulkAction}>
@@ -288,7 +289,7 @@ export function EmployeeTable({ employeeAdded, setEmployeeAdded }) {
 
 
         <div className="flex items-center gap-2">
-          <div className="relative">
+          <div className="relative w-full sm:w-auto">
             <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
             <Input
               placeholder="Search..."
@@ -310,7 +311,7 @@ export function EmployeeTable({ employeeAdded, setEmployeeAdded }) {
         <Table>
           <TableHeader>
             <TableRow className="bg-muted/50">
-              <TableHead className="w-[50px]">
+              <TableHead className="w-[50px] whitespace-nowrap">
                 <Checkbox
                   checked={
                     selectedEmployees.length > 0 &&
@@ -319,25 +320,25 @@ export function EmployeeTable({ employeeAdded, setEmployeeAdded }) {
                   onCheckedChange={(checked) => handleSelectAll(checked as boolean)}
                 />
               </TableHead>
-              <TableHead>Employee</TableHead>
-              <TableHead>Department</TableHead>
-              <TableHead>Phone</TableHead>
-              <TableHead>Verified</TableHead>
+              <TableHead className="whitespace-nowrap">Employee</TableHead>
+              <TableHead className="whitespace-nowrap">Department</TableHead>
+              <TableHead className="whitespace-nowrap">Phone</TableHead>
+              <TableHead className="whitespace-nowrap">Verified</TableHead>
               {/* <TableHead>Status</TableHead> */}
-              <TableHead className="w-[50px]"></TableHead>
+              <TableHead className="w-[50px] whitespace-nowrap"></TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {filteredEmployees.map((employee) => (
               <TableRow key={employee.uid}>
-                <TableCell>
+                <TableCell className="whitespace-nowrap">
                   <Checkbox
                     checked={selectedEmployees.includes(employee.uid)}
                     onCheckedChange={() => handleSelect(employee.uid)}
                   />
                 </TableCell>
-                <TableCell>
-                  <div className="flex items-center gap-3">
+                <TableCell className="whitespace-nowrap">
+                  <div className="flex items-center gap-3 ">
                     <Avatar className="h-8 w-8">
 
                       <AvatarFallback className="bg-blue-100 text-blue-600">
@@ -351,14 +352,14 @@ export function EmployeeTable({ employeeAdded, setEmployeeAdded }) {
                     </div>
                   </div>
                 </TableCell>
-                <TableCell>
+                <TableCell className="whitespace-nowrap">
                   <div>
                     <p className="font-medium">{employee.department}</p>
                     <p className="text-sm text-muted-foreground">{employee.designation}</p>
                   </div>
                 </TableCell>
-                <TableCell className="text-muted-foreground">{employee.phone}</TableCell>
-                <TableCell>
+                <TableCell className="text-muted-foreground whitespace-nowrap">{employee.phone}</TableCell>
+                <TableCell className="whitespace-nowrap">
                   <div className="flex gap-4">
                     <div className="flex items-center gap-1">
                       <div
@@ -395,7 +396,7 @@ export function EmployeeTable({ employeeAdded, setEmployeeAdded }) {
                     {employee.status}
                   </span>
                 </TableCell> */}
-                <TableCell>
+                <TableCell className="whitespace-nowrap">
                   <Button variant="ghost" size="icon" className="h-8 w-8">
                     <MoreHorizontal className="h-4 w-4" />
                   </Button>

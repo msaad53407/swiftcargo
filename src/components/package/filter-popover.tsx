@@ -136,13 +136,18 @@ export function FilterPopover({
                                         <SelectValue placeholder="Select status" />
                                     </SelectTrigger>
                                     <SelectContent>
-                                        <SelectItem value="PENDING">Pending</SelectItem>
-                                        <SelectItem value="on-the-way">On the way</SelectItem>
-                                        <SelectItem value="delivered">Delivered</SelectItem>
+                                        <SelectItem value="accepted">Accepted</SelectItem>
+                                        <SelectItem value="arrived-at-tash-airport">Arrived at Tash Airport</SelectItem>
+                                        <SelectItem value="departed-from-tash-airport">Departed from Tash Airport</SelectItem>
+                                        <SelectItem value="arrived-at-jfk-airport">Arrived at JFK Airport</SelectItem>
+                                        <SelectItem value="picked-up-from-jfk-airport">Picked up from JFK Airport</SelectItem>
+                                        <SelectItem value="available-for-pickup">Available for pick up</SelectItem>
+                                        <SelectItem value="shipped-to-receivers-destination">Shipped to Receiver’s destination</SelectItem>
                                         <SelectItem value="cancelled">Cancelled</SelectItem>
                                     </SelectContent>
                                 </Select>
                             </div>
+
                         </div>
                         <Button onClick={handleApplyFilter} className="w-full">
                             Apply Filters

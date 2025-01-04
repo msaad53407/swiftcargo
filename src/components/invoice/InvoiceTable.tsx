@@ -158,42 +158,42 @@ export function PaymentTable() {
                 <Table>
                     <TableHeader>
                         <TableRow className="bg-muted/50">
-                            <TableHead className="w-[50px]">
+                            <TableHead className="w-[50px] whitespace-nowrap">
                                 <Checkbox
                                     checked={selectedPayments.length === payments.length}
                                     onCheckedChange={(checked) => handleSelectAll(checked as boolean)}
                                 />
                             </TableHead>
-                            <TableHead>Package id</TableHead>
-                            <TableHead>Date</TableHead>
-                            <TableHead>Status</TableHead>
-                            <TableHead>Customer</TableHead>
-                            <TableHead>Payment Detail</TableHead>
-                            <TableHead>Total</TableHead>
-                            <TableHead className="w-[50px]">Action</TableHead>
+                            <TableHead className="whitespace-nowrap">Package id</TableHead>
+                            <TableHead className="whitespace-nowrap">Date</TableHead>
+                            <TableHead className="whitespace-nowrap">Status</TableHead>
+                            <TableHead className="whitespace-nowrap">Customer</TableHead>
+                            <TableHead className="whitespace-nowrap">Payment Detail</TableHead>
+                            <TableHead className="whitespace-nowrap">Total</TableHead>
+                            <TableHead className="w-[50px] whitespace-nowrap">Action</TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
                         {payments.map((payment) => (
                             <TableRow key={payment.packageId}>
-                                <TableCell>
+                                <TableCell className="whitespace-nowrap">
                                     <Checkbox
                                         checked={selectedPayments.includes(payment.packageId)}
                                         onCheckedChange={() => handleSelect(payment.packageId)}
                                     />
                                 </TableCell>
-                                <TableCell className="font-medium">{payment.packageId}</TableCell>
-                                <TableCell>{payment.createdAt}</TableCell>
-                                <TableCell>
+                                <TableCell className="font-medium whitespace-nowrap">{payment.packageId}</TableCell>
+                                <TableCell className="whitespace-nowrap">{payment.createdAt}</TableCell>
+                                <TableCell className="whitespace-nowrap">
                                     <div className="flex items-center gap-2">
                                         <div className={`h-2 w-2 rounded-full ${getStatusDot(payment.status)}`} />
                                         <span className={getStatusColor(payment.status)}>{payment.status}</span>
                                     </div>
                                 </TableCell>
-                                <TableCell>{payment.receiverName}</TableCell>
-                                <TableCell>{payment.paymentStatus}</TableCell>
-                                <TableCell>$ {payment.amount.total}</TableCell>
-                                <TableCell>
+                                <TableCell className="whitespace-nowrap">{payment.receiverName}</TableCell>
+                                <TableCell className="whitespace-nowrap">{payment.paymentStatus}</TableCell>
+                                <TableCell className="whitespace-nowrap">$ {payment.amount.total}</TableCell>
+                                <TableCell className="whitespace-nowrap">
                                     <Button variant="ghost" size="icon" className="h-8 w-8">
                                         <MoreHorizontal className="h-4 w-4" />
                                     </Button>
@@ -240,6 +240,7 @@ export function PaymentTable() {
                     </Button>
                 </div>
             </div>
+
         </div>
     )
 }

@@ -5,8 +5,9 @@ import { Input } from '@/components/ui/input';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { useCustomToast } from '@/components/ui/custom-toast';
+
 import { Lock, Mail } from 'lucide-react';
+import { toast } from 'sonner';
 
 interface SignInForm {
   email: string;
@@ -19,7 +20,6 @@ export default function SignIn() {
   const [error, setError] = useState('');
   const { register, handleSubmit } = useForm<SignInForm>();
   const { signIn } = useAuth();
-  const toast = useCustomToast();
 
   const onSubmit = async (data: SignInForm) => {
     setIsLoading(true);

@@ -4,13 +4,14 @@ import { Button } from '@/components/ui/button';
 import { EmployeeTable } from '@/components/employees/EmployeeTable';
 import { AddEmployeeDialog } from '@/components/employees/AddEmployeeDialog';
 import { createEmployee, createOrReactivateEmployee } from '@/utils/employee';
-import { useCustomToast } from '@/components/ui/custom-toast';
+
 import { useAuth } from '@/contexts/AuthContext';
+import { toast } from 'sonner';
 
 export default function EmployeesPage() {
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
-  const toast = useCustomToast();
+
   const [isLoading, setIsLoading] = useState(false);
   const [employeeAdded, setEmployeeAdded] = useState(false)
   const { currentUser } = useAuth()
@@ -33,12 +34,13 @@ export default function EmployeesPage() {
 
   return (
     <div className="p-6 space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
+      <div className="flex flex-col sm:flex-row items-start lg:items-center justify-between">
+        <div className="mb-4 lg:mb-0">
+
           <h1 className="text-2xl font-semibold">Employees</h1>
           <p className="text-gray-500">Departmental Member's Information Details</p>
         </div>
-        <div className="flex items-center gap-4">
+        <div className="flex  lg:flex-row items-start lg:items-center gap-4 lg:gap-4 lg:justify-end w-full lg:w-auto">
           {/* <Button
             variant="outline"
             className="gap-2"

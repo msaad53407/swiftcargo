@@ -12,14 +12,24 @@ export function Header({ toggleSidebar }: HeaderProps) {
 
   return (
     <header className="h-16 border-b border-gray-200 bg-white px-4 lg:px-6 flex items-center justify-between">
-      <button
-        onClick={toggleSidebar}
-        className="p-2 rounded-md lg:hidden hover:bg-gray-100"
-      >
-        <Menu size={24} />
-      </button>
+      {/* Mobile: Toggle and Logo */}
+      <div className="flex items-center lg:hidden">
 
-      <div className="flex items-center gap-4 ml-auto">
+        <h1 className="ml-3 text-2xl font-bold">
+          Swift<span className="text-[#40B093]">cargo</span>.
+        </h1>
+      </div>
+
+      {/* Desktop: Avatar and other actions */}
+      <div className='lg:hidden'>
+        <button
+          onClick={toggleSidebar}
+          className="p-2 rounded-md hover:bg-gray-100"
+        >
+          <Menu size={24} />
+        </button>
+      </div>
+      <div className="hidden lg:flex items-center gap-4 ml-auto">
         <div className="flex items-center gap-3 pl-4 border-l border-gray-200">
           <Avatar>
             <img
@@ -37,4 +47,3 @@ export function Header({ toggleSidebar }: HeaderProps) {
     </header>
   );
 }
-

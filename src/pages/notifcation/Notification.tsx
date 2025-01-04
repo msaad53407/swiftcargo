@@ -105,12 +105,12 @@ export default function NotificationsPage() {
                     <div className="flex-shrink-0 mt-1">
                         {getNotificationIcon(notification.type)}
                     </div>
-                    <div className="flex-grow min-w-0">
+                    <div className="flex-grow">
                         <div className="flex items-start justify-between gap-2">
                             <h3 className="font-medium text-gray-900 truncate">
                                 {notification.title}
                             </h3>
-                            <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <div className="flex items-center gap-2 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
                                 {!notification.read && (
                                     <Button
                                         variant="ghost"
@@ -151,10 +151,10 @@ export default function NotificationsPage() {
     )
 
     return (
-        <div className="p-6">
-            <div className=" mx-auto p-4">
-                <Card className="w-full bg-white shadow-lg">
-                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
+        <div className="p-2 sm:p-6 h-full overflow-hidden">
+            <div className="mx-auto h-full flex flex-col">
+                <Card className="w-full bg-white shadow-lg flex-grow overflow-hidden flex flex-col">
+                    <CardHeader className="flex flex-col sm:flex-row items-start sm:items-center justify-between space-y-2 sm:space-y-0 pb-4">
                         <div>
                             <CardTitle className="text-xl font-semibold">Notifications</CardTitle>
                             <p className="text-sm text-muted-foreground">
@@ -166,19 +166,19 @@ export default function NotificationsPage() {
                                 variant="outline"
                                 size="sm"
                                 onClick={handleMarkAllAsRead}
-                                className="flex items-center gap-2"
+                                className="flex items-center gap-2 w-full sm:w-auto"
                             >
                                 <Check className="h-4 w-4" />
                                 Mark all as read
                             </Button>
                         )}
                     </CardHeader>
-                    <CardContent>
-                        <Tabs defaultValue="all" value={activeTab} onValueChange={(value) => setActiveTab(value as TabValue)}>
-                            <TabsList className="grid w-[40%] grid-cols-3 mb-4">
+                    <CardContent className="flex-grow overflow-hidden">
+                        <Tabs defaultValue="all" value={activeTab} onValueChange={(value) => setActiveTab(value as TabValue)} className="h-full flex flex-col">
+                            <TabsList className="grid w-full sm:w-[40%] grid-cols-3 mb-4">
                                 <TabsTrigger value="all" className="relative">
                                     All
-                                    <span className="ml-1 text-xs text-muted-foreground ">
+                                    <span className="ml-1 text-xs text-muted-foreground">
                                         ({notifications.length})
                                     </span>
                                 </TabsTrigger>
@@ -195,15 +195,17 @@ export default function NotificationsPage() {
                                     </span>
                                 </TabsTrigger>
                             </TabsList>
-                            <TabsContent value="all" className="mt-0">
-                                <NotificationList notifications={filteredNotifications} />
-                            </TabsContent>
-                            <TabsContent value="unread" className="mt-0">
-                                <NotificationList notifications={filteredNotifications} />
-                            </TabsContent>
-                            <TabsContent value="read" className="mt-0">
-                                <NotificationList notifications={filteredNotifications} />
-                            </TabsContent>
+                            <div className="h-full overflow-y-auto">
+                                <TabsContent value="all" className="mt-0 h-full ">
+                                    <NotificationList notifications={filteredNotifications} />
+                                </TabsContent>
+                                <TabsContent value="unread" className="mt-0 h-full">
+                                    <NotificationList notifications={filteredNotifications} />
+                                </TabsContent>
+                                <TabsContent value="read" className="mt-0 h-full">
+                                    <NotificationList notifications={filteredNotifications} />
+                                </TabsContent>
+                            </div>
                         </Tabs>
                     </CardContent>
                 </Card>

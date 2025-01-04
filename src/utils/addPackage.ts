@@ -103,7 +103,7 @@ export const createPackageWithInvoice = async (rawData: any, db: any) => {
         Number.parseFloat(rawData.totalAmount),
         Number.parseFloat(rawData.dueAmount)
       ),
-      status: "PENDING",
+      status: "Activated",
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     };

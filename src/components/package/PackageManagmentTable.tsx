@@ -24,6 +24,9 @@ import Loader from "../Loader.js"
 import * as Papa from "papaparse";
 import { useAuth } from "@/contexts/AuthContext.js"
 import FilterPopover, { FilterValues } from "../package/filter-popover.js"
+import { toast } from "sonner"
+
+
 
 interface Package {
   id: string
@@ -163,6 +166,7 @@ export function PackageTable({ packageAdded, setPackageAdded, download, setDownl
     // })
   }
   const handleDelete = async (id: string) => {
+
     if (window.confirm('Are you sure you want to delete this package?')) {
       const success = await deletePackage(db, id);
       if (success) {
@@ -173,6 +177,7 @@ export function PackageTable({ packageAdded, setPackageAdded, download, setDownl
   };
 
   const handleBulkAction = async (action: string) => {
+    if (!selectedPackages.length > 0) { toast.error("Please Select atleast 1 package") }
     if (action === 'delete' && selectedPackages.length > 0) {
       if (window.confirm(`Are you sure you want to delete ${selectedPackages.length} packages?`)) {
         const success = await bulkDeletePackages(db, selectedPackages);
@@ -279,6 +284,7 @@ export function PackageTable({ packageAdded, setPackageAdded, download, setDownl
     document.body.removeChild(link);
   };
   const handleBackToTable = () => {
+    loadPackages()
     setSelectedPackageId(null);
   };
   if (loading) {
@@ -303,11 +309,11 @@ export function PackageTable({ packageAdded, setPackageAdded, download, setDownl
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         {currentUser?.userType === 'admin' ? (
           <div className="flex items-center gap-2">
             <Select onValueChange={handleBulkAction}>
-              <SelectTrigger className="w-[230px]">
+              <SelectTrigger className="w-full sm:w-[230px]">
                 <SelectValue placeholder="Bulk Action" />
               </SelectTrigger>
               <SelectContent>
@@ -320,20 +326,22 @@ export function PackageTable({ packageAdded, setPackageAdded, download, setDownl
                     <span className="text-red-500">Delete Selected</span>
                   </div>
                 </SelectItem>
-
               </SelectContent>
             </Select>
-            <Button variant="outline" size="sm" onClick={() => handleBulkAction('delete')}>
+            <Button className="text-red-500 hover:text-red-600 hover:border-red-600"
+              variant="outline" size="sm" onClick={() => handleBulkAction('delete')}>
               Apply
             </Button>
           </div>
-        ) : <div></div>}
+        ) : (
+          <div></div>
+        )}
         <div className="flex items-center gap-2">
-          <div className="relative">
+          <div className="relative w-full sm:w-auto">
             <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
             <Input
               placeholder="Search..."
-              className="pl-8"
+              className="w-full pl-8"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
@@ -352,9 +360,10 @@ export function PackageTable({ packageAdded, setPackageAdded, download, setDownl
         </div>
       </div>
 
-      {/* Desktop view */}
-      <div className="hidden md:block rounded-lg border">
-        <Table>
+
+      {/* Scrollable Table View */}
+      <div className="overflow-x-auto rounded-lg border">
+        <Table className="min-w-[1000px]">
           <TableHeader>
             <TableRow className="bg-muted/50">
               <TableHead className="w-[50px]">
@@ -363,20 +372,19 @@ export function PackageTable({ packageAdded, setPackageAdded, download, setDownl
                   onCheckedChange={(checked) => handleSelectAll(checked as boolean)}
                 />
               </TableHead>
-              <TableHead>Sender Detail</TableHead>
-              <TableHead>Receiver Detail</TableHead>
-              <TableHead>Invoice No</TableHead>
-              <TableHead>Date</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead>Payment</TableHead>
-              <TableHead>Amount</TableHead>
+              <TableHead className="whitespace-nowrap">Sender Detail</TableHead>
+              <TableHead className="whitespace-nowrap">Receiver Detail</TableHead>
+              <TableHead className="whitespace-nowrap">Invoice No</TableHead>
+              <TableHead className="whitespace-nowrap">Date</TableHead>
+              <TableHead className="whitespace-nowrap">Status</TableHead>
+              <TableHead className="whitespace-nowrap">Payment</TableHead>
+              <TableHead className="whitespace-nowrap">Amount</TableHead>
               <TableHead className="w-[50px]"></TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {filteredPackages.map((pkg) => (
               <TableRow key={pkg.id}>
-
                 <TableCell>
                   <Checkbox
                     checked={selectedPackages.includes(pkg.id)}
@@ -409,10 +417,10 @@ export function PackageTable({ packageAdded, setPackageAdded, download, setDownl
                     </div>
                   </div>
                 </TableCell>
-                <TableCell>
+                <TableCell className="whitespace-nowrap">
                   <span className="text-blue-600">{pkg.invoiceNo}</span>
                 </TableCell>
-                <TableCell>
+                <TableCell className="whitespace-nowrap">
                   <div>
                     <p>{pkg.dateOfAcceptance}</p>
                     <p className="text-sm text-muted-foreground">
@@ -420,13 +428,13 @@ export function PackageTable({ packageAdded, setPackageAdded, download, setDownl
                     </p>
                   </div>
                 </TableCell>
-                <TableCell>
+                <TableCell className="whitespace-nowrap">
                   <p className="text-sm text-muted-foreground truncate max-w-[200px]">
                     {pkg.status}
                   </p>
                 </TableCell>
-                <TableCell>{pkg.paymentStatus}</TableCell>
-                <TableCell>
+                <TableCell className="whitespace-nowrap">{pkg.paymentStatus}</TableCell>
+                <TableCell className="whitespace-nowrap">
                   <div>
                     <p>Total: ${pkg.amount.total}</p>
                     <p className="text-sm text-muted-foreground">Pending: ${pkg.amount.pending}</p>
@@ -478,47 +486,8 @@ export function PackageTable({ packageAdded, setPackageAdded, download, setDownl
           </Button>
         </div>
       </div>
-
-      {/* Mobile view */}
-      <div className="md:hidden space-y-4">
-        {filteredPackages.map((pkg) => (
-          <Card key={pkg.id}>
-            <CardContent className="p-4">
-              <div className="flex justify-between items-start mb-4">
-                <div>
-                  <p className="font-semibold text-lg text-blue-600">{pkg.invoiceNo}</p>
-                  <p className="text-sm text-muted-foreground">{pkg.dateOfAcceptance}</p>
-                </div>
-                <Badge variant={pkg.paymentStatus === "Paid" ? "default" : "secondary"}>
-                  {pkg.paymentStatus}
-                </Badge>
-              </div>
-              <div className="space-y-2">
-                <div>
-                  <p className="font-medium">Sender: {pkg.sender.name}</p>
-                  <p className="text-sm text-muted-foreground truncate">{pkg.sender.address}</p>
-                </div>
-                <div>
-                  <p className="font-medium">Receiver: {pkg.receiver.name}</p>
-                  <p className="text-sm text-muted-foreground truncate">{pkg.receiver.address}</p>
-                </div>
-                <div>
-                  <p className="font-medium">Weight: {pkg.packageWeight}</p>
-                  <p className="text-sm text-muted-foreground truncate">{pkg.contentDetail}</p>
-                </div>
-                <div className="flex justify-between items-center">
-                  <p className="font-medium">Total: ${pkg.amount.total}</p>
-                  <Button variant="ghost" size="sm">
-                    <MoreHorizontal className="h-4 w-4" />
-                  </Button>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
-
     </div>
+
   )
 }
 

@@ -227,42 +227,36 @@ export default function Dashboard() {
 
 
     return (
-        <div className="p-6 space-y-6">
-            <div className="flex justify-between items-center">
+        <div className="p-4 space-y-6 lg:p-6">
+            <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
                 <div>
-                    <h1 className="text-2xl font-bold">Overview Dashboard</h1>
-                    {/* <p className="text-muted-foreground">
-                        Hi Admin, take a look at your performance and analytics
-                    </p> */}
+                    <h1 className="text-xl lg:text-2xl font-bold">Overview Dashboard</h1>
+                    {/* Add a responsive description if needed */}
+                    {/* <p className="text-muted-foreground text-sm lg:text-base">
+              Hi Admin, take a look at your performance and analytics
+            </p> */}
                 </div>
-                {/* <div className="flex gap-4">
-                    <div className="flex items-center gap-2 px-4 py-2 border rounded-md">
-                        <Clock className="h-4 w-4" />
-                        12 January 2024 - 12 January 2025
-                    </div>
-                    <button className="px-4 py-2 bg-primary text-primary-foreground rounded-md">
-                        Export
-                    </button>
-                </div> */}
+                {/* Responsive Action Section */}
+                {/* <div className="flex gap-2 lg:gap-4 flex-wrap"> */}
             </div>
 
             {/* Main Analytics Section */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
                 {/* Total Profit Card */}
-                <Card className="col-span-2">
+                <Card className="col-span-1 lg:col-span-2">
                     <CardHeader>
-                        <CardTitle className="text-lg font-medium">Total Profit</CardTitle>
+                        <CardTitle className="text-base lg:text-lg font-medium">Total Profit</CardTitle>
                     </CardHeader>
                     <CardContent>
                         <div className="space-y-4">
                             <div>
-                                <div className="text-4xl font-bold">${totalProfit.toFixed(2)}</div>
+                                <div className="text-3xl lg:text-4xl font-bold">${totalProfit.toFixed(2)}</div>
                                 <div className="flex items-center gap-2 text-sm text-green-500">
                                     <TrendingUp className="h-4 w-4" />
                                     {growth.toFixed(2)}%
                                 </div>
                             </div>
-                            <div className="h-[200px]">
+                            <div className="h-48 lg:h-[200px]">
                                 <ResponsiveContainer width="100%" height="100%">
                                     <LineChart data={profitData}>
                                         <Tooltip />
@@ -283,18 +277,22 @@ export default function Dashboard() {
                 {/* Payment Status Card */}
                 <Card>
                     <CardHeader>
-                        <CardTitle className="text-lg font-medium">Package Status</CardTitle>
+                        <CardTitle className="text-base lg:text-lg font-medium">Package Status</CardTitle>
                     </CardHeader>
                     <CardContent>
                         <div className="mb-4">
-                            <Select value={selectedStatus} onValueChange={setSelectedStatus}>
-                                <SelectTrigger className="w-[230px]">
-                                    <SelectValue placeholder="Select Payment Status" />
+                            <Select onValueChange={setSelectedStatus}>
+                                <SelectTrigger className="w-full lg:w-[230px]">
+                                    <SelectValue placeholder="Select Status" />
                                 </SelectTrigger>
                                 <SelectContent>
-                                    <SelectItem value="PENDING">Pending</SelectItem>
-                                    <SelectItem value="on-the-way">On the way</SelectItem>
-                                    <SelectItem value="delivered">Delivered</SelectItem>
+                                    <SelectItem value="accepted">Accepted</SelectItem>
+                                    <SelectItem value="arrived-at-tash-airport">Arrived at Tash Airport</SelectItem>
+                                    <SelectItem value="departed-from-tash-airport">Departed from Tash Airport</SelectItem>
+                                    <SelectItem value="arrived-at-jfk-airport">Arrived at JFK Airport</SelectItem>
+                                    <SelectItem value="picked-up-from-jfk-airport">Picked up from JFK Airport</SelectItem>
+                                    <SelectItem value="available-for-pickup">Available for pick up</SelectItem>
+                                    <SelectItem value="shipped-to-receivers-destination">Shipped to Receiver’s destination</SelectItem>
                                     <SelectItem value="cancelled">Cancelled</SelectItem>
                                 </SelectContent>
                             </Select>
@@ -307,8 +305,7 @@ export default function Dashboard() {
                                 </div>
                             )}
                         </div>
-
-                        <div className="h-[200px]">
+                        <div className="h-48 lg:h-[200px]">
                             <ResponsiveContainer width="100%" height="100%">
                                 <PieChart>
                                     <Pie
@@ -330,80 +327,58 @@ export default function Dashboard() {
                 </Card>
             </div>
 
-
-
             {/* Stats Cards */}
-            <div className="grid grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                 {stats.isLoading ? (
                     <>
-                        {/* <StatsCardSkeleton /> */}
                         <StatsCardSkeleton />
                         <StatsCardSkeleton />
                         <StatsCardSkeleton />
                     </>
                 ) : (
                     <>
-                        {/* Total Clients Card
+                        {/* Total Packages */}
                         <Card>
-                            <CardContent className="pt-6">
-                                <div className="flex items-center justify-between">
-                                    <div className="flex items-center gap-4">
-                                        <div className="p-2 bg-blue-100 rounded-lg">
-                                            <Users className="h-6 w-6 text-blue-500" />
-                                        </div>
-                                        <div>
-                                            <div className="text-2xl font-bold">
-                                                {stats.totalEmployees.toLocaleString()}
-                                            </div>
-                                            <div className="text-sm text-muted-foreground">Total Employees</div>
-                                        </div>
-                                    </div>
-
-                                </div>
-                            </CardContent>
-                        </Card> */}
-
-                        {/* Total Packages Card */}
-                        <Card>
-                            <CardContent className="pt-6">
-                                <div className="flex items-center justify-between">
+                            <CardContent className="pt-4 lg:pt-6">
+                                <div className="flex items-center justify-between gap-2">
                                     <div className="flex items-center gap-4">
                                         <div className="p-2 bg-purple-100 rounded-lg">
-                                            <Package className="h-6 w-6 text-purple-500" />
+                                            <Package className="h-5 w-5 lg:h-6 lg:w-6 text-purple-500" />
                                         </div>
                                         <div>
-                                            <div className="text-2xl font-bold">
+                                            <div className="text-xl lg:text-2xl font-bold">
                                                 {stats.totalPackages.toLocaleString()}
                                             </div>
-                                            <div className="text-sm text-muted-foreground">Total Packages</div>
+                                            <div className="text-sm lg:text-base text-muted-foreground">
+                                                Total Packages
+                                            </div>
                                         </div>
                                     </div>
-
                                 </div>
                             </CardContent>
                         </Card>
 
-                        {/* Total Employees Card */}
+                        {/* Total Employees */}
                         <Card>
-                            <CardContent className="pt-6">
-                                <div className="flex items-center justify-between">
+                            <CardContent className="pt-4 lg:pt-6">
+                                <div className="flex items-center justify-between gap-2">
                                     <div className="flex items-center gap-4">
                                         <div className="p-2 bg-orange-100 rounded-lg">
-                                            <Users className="h-6 w-6 text-orange-500" />
+                                            <Users className="h-5 w-5 lg:h-6 lg:w-6 text-orange-500" />
                                         </div>
                                         <div>
-                                            <div className="text-2xl font-bold">
+                                            <div className="text-xl lg:text-2xl font-bold">
                                                 {stats.totalEmployees.toLocaleString()}
                                             </div>
-                                            <div className="text-sm text-muted-foreground">Total Employees</div>
+                                            <div className="text-sm lg:text-base text-muted-foreground">
+                                                Total Employees
+                                            </div>
                                         </div>
                                     </div>
-
                                 </div>
                             </CardContent>
                         </Card>
-
-                        {/* Invoice Sent Card */}
+                        {/* Additional Cards */}
                         <Card>
                             <CardContent className="pt-6">
                                 <div className="flex items-center justify-between">
@@ -432,29 +407,33 @@ export default function Dashboard() {
                     <CardTitle>Recent Deliveries</CardTitle>
                 </CardHeader>
                 <CardContent>
-                    <div className="relative w-full overflow-auto">
-                        <table className="w-full caption-bottom text-sm">
+                    <div className="relative w-full overflow-x-auto">
+                        <table className="w-full text-sm">
                             <thead>
                                 <tr className="border-b">
-                                    <th className="h-12 px-4 text-left align-middle">Invoice No.</th>
-                                    <th className="h-12 px-4 text-left align-middle">Customer</th>
-                                    <th className="h-12 px-4 text-left align-middle">Date</th>
-                                    <th className="h-12 px-4 text-left align-middle">Amount</th>
-                                    <th className="h-12 px-4 text-left align-middle">Status</th>
+                                    <th className="h-12 px-4 text-left whitespace-nowrap">Invoice No.</th>
+                                    <th className="h-12 px-4 text-left whitespace-nowrap">Customer</th>
+                                    <th className="h-12 px-4 text-left whitespace-nowrap">Date</th>
+                                    <th className="h-12 px-4 text-left whitespace-nowrap">Amount</th>
+                                    <th className="h-12 px-4 text-left whitespace-nowrap">Status</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {invoiceData.map((delivery, index) => (
                                     <tr key={index} className="border-b">
-                                        <td className="p-4 align-middle">{delivery.invoiceNo}</td>
-                                        <td className="p-4 align-middle">{delivery.receiverName}</td>
-                                        <td className="p-4 align-middle">{delivery.createdAt}</td>
-                                        <td className="p-4 align-middle">{delivery.amount.total}</td>
-                                        <td className="p-4 align-middle">
-                                            <span className={`px-2 py-1 rounded-full text-xs ${delivery.status === 'Paid' ? 'bg-green-100 text-green-600' :
-                                                delivery.status === 'Due' ? 'bg-yellow-100 text-yellow-600' :
-                                                    'bg-red-100 text-red-600'
-                                                }`}>
+                                        <td className="p-4 whitespace-nowrap">{delivery.invoiceNo}</td>
+                                        <td className="p-4 whitespace-nowrap">{delivery.receiverName}</td>
+                                        <td className="p-4 whitespace-nowrap">{delivery.createdAt}</td>
+                                        <td className="p-4 whitespace-nowrap">{delivery.amount.total}</td>
+                                        <td className="p-4 whitespace-nowrap">
+                                            <span
+                                                className={`px-2 py-1 rounded-full text-xs ${delivery.status === 'Paid'
+                                                    ? 'bg-green-100 text-green-600'
+                                                    : delivery.status === 'Partially Paid'
+                                                        ? 'bg-yellow-100 text-yellow-600'
+                                                        : 'bg-red-100 text-red-600'
+                                                    }`}
+                                            >
                                                 {delivery.status}
                                             </span>
                                         </td>
@@ -466,6 +445,7 @@ export default function Dashboard() {
                 </CardContent>
             </Card>
         </div>
+
     )
 }
 
