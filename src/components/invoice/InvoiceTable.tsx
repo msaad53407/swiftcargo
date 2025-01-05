@@ -15,6 +15,7 @@ import {
 import { db } from "../../firebase/config.js"
 import { fetchInvoicesWithPagination } from "@/utils/invoiceUtils"
 import Loader from "../Loader.js"
+import { InvoiceDetails } from "./InvoiceDetails .js"
 
 interface Payment {
     packageId: string;
@@ -39,6 +40,7 @@ export function PaymentTable() {
     const [loading, setLoading] = useState<boolean>(true);
     const [payments, setPayments] = useState<Payment[]>([]);
     const [error, setError] = useState<string | null>(null);
+    const [invoiceId, setInvoiceId] = useState<string | null>(null);
 
     const loadInvoices = async (page: number = currentPage) => {
         try {
@@ -140,6 +142,32 @@ export function PaymentTable() {
     if (loading) {
         return <Loader />
     }
+
+
+
+    const handleViewDetails = (invoiceId: string) => {
+        setInvoiceId(invoiceId);
+    };
+    const handleBackToTable = () => {
+        loadInvoices()
+        setInvoiceId(null);
+    };
+    if (invoiceId) {
+        return (
+            <div>
+                <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={handleBackToTable}
+                    className="mb-4"
+                >
+                    <ChevronLeft className="h-4 w-4 mr-2" />
+                    Back to invoices
+                </Button>
+                <InvoiceDetails invoiceId={invoiceId} />
+            </div>
+        );
+    }
     return (
         <div className="space-y-4">
             {/* <div className="flex items-center justify-between">
@@ -194,7 +222,7 @@ export function PaymentTable() {
                                 <TableCell className="whitespace-nowrap">{payment.paymentStatus}</TableCell>
                                 <TableCell className="whitespace-nowrap">$ {payment.amount.total}</TableCell>
                                 <TableCell className="whitespace-nowrap">
-                                    <Button variant="ghost" size="icon" className="h-8 w-8">
+                                    <Button onClick={() => handleViewDetails(payment.packageId)} variant="ghost" size="icon" className="h-8 w-8">
                                         <MoreHorizontal className="h-4 w-4" />
                                     </Button>
                                 </TableCell>
