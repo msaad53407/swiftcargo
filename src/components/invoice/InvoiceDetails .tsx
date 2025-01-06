@@ -141,21 +141,20 @@ export function InvoiceDetails({ invoiceId }: InvoiceDetailsProps) {
                 </CardContent>
             </Card>
 
-            <Card>
+            <Card className="w-full">
                 <CardHeader className="pb-4">
                     <CardTitle>Payment Details</CardTitle>
                 </CardHeader>
                 <CardContent>
-                    <div className="grid grid-cols-2 gap-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div className="space-y-6">
                             <div className="space-y-2">
                                 <Label className="text-muted-foreground">Payment Status</Label>
                                 <Select value={status} onValueChange={setStatus}>
-                                    <SelectTrigger className="w-[180px]">
+                                    <SelectTrigger className="w-full md:w-[180px]">
                                         <SelectValue placeholder="Select status" />
                                     </SelectTrigger>
                                     <SelectContent>
-                                        {/* <SelectItem value="draft">Draft</SelectItem> */}
                                         <SelectItem value="PENDING">Pending</SelectItem>
                                         <SelectItem value="paid">Paid</SelectItem>
                                         <SelectItem value="overdue">Overdue</SelectItem>
