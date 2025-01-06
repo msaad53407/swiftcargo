@@ -23,7 +23,7 @@ function DashboardLayout({ children }: { children: React.ReactNode }) {
       <Sidebar open={sidebarOpen} setOpen={setSidebarOpen} />
       <div className="flex-1 flex flex-col overflow-hidden">
         <Header toggleSidebar={() => setSidebarOpen(!sidebarOpen)} />
-        <main className="flex-1 overflow-y-auto p-4">
+        <main className="flex-1 overflow-y-auto p-4 ">
           {children}
         </main>
       </div>

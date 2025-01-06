@@ -325,7 +325,7 @@ export function EmployeeTable({ employeeAdded, setEmployeeAdded }) {
               <TableHead className="whitespace-nowrap">Phone</TableHead>
               <TableHead className="whitespace-nowrap">Verified</TableHead>
               {/* <TableHead>Status</TableHead> */}
-              <TableHead className="w-[50px] whitespace-nowrap"></TableHead>
+              {/* <TableHead className="w-[50px] whitespace-nowrap"></TableHead> */}
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -396,11 +396,11 @@ export function EmployeeTable({ employeeAdded, setEmployeeAdded }) {
                     {employee.status}
                   </span>
                 </TableCell> */}
-                <TableCell className="whitespace-nowrap">
+                {/* <TableCell className="whitespace-nowrap">
                   <Button variant="ghost" size="icon" className="h-8 w-8">
                     <MoreHorizontal className="h-4 w-4" />
                   </Button>
-                </TableCell>
+                </TableCell> */}
               </TableRow>
             ))}
           </TableBody>

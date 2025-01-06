@@ -114,12 +114,13 @@ export const notifyPackageDeleted = (
 export const notifyPackageStatusUpdated = (
   packageId: string,
   invoiceNumber: string,
-  newStatus: string
+  newStatus: string,
+  updatedBy: string
 ) => {
   return createNotification({
     type: "PACKAGE_STATUS_UPDATED",
     title: "Package Status Updated",
-    description: `Package with Invoice No #${invoiceNumber} status changed to ${newStatus}`,
+    description: `Package with Invoice No #${invoiceNumber} status changed to ${newStatus} By ${updatedBy}`,
     metadata: { packageId, invoiceNumber, newStatus },
   });
 };

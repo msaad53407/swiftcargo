@@ -4,7 +4,7 @@ import { notifyPackageAdded } from "./notificaiton";
 // Define TypeScript interfaces
 interface Sender {
   name: string;
-  address: string;
+  // address: string;
   phone: string;
 }
 
@@ -32,6 +32,10 @@ interface Package {
   status?: string;
   createdAt?: string;
   updatedAt?: string;
+  updatedBy?: {
+    name: string;
+    email: string;
+  };
 }
 
 interface Invoice {
@@ -73,17 +77,21 @@ const calculatePaymentStatus = (total: number, pending: number): string => {
  * @param {Object} db - Firestore database instance
  * @returns {Promise<Object>} - Created package and invoice IDs
  */
-export const createPackageWithInvoice = async (rawData: any, db: any) => {
+export const createPackageWithInvoice = async (
+  rawData: any,
+  db: any,
+  updatedByName: string,
+  updatedByEmail: string
+) => {
   try {
     // Generate package ID
     const packageId = generatePackageId();
 
-    // Format package data according to the required structure
     const packageData: Package = {
       id: packageId,
       sender: {
         name: rawData.senderName,
-        address: rawData.senderAddress,
+        // address: rawData.senderAddress,
         phone: rawData.senderPhone,
       },
       receiver: {
@@ -103,7 +111,11 @@ export const createPackageWithInvoice = async (rawData: any, db: any) => {
         Number.parseFloat(rawData.totalAmount),
         Number.parseFloat(rawData.dueAmount)
       ),
-      status: "Activated",
+      status: "Accepted",
+      updatedBy: {
+        name: updatedByName,
+        email: updatedByEmail,
+      },
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     };

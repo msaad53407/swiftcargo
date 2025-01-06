@@ -37,7 +37,7 @@ interface AddPackageDialogProps {
 export function AddPackageDialog({ isOpen, onClose, onSubmit, isLoading }: AddPackageDialogProps) {
     const [formData, setFormData] = useState({
         senderName: '',
-        senderAddress: '',
+        // senderAddress: '',
         senderPhone: '',
         receiverName: '',
         receiverAddress: '',
@@ -59,7 +59,7 @@ export function AddPackageDialog({ isOpen, onClose, onSubmit, isLoading }: AddPa
             onClose()
             setFormData({
                 senderName: '',
-                senderAddress: '',
+                // senderAddress: '',
                 senderPhone: '',
                 receiverName: '',
                 receiverAddress: '',
@@ -101,7 +101,7 @@ export function AddPackageDialog({ isOpen, onClose, onSubmit, isLoading }: AddPa
                                 required
                             />
                         </div>
-                        <div className="space-y-2">
+                        {/* <div className="space-y-2">
                             <Label htmlFor="senderAddress">Sender Address</Label>
                             <Input
                                 id="senderAddress"
@@ -110,7 +110,7 @@ export function AddPackageDialog({ isOpen, onClose, onSubmit, isLoading }: AddPa
                                 placeholder="Enter address"
                                 required
                             />
-                        </div>
+                        </div> */}
                         <div className="space-y-2">
                             <Label htmlFor="senderPhone">Sender Phone</Label>
                             <Input

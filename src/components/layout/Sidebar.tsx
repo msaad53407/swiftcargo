@@ -52,7 +52,7 @@ export function Sidebar({ open, setOpen }: SidebarProps) {
           {/* Header */}
           <div className="flex items-center justify-between p-4">
             <h1 className="text-2xl font-bold">
-              Swift<span className="text-[#40B093]">cargo</span>.
+              Ummah<span className="text-[#40B093]">cargo</span>.
             </h1>
             <button onClick={() => setOpen(false)} className="lg:hidden">
               <X size={24} />

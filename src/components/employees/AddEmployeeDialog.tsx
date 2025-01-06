@@ -85,7 +85,7 @@ export function AddEmployeeDialog({ isOpen, onClose, onSubmit, isLoading }: AddE
                 type="email"
                 value={formData.email}
                 onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                placeholder="info@swiftcargo.com"
+                placeholder="info@ummahcargo.com"
                 required
               />
             </div>

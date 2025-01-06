@@ -17,10 +17,12 @@ import { Label } from "@/components/ui/label"
 import { toast } from "sonner"
 import { notifyPackageStatusUpdated } from "@/utils/notificaiton.js"
 import Loader from "../Loader.js"
+import { useAuth } from "@/contexts/AuthContext.js"
+import { Input } from "../ui/input.js"
 
 interface Sender {
     name: string;
-    address: string;
+    // address: string;
     phone: string;
 }
 
@@ -48,146 +50,171 @@ interface Package {
     status?: string;
     createdAt?: string;
     updatedAt?: string;
+    updatedBy?: {
+        name: string;
+        email: string;
+    };
 }
 
 interface PackageDetailsProps {
     packageId: string;
 }
 
-export function PackageDetails({ packageId }: PackageDetailsProps) {
+export function PackageDetails({ packageId }: { packageId: string }) {
+    const { currentUser } = useAuth()
     const [packageData, setPackageData] = useState<Package | null>(null)
-    const [status, setStatus] = useState<string>("")
+    const [isEditing, setIsEditing] = useState(false)
+    const [editedData, setEditedData] = useState<Package | null>(null)
     const [isSaving, setIsSaving] = useState(false)
     const [isLoading, setIsLoading] = useState(true)
-    const fetchPackageData = async () => {
-        try {
-            // Reference to the 'packages' collection
-            const packagesCollectionRef = collection(db, "packages");
-
-            // Query to find the document where packageId matches the provided ID
-            const q = query(packagesCollectionRef, where("id", "==", packageId));
-
-            // Execute the query
-            const querySnapshot = await getDocs(q);
-
-            if (!querySnapshot.empty) {
-                // Assuming there's only one match; handle multiple matches if needed
-                const doc = querySnapshot.docs[0];
-                const data = doc.data();
-
-                setPackageData(data);
-                setStatus(data.status || "");
-            } else {
-                console.warn("No package found with this packageId.");
-                // Optionally add your toast or error handling here
-            }
-        } catch (error) {
-            console.error("Error fetching package data:", error);
-            // Optionally add your toast or error handling here
-        } finally {
-            setIsLoading(false);
-        }
-    };
 
     useEffect(() => {
+        fetchPackageData()
+    }, [packageId])
 
-        fetchPackageData();
-    }, [packageId]);
+    useEffect(() => {
+        if (packageData) {
+            setEditedData(packageData)
+        }
+    }, [packageData])
 
-    const handleSave = async () => {
-        if (!packageData) return;
-
-        setIsSaving(true);
+    const fetchPackageData = async () => {
         try {
-            // Reference to the 'packages' collection
-            const packagesCollectionRef = collection(db, "packages");
-
-            // Query to find the document where packageId matches the provided ID
-            const q = query(packagesCollectionRef, where("id", "==", packageId));
-
-            // Execute the query
-            const querySnapshot = await getDocs(q);
+            const packagesCollectionRef = collection(db, "packages")
+            const q = query(packagesCollectionRef, where("id", "==", packageId))
+            const querySnapshot = await getDocs(q)
 
             if (!querySnapshot.empty) {
-                // Assuming there's only one match; handle multiple matches if necessary
-                const doc = querySnapshot.docs[0];
-                const docRef = doc.ref; // Get the document reference
-
-                // Update the document
-                await updateDoc(docRef, {
-                    status,
-                    updatedAt: new Date().toISOString(),
-                });
-                await notifyPackageStatusUpdated(packageId, packageData.invoiceNo, status)
-
-                toast.success("Package status updated successfully.")
-
-                // Add your toast here
-            } else {
-                console.warn("No package found to update with this packageId.");
-                // Optionally add your toast or error handling here
-                toast.error("No package found to update with this packageId.")
+                const doc = querySnapshot.docs[0]
+                const data = doc.data()
+                setPackageData(data)
             }
         } catch (error) {
-            console.error("Error updating package status:", error);
-            toast.error(`Error updating package status: ${error}`)
-            // Optionally add your toast or error handling here
+            toast.error("Error fetching package data")
+            console.error(error)
         } finally {
-            setIsSaving(false);
+            setIsLoading(false)
         }
-    };
-
-
-    if (isLoading) {
-        return <Loader />
     }
 
-    if (!packageData) {
-        return <div>No package data found</div>
+    const handleInputChange = (field: string, value: any, section?: string) => {
+        if (!editedData) return
+
+        if (section) {
+            setEditedData({
+                ...editedData,
+                [section]: {
+                    ...editedData[section],
+                    [field]: value
+                }
+            })
+        } else {
+            setEditedData({
+                ...editedData,
+                [field]: value
+            })
+        }
+    }
+
+    const handleSave = async () => {
+        if (!editedData) return
+        setIsSaving(true)
+
+        try {
+            const packagesCollectionRef = collection(db, "packages")
+            const q = query(packagesCollectionRef, where("id", "==", packageId))
+            const querySnapshot = await getDocs(q)
+
+            if (!querySnapshot.empty) {
+                const doc = querySnapshot.docs[0]
+                const docRef = doc.ref
+
+                await updateDoc(docRef, {
+                    ...editedData,
+                    updatedAt: new Date().toISOString(),
+                    updatedBy: {
+                        name: currentUser?.name || '',
+                        email: currentUser?.email || ''
+                    }
+                })
+
+                if (editedData.status !== packageData?.status) {
+                    await notifyPackageStatusUpdated(
+                        packageId,
+                        editedData.invoiceNo,
+                        editedData.status || '',
+                        currentUser?.name || ''
+                    )
+                }
+
+                toast.success("Package updated successfully")
+                setIsEditing(false)
+                fetchPackageData()
+            }
+        } catch (error) {
+            toast.error("Error updating package")
+            console.error(error)
+        } finally {
+            setIsSaving(false)
+        }
+    }
+
+    if (isLoading) return <Loader />
+    if (!packageData || !editedData) return <div>No package data found</div>
+
+    const renderField = (label: string, value: string, field: string, section?: string) => {
+        if (isEditing) {
+            return (
+                <div className="space-y-2">
+                    <Label className="text-muted-foreground">{label}</Label>
+                    <Input
+                        value={section ? editedData[section][field] : editedData[field]}
+                        onChange={(e) => handleInputChange(field, e.target.value, section)}
+                    />
+                </div>
+            )
+        }
+        return (
+            <div className="space-y-2">
+                <Label className="text-muted-foreground">{label}</Label>
+                <p className="font-medium">{value}</p>
+            </div>
+        )
     }
 
     return (
         <div className="space-y-6">
+            <div className="flex justify-start">
+                <Button onClick={() => isEditing ? handleSave() : setIsEditing(true)} disabled={isSaving}>
+                    {isSaving ? (
+                        <div className="flex items-center gap-2">
+                            <div className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
+                            <span>Saving...</span>
+                        </div>
+                    ) : isEditing ? "Save Changes" : "Edit"}
+                </Button>
+                {isEditing && (
+                    <Button variant="outline" className="ml-2" onClick={() => setIsEditing(false)}>
+                        Cancel
+                    </Button>
+                )}
+            </div>
+
             <Card>
                 <CardHeader className="pb-4">
                     <CardTitle>Package Information</CardTitle>
-                    <p className="text-sm text-muted-foreground">
-                        Basic info, like your name and address, that you use on package for delivery
-                    </p>
                 </CardHeader>
                 <CardContent>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div className="space-y-6">
-                            <div className="space-y-2">
-                                <Label className="text-muted-foreground">Invoice No</Label>
-                                <p className="font-medium">{packageData.invoiceNo}</p>
-                            </div>
-                            <div className="space-y-2">
-                                <Label className="text-muted-foreground">Sender Name</Label>
-                                <p className="font-medium">{packageData.sender.name}</p>
-                            </div>
-                            <div className="space-y-2">
-                                <Label className="text-muted-foreground">Mobile Number</Label>
-                                <p className="font-medium">{packageData.sender.phone}</p>
-                            </div>
-                            <div className="space-y-2">
-                                <Label className="text-muted-foreground">Address From</Label>
-                                <p className="font-medium">{packageData.sender.address}</p>
-                            </div>
+                            {renderField("Invoice No", packageData.invoiceNo, "invoiceNo")}
+                            {renderField("Sender Name", packageData.sender.name, "name", "sender")}
+                            {renderField("Sender Mobile Number", packageData.sender.phone, "phone", "sender")}
                         </div>
                         <div className="space-y-6">
-                            <div className="space-y-2">
-                                <Label className="text-muted-foreground">Recipient Name</Label>
-                                <p className="font-medium">{packageData.receiver.name}</p>
-                            </div>
-                            <div className="space-y-2">
-                                <Label className="text-muted-foreground">Mobile Number</Label>
-                                <p className="font-medium">{packageData.receiver.phone}</p>
-                            </div>
-                            <div className="space-y-2">
-                                <Label className="text-muted-foreground">Address To</Label>
-                                <p className="font-medium">{packageData.receiver.address}</p>
-                            </div>
+                            {renderField("Receiver Name", packageData.receiver.name, "name", "receiver")}
+                            {renderField("Receiver Mobile Number", packageData.receiver.phone, "phone", "receiver")}
+                            {renderField("Address To", packageData.receiver.address, "address", "receiver")}
                         </div>
                     </div>
                 </CardContent>
@@ -198,74 +225,85 @@ export function PackageDetails({ packageId }: PackageDetailsProps) {
                     <CardTitle>Additional Information</CardTitle>
                 </CardHeader>
                 <CardContent>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div className="space-y-6">
-                            <div className="space-y-2">
-                                <Label className="text-muted-foreground">Date of Acceptance</Label>
-                                <p className="font-medium">{packageData.dateOfAcceptance}</p>
-                            </div>
-                            <div className="space-y-2">
-                                <Label className="text-muted-foreground">Package Weight</Label>
-                                <p className="font-medium">{packageData.packageWeight}</p>
-                            </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="space-y-4">
+                            {renderField("Date of Acceptance", packageData.dateOfAcceptance, "dateOfAcceptance")}
+                            {renderField("Package Weight", packageData.packageWeight, "packageWeight")}
+                            {isEditing ? (
+                                <>
+                                    <div className="space-y-2">
+                                        <Label className="text-muted-foreground">Total Amount</Label>
+                                        <Input
+                                            type="number"
+                                            value={editedData.amount.total}
+                                            onChange={(e) => handleInputChange("total", parseFloat(e.target.value), "amount")}
+                                        />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Label className="text-muted-foreground">Pending Amount</Label>
+                                        <Input
+                                            type="number"
+                                            value={editedData.amount.pending}
+                                            onChange={(e) => handleInputChange("pending", parseFloat(e.target.value), "amount")}
+                                        />
+                                    </div>
+                                </>
+                            ) : (
+                                <>
+                                    <div className="space-y-2">
+                                        <Label className="text-muted-foreground">Total Amount</Label>
+                                        <p className="font-medium">${packageData.amount.total}</p>
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Label className="text-muted-foreground">Pending Amount</Label>
+                                        <p className="font-medium">${packageData.amount.pending}</p>
+                                    </div>
+                                    <div className="space-y-4 md:col-span-2">
+                                        <div className="space-y-2">
+                                            <Label className="text-muted-foreground">Updated By</Label>
+                                            <p className="font-medium">
+                                                {packageData.updatedBy?.name} ({packageData.updatedBy?.email})
+                                            </p>
+                                        </div>
+                                        <div className="space-y-2">
+                                            <Label className="text-muted-foreground">Last Updated</Label>
+                                            <p className="font-medium">
+                                                {packageData.updatedAt ? new Date(packageData.updatedAt).toLocaleString() : '-'}
+                                            </p>
+                                        </div>
+                                    </div>
+                                </>
+                            )}
+                        </div>
+                        <div className="space-y-4">
+                            {renderField("Content Detail", packageData.contentDetail, "contentDetail")}
+                            {renderField("Payment Status", packageData.paymentStatus, "paymentStatus")}
                             <div className="space-y-2">
                                 <Label className="text-muted-foreground">Delivery Status</Label>
-                                <Select value={status} onValueChange={setStatus}>
-                                    <SelectTrigger className="w-[180px]">
+                                <Select
+                                    value={editedData.status}
+                                    onValueChange={(value) => handleInputChange("status", value)}
+                                    disabled={!isEditing}
+                                >
+                                    <SelectTrigger className="w-[280px]">
                                         <SelectValue placeholder="Select status" />
                                     </SelectTrigger>
                                     <SelectContent>
-                                        <SelectItem value="accepted">Accepted</SelectItem>
+                                        <SelectItem value="Accepted">Accepted</SelectItem>
                                         <SelectItem value="arrived-at-tash-airport">Arrived at Tash Airport</SelectItem>
                                         <SelectItem value="departed-from-tash-airport">Departed from Tash Airport</SelectItem>
                                         <SelectItem value="arrived-at-jfk-airport">Arrived at JFK Airport</SelectItem>
                                         <SelectItem value="picked-up-from-jfk-airport">Picked up from JFK Airport</SelectItem>
                                         <SelectItem value="available-for-pick-up">Available for pick up</SelectItem>
-                                        <SelectItem value="shipped-to-receivers-destination">Shipped to Receiver’s destination</SelectItem>
+                                        <SelectItem value="shipped-to-receivers-destination">Shipped to Receiver's destination</SelectItem>
                                         <SelectItem value="cancelled">Cancelled</SelectItem>
                                     </SelectContent>
                                 </Select>
-                            </div>
-
-                        </div>
-                        <div className="space-y-6">
-                            <div className="space-y-2">
-                                <Label className="text-muted-foreground">Content Detail</Label>
-                                <p className="font-medium">{packageData.contentDetail}</p>
-                            </div>
-                            <div className="space-y-2">
-                                <Label className="text-muted-foreground">Payment Status</Label>
-                                <p className="font-medium">{packageData.paymentStatus}</p>
-                            </div>
-                            <div className="space-y-2">
-                                <Label className="text-muted-foreground">Total Amount</Label>
-                                <p className="font-medium">${packageData.amount.total}</p>
-                            </div>
-                            <div className="space-y-2">
-                                <Label className="text-muted-foreground">Pending Amount</Label>
-                                <p className="font-medium">${packageData.amount.pending}</p>
                             </div>
                         </div>
                     </div>
                 </CardContent>
             </Card>
-
-            <div className="flex justify-start">
-                <Button
-
-                    onClick={handleSave}
-                    disabled={isSaving}
-                >
-                    {isSaving ? (
-                        <div className="flex items-center gap-2">
-                            <div className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
-                            <span>Saving...</span>
-                        </div>
-                    ) : (
-                        "Save"
-                    )}
-                </Button>
-            </div>
         </div>
     )
 }

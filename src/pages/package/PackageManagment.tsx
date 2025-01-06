@@ -15,12 +15,14 @@ function PackageManagment() {
 
     const [download, setDownload] = useState(false)
     const { currentUser, loading } = useAuth();
+    console.log("curern", currentUser?.name)
+
     const [packageAdded, setPackageAdded] = useState(false)
     const handleAddPackage = async (data: typeof formData) => {
 
         setIsLoading(true);
         try {
-            await createPackageWithInvoice(data, db);
+            await createPackageWithInvoice(data, db, currentUser?.name, currentUser?.email);
             toast.success('Package added successfully! ');
             setPackageAdded(true)
         } catch (error) {

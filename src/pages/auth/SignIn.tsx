@@ -43,7 +43,7 @@ export default function SignIn() {
       <div className="w-full lg:w-1/2 flex flex-col p-4 sm:p-8">
         <div className="flex justify-between items-center mb-8 lg:mb-16">
           <h1 className="text-xl sm:text-2xl font-bold">
-            Swift<span className="text-[#40B093]">cargo</span>.
+            Ummah<span className="text-[#40B093]">cargo</span>.
           </h1>
         </div>
 
@@ -52,10 +52,10 @@ export default function SignIn() {
             {/* Text section */}
             <div className="space-y-2 sm:space-y-4 max-w-2xl mx-auto text-center">
               <h1 className="text-3xl sm:text-3xl lg:text-5xl font-bold tracking-tight leading-tight">
-                WELCOME TO SWIFTCARGO
+                WELCOME TO UmmahCargo
               </h1>
               <p className="text-gray-500 text-base sm:text-lg">
-                Welcome to Swiftcargo dashboard system
+                Welcome to UmmahCargo dashboard system
               </p>
             </div>
             {error && (

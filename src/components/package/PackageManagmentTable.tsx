@@ -25,6 +25,7 @@ import * as Papa from "papaparse";
 import { useAuth } from "@/contexts/AuthContext.js"
 import FilterPopover, { FilterValues } from "../package/filter-popover.js"
 import { toast } from "sonner"
+import { BulkActions } from "./BulkActions.js"
 
 
 
@@ -310,7 +311,7 @@ export function PackageTable({ packageAdded, setPackageAdded, download, setDownl
   return (
     <div className="space-y-4">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        {currentUser?.userType === 'admin' ? (
+        {/* {currentUser?.userType === 'admin' ? (
           <div className="flex items-center gap-2">
             <Select onValueChange={handleBulkAction}>
               <SelectTrigger className="w-full sm:w-[230px]">
@@ -333,9 +334,21 @@ export function PackageTable({ packageAdded, setPackageAdded, download, setDownl
               Apply
             </Button>
           </div>
+
+          In your main component
+          
         ) : (
           <div></div>
-        )}
+          
+        )} */}
+        <BulkActions
+          selectedPackages={selectedPackages}
+          onBulkAction={setSelectedPackages}
+          currentUser={currentUser}
+          db={db}
+          loadPackages={loadPackages}
+          currentPage={currentPage}
+        />
         <div className="flex items-center gap-2">
           <div className="relative w-full sm:w-auto">
             <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
@@ -395,8 +408,8 @@ export function PackageTable({ packageAdded, setPackageAdded, download, setDownl
                   <div className="space-y-1">
                     <p className="font-medium">{pkg.sender.name}</p>
                     <div className="flex items-center text-sm text-muted-foreground">
-                      <MapPin className="mr-1 h-3 w-3 flex-shrink-0" />
-                      <span className="truncate max-w-[150px]">{pkg.sender.address}</span>
+                      {/* <MapPin className="mr-1 h-3 w-3 flex-shrink-0" /> */}
+                      {/* <span className="truncate max-w-[150px]">{pkg.sender.address}</span> */}
                     </div>
                     <div className="flex items-center text-sm text-muted-foreground">
                       <Phone className="mr-1 h-3 w-3 flex-shrink-0" />
@@ -408,8 +421,8 @@ export function PackageTable({ packageAdded, setPackageAdded, download, setDownl
                   <div className="space-y-1">
                     <p className="font-medium">{pkg.receiver.name}</p>
                     <div className="flex items-center text-sm text-muted-foreground">
-                      <MapPin className="mr-1 h-3 w-3 flex-shrink-0" />
-                      <span className="truncate max-w-[150px]">{pkg.receiver.address}</span>
+                      {/* <MapPin className="mr-1 h-3 w-3 flex-shrink-0" /> */}
+                      {/* <span className="truncate max-w-[150px]">{pkg.receiver.address}</span> */}
                     </div>
                     <div className="flex items-center text-sm text-muted-foreground">
                       <Phone className="mr-1 h-3 w-3 flex-shrink-0" />
