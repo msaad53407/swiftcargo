@@ -170,17 +170,7 @@ export function PaymentTable() {
     }
     return (
         <div className="space-y-4">
-            {/* <div className="flex items-center justify-between">
-                <h2 className="text-lg font-semibold">Payment Detail Report</h2>
-                <div className="flex items-center gap-2">
-                    <Button variant="ghost" size="icon">
-                        <Search className="h-4 w-4" />
-                    </Button>
-                    <Button variant="ghost" size="icon">
-                        <Settings2 className="h-4 w-4" />
-                    </Button>
-                </div>
-            </div> */}
+
 
             <div className="rounded-lg border">
                 <Table>
@@ -204,24 +194,24 @@ export function PaymentTable() {
                     <TableBody>
                         {payments.map((payment) => (
                             <TableRow key={payment.packageId}>
-                                <TableCell className="whitespace-nowrap">
+                                <TableCell className="whitespace-nowrap p-4">
                                     <Checkbox
                                         checked={selectedPayments.includes(payment.packageId)}
                                         onCheckedChange={() => handleSelect(payment.packageId)}
                                     />
                                 </TableCell>
-                                <TableCell className="font-medium whitespace-nowrap">{payment.packageId}</TableCell>
-                                <TableCell className="whitespace-nowrap">{payment.createdAt}</TableCell>
-                                <TableCell className="whitespace-nowrap">
+                                <TableCell className="font-medium whitespace-nowrap p-4">{payment.packageId}</TableCell>
+                                <TableCell className="whitespace-nowrap p-4">{payment.createdAt}</TableCell>
+                                <TableCell className="whitespace-nowrap p-4">
                                     <div className="flex items-center gap-2">
                                         <div className={`h-2 w-2 rounded-full ${getStatusDot(payment.status)}`} />
                                         <span className={getStatusColor(payment.status)}>{payment.status}</span>
                                     </div>
                                 </TableCell>
-                                <TableCell className="whitespace-nowrap">{payment.receiverName}</TableCell>
-                                <TableCell className="whitespace-nowrap">{payment.paymentStatus}</TableCell>
-                                <TableCell className="whitespace-nowrap">$ {payment.amount.total}</TableCell>
-                                <TableCell className="whitespace-nowrap">
+                                <TableCell className="whitespace-nowrap p-4">{payment.receiverName}</TableCell>
+                                <TableCell className="whitespace-nowrap p-4">{payment.paymentStatus}</TableCell>
+                                <TableCell className="whitespace-nowrap p-4">$ {payment.amount.total}</TableCell>
+                                <TableCell className="whitespace-nowrap p-4">
                                     <Button onClick={() => handleViewDetails(payment.packageId)} variant="ghost" size="icon" className="h-8 w-8">
                                         <MoreHorizontal className="h-4 w-4" />
                                     </Button>

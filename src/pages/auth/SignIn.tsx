@@ -27,7 +27,7 @@ export default function SignIn() {
     try {
       await signIn(data.email, data.password);
       toast.success("Login successful!");
-      navigate('/dashboard');
+      navigate('/packages');
     } catch (error) {
       console.error(error);
       toast.error('Invalid email or password');
@@ -52,10 +52,10 @@ export default function SignIn() {
             {/* Text section */}
             <div className="space-y-2 sm:space-y-4 max-w-2xl mx-auto text-center">
               <h1 className="text-3xl sm:text-3xl lg:text-5xl font-bold tracking-tight leading-tight">
-                WELCOME TO UmmahCargo
+                WELCOME TO Ummah Cargo
               </h1>
               <p className="text-gray-500 text-base sm:text-lg">
-                Welcome to UmmahCargo dashboard system
+                Welcome to Ummah Cargo dashboard system
               </p>
             </div>
             {error && (

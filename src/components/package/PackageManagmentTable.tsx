@@ -405,7 +405,7 @@ export function PackageTable({ packageAdded, setPackageAdded, download, setDownl
                   />
                 </TableCell>
                 <TableCell>
-                  <div className="space-y-1">
+                  <div className="space-y-1 p-4">
                     <p className="font-medium">{pkg.sender.name}</p>
                     <div className="flex items-center text-sm text-muted-foreground">
                       {/* <MapPin className="mr-1 h-3 w-3 flex-shrink-0" /> */}
@@ -418,7 +418,7 @@ export function PackageTable({ packageAdded, setPackageAdded, download, setDownl
                   </div>
                 </TableCell>
                 <TableCell>
-                  <div className="space-y-1">
+                  <div className="space-y-1 p-4">
                     <p className="font-medium">{pkg.receiver.name}</p>
                     <div className="flex items-center text-sm text-muted-foreground">
                       {/* <MapPin className="mr-1 h-3 w-3 flex-shrink-0" /> */}
@@ -430,10 +430,10 @@ export function PackageTable({ packageAdded, setPackageAdded, download, setDownl
                     </div>
                   </div>
                 </TableCell>
-                <TableCell className="whitespace-nowrap">
+                <TableCell className="whitespace-nowrap p-4">
                   <span className="text-blue-600">{pkg.invoiceNo}</span>
                 </TableCell>
-                <TableCell className="whitespace-nowrap">
+                <TableCell className="whitespace-nowrap p-4">
                   <div>
                     <p>{pkg.dateOfAcceptance}</p>
                     <p className="text-sm text-muted-foreground">
@@ -441,13 +441,13 @@ export function PackageTable({ packageAdded, setPackageAdded, download, setDownl
                     </p>
                   </div>
                 </TableCell>
-                <TableCell className="whitespace-nowrap">
+                <TableCell className="whitespace-nowrap p-4">
                   <p className="text-sm text-muted-foreground truncate max-w-[200px]">
                     {pkg.status}
                   </p>
                 </TableCell>
-                <TableCell className="whitespace-nowrap">{pkg.paymentStatus}</TableCell>
-                <TableCell className="whitespace-nowrap">
+                <TableCell className="whitespace-nowrap p-4">{pkg.paymentStatus}</TableCell>
+                <TableCell className="whitespace-nowrap p-4">
                   <div>
                     <p>Total: ${pkg.amount.total}</p>
                     <p className="text-sm text-muted-foreground">Pending: ${pkg.amount.pending}</p>
