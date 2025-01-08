@@ -56,7 +56,6 @@ export function EmployeeTable({ employeeAdded, setEmployeeAdded }) {
     setIsLoading(true);
     try {
       const fetchedManagers = await fetchManagers();
-
       // Filter out suspended managers
       const activeManagers = fetchedManagers.filter(manager => !manager.suspended);
 
@@ -81,7 +80,6 @@ export function EmployeeTable({ employeeAdded, setEmployeeAdded }) {
       const fetchedManagers = await fetchManagers();
       setEmployees(fetchedManagers);
       setFilteredEmployees(fetchedManagers);
-      console.log("all managers", fetchedManagers);
     } catch (error) {
       toast.error("Failed to load managers");
     } finally {
@@ -158,13 +156,13 @@ export function EmployeeTable({ employeeAdded, setEmployeeAdded }) {
             employee.designation.toLowerCase() === activeFilters.designation.toLowerCase()
         )
       }
-      if (activeFilters.kycVerified) {
-        result = result.filter((employee) => employee.kycVerified)
+      // if (activeFilters.kycVerified) {
+      //   result = result.filter((employee) => employee.kycVerified)
 
-      }
-      if (activeFilters.emailVerified) {
-        result = result.filter((employee) => employee.emailVerified)
-      }
+      // }
+      // if (activeFilters.emailVerified) {
+      //   result = result.filter((employee) => employee.emailVerified)
+      // }
       // Note: Implement hasBalance filter based on your data structure
     }
 
@@ -299,7 +297,7 @@ export function EmployeeTable({ employeeAdded, setEmployeeAdded }) {
             />
           </div>
           <FilterPopover
-            filters={activeFilters || { emailVerified: false, kycVerified: false, department: "", designation: "" }}
+            filters={activeFilters || { department: "", designation: "" }}
             onApplyFilter={handleApplyFilter}
             onResetFilter={handleResetFilter}
             onSaveFilter={handleSaveFilter}
@@ -323,7 +321,7 @@ export function EmployeeTable({ employeeAdded, setEmployeeAdded }) {
               <TableHead className="whitespace-nowrap">Employee</TableHead>
               <TableHead className="whitespace-nowrap">Department</TableHead>
               <TableHead className="whitespace-nowrap">Phone</TableHead>
-              <TableHead className="whitespace-nowrap">Verified</TableHead>
+              {/* <TableHead className="whitespace-nowrap">Verified</TableHead> */}
               {/* <TableHead>Status</TableHead> */}
               {/* <TableHead className="w-[50px] whitespace-nowrap"></TableHead> */}
             </TableRow>
@@ -359,7 +357,7 @@ export function EmployeeTable({ employeeAdded, setEmployeeAdded }) {
                   </div>
                 </TableCell>
                 <TableCell className="text-muted-foreground whitespace-nowrap">{employee.phone}</TableCell>
-                <TableCell className="whitespace-nowrap">
+                {/* <TableCell className="whitespace-nowrap">
                   <div className="flex gap-4">
                     <div className="flex items-center gap-1">
                       <div
@@ -386,7 +384,7 @@ export function EmployeeTable({ employeeAdded, setEmployeeAdded }) {
                       <span className="text-sm text-muted-foreground">KYC</span>
                     </div>
                   </div>
-                </TableCell>
+                </TableCell> */}
                 {/* <TableCell>
                   <span
                     className={`inline-flex rounded-full px-2 py-1 text-xs font-medium ${getStatusColor(

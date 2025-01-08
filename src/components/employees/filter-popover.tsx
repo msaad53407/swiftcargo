@@ -25,8 +25,7 @@ interface FilterPopoverProps {
 }
 
 export interface FilterValues {
-    emailVerified: boolean
-    kycVerified: boolean
+
     department: string
     designation: string
 }
@@ -56,7 +55,7 @@ export function FilterPopover({
                         <h4 className="font-medium leading-none">Filter Members</h4>
                     </div>
                     <div className="grid gap-2">
-                        <div className="flex items-center space-x-4">
+                        {/* <div className="flex items-center space-x-4">
                             <div className="flex items-center space-x-2">
                                 <Checkbox
                                     id="email"
@@ -87,7 +86,7 @@ export function FilterPopover({
                                     KYC Verified
                                 </label>
                             </div>
-                        </div>
+                        </div> */}
                         <div className="grid gap-2">
                             <div className="grid gap-1">
                                 <label className="text-sm">Department</label>
@@ -101,10 +100,9 @@ export function FilterPopover({
                                         <SelectValue placeholder="Select department" />
                                     </SelectTrigger>
                                     <SelectContent>
-                                        <SelectItem value="Finance">Finance</SelectItem>
-                                        <SelectItem value="Human Resource">Human Resource</SelectItem>
-                                        <SelectItem value="Information Technology">Information Technology</SelectItem>
-                                        <SelectItem value="Marketing">Marketing</SelectItem>
+                                        <SelectItem value="manager">Manager</SelectItem>
+                                        <SelectItem value="admin    ">Admin</SelectItem>
+
                                     </SelectContent>
                                 </Select>
                             </div>

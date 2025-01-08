@@ -24,8 +24,6 @@ interface EmployeeData {
   designation: string;
   phone: string;
   address: string;
-  emailVerified: boolean;
-  kycVerified: boolean;
   suspended: boolean;
 }
 
@@ -57,8 +55,6 @@ export const createOrReactivateEmployee = async (
         designation: employeeData.designation,
         phone: employeeData.phone,
         address: employeeData.address,
-        emailVerified: employeeData.emailVerified,
-        kycVerified: employeeData.kycVerified,
         suspended: false,
         reactivatedAt: new Date(),
         status: "active",
@@ -91,8 +87,6 @@ export const createOrReactivateEmployee = async (
       designation: employeeData.designation,
       phone: employeeData.phone,
       address: employeeData.address,
-      emailVerified: employeeData.emailVerified,
-      kycVerified: employeeData.kycVerified,
       hashedPassword,
       userType: "manager",
       uid: userCredential.user.uid,

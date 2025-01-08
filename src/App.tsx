@@ -68,7 +68,7 @@ function App() {
               </ProtectedRoute>
             }
           />
-          <Route
+          {/* <Route
             path="/invoices"
             element={
               <ProtectedRoute allowedRoles={['admin', 'manager']}>
@@ -77,7 +77,7 @@ function App() {
                 </DashboardLayout>
               </ProtectedRoute>
             }
-          />
+          /> */}
           <Route
             path="/notifications"
             element={

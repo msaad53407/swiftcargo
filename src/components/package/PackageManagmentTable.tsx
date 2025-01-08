@@ -385,9 +385,9 @@ export function PackageTable({ packageAdded, setPackageAdded, download, setDownl
                   onCheckedChange={(checked) => handleSelectAll(checked as boolean)}
                 />
               </TableHead>
-              <TableHead className="whitespace-nowrap">Sender Detail</TableHead>
-              <TableHead className="whitespace-nowrap">Receiver Detail</TableHead>
               <TableHead className="whitespace-nowrap">Invoice No</TableHead>
+              <TableHead className="whitespace-nowrap">Receiver Detail</TableHead>
+              <TableHead className="whitespace-nowrap">Sender Detail</TableHead>
               <TableHead className="whitespace-nowrap">Date</TableHead>
               <TableHead className="whitespace-nowrap">Status</TableHead>
               <TableHead className="whitespace-nowrap">Payment</TableHead>
@@ -405,17 +405,7 @@ export function PackageTable({ packageAdded, setPackageAdded, download, setDownl
                   />
                 </TableCell>
                 <TableCell>
-                  <div className="space-y-1 p-4">
-                    <p className="font-medium">{pkg.sender.name}</p>
-                    <div className="flex items-center text-sm text-muted-foreground">
-                      {/* <MapPin className="mr-1 h-3 w-3 flex-shrink-0" /> */}
-                      {/* <span className="truncate max-w-[150px]">{pkg.sender.address}</span> */}
-                    </div>
-                    <div className="flex items-center text-sm text-muted-foreground">
-                      <Phone className="mr-1 h-3 w-3 flex-shrink-0" />
-                      <span>{pkg.sender.phone}</span>
-                    </div>
-                  </div>
+                  <span className="text-blue-600">{pkg.invoiceNo}</span>
                 </TableCell>
                 <TableCell>
                   <div className="space-y-1 p-4">
@@ -431,7 +421,18 @@ export function PackageTable({ packageAdded, setPackageAdded, download, setDownl
                   </div>
                 </TableCell>
                 <TableCell className="whitespace-nowrap p-4">
-                  <span className="text-blue-600">{pkg.invoiceNo}</span>
+                  <div className="space-y-1 p-4">
+                    <p className="font-medium">{pkg.sender.name}</p>
+                    <div className="flex items-center text-sm text-muted-foreground">
+                      {/* <MapPin className="mr-1 h-3 w-3 flex-shrink-0" /> */}
+                      {/* <span className="truncate max-w-[150px]">{pkg.sender.address}</span> */}
+                    </div>
+                    <div className="flex items-center text-sm text-muted-foreground">
+                      <Phone className="mr-1 h-3 w-3 flex-shrink-0" />
+                      <span>{pkg.sender.phone}</span>
+                    </div>
+                  </div>
+
                 </TableCell>
                 <TableCell className="whitespace-nowrap p-4">
                   <div>

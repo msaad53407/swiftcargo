@@ -404,7 +404,7 @@ export default function Dashboard() {
             {/* Recent Deliveries Table */}
             <Card>
                 <CardHeader>
-                    <CardTitle>Recent Deliveries</CardTitle>
+                    <CardTitle>Recent Packages</CardTitle>
                 </CardHeader>
                 <CardContent>
                     <div className="relative w-full overflow-x-auto">

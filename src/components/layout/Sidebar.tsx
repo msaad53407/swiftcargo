@@ -9,7 +9,7 @@ const menuItems = [
   { icon: Package, label: 'Packages Management', path: '/packages' },
   { icon: Bell, label: 'Notification', path: '/notifications' },
   { icon: Users, label: 'Employees', path: '/employees' },
-  { icon: FileText, label: 'Invoice Management', path: '/invoices' },
+  // { icon: FileText, label: 'Invoice Management', path: '/invoices' },
   { icon: Settings, label: 'Setting', path: '/settings' },
 ];
 

@@ -89,12 +89,13 @@ export const notifyEmployeeAdded = (employeeName: string) => {
 
 export const notifyPackageAdded = (
   packageId: string,
-  invoiceNumber: string
+  invoiceNumber: string,
+  updatedBy: string
 ) => {
   return createNotification({
     type: "PACKAGE_ADDED",
     title: "New Package Created",
-    description: `Package with Invoice No #${invoiceNumber} has been created`,
+    description: `Package with Invoice No #${invoiceNumber} has been created By ${updatedBy}`,
     metadata: { packageId, invoiceNumber },
   });
 };

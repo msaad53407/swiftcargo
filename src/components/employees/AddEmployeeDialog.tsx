@@ -35,8 +35,6 @@ export function AddEmployeeDialog({ isOpen, onClose, onSubmit, isLoading }: AddE
     designation: '',
     phone: '',
     address: '',
-    emailVerified: false,
-    kycVerified: false,
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -54,8 +52,7 @@ export function AddEmployeeDialog({ isOpen, onClose, onSubmit, isLoading }: AddE
         designation: '',
         phone: '',
         address: '',
-        emailVerified: false,
-        kycVerified: false,
+
       });
     }
   };
@@ -110,10 +107,8 @@ export function AddEmployeeDialog({ isOpen, onClose, onSubmit, isLoading }: AddE
                   <SelectValue placeholder="Select Department" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="Human Resource">Human Resource</SelectItem>
-                  <SelectItem value="Information Technology">Information Technology</SelectItem>
-                  <SelectItem value="Finance">Finance</SelectItem>
-                  <SelectItem value="Marketing">Marketing</SelectItem>
+                  <SelectItem value="manager">Manager</SelectItem>
+                  <SelectItem value="admin">Admin</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -147,29 +142,6 @@ export function AddEmployeeDialog({ isOpen, onClose, onSubmit, isLoading }: AddE
                 placeholder="Enter address"
                 required
               />
-            </div>
-          </div>
-
-          <div className="flex space-x-4">
-            <div className="flex items-center space-x-2">
-              <Checkbox
-                id="emailVerified"
-                checked={formData.emailVerified}
-                onCheckedChange={(checked) =>
-                  setFormData({ ...formData, emailVerified: checked as boolean })
-                }
-              />
-              <Label htmlFor="emailVerified">Email Verified</Label>
-            </div>
-            <div className="flex items-center space-x-2">
-              <Checkbox
-                id="kycVerified"
-                checked={formData.kycVerified}
-                onCheckedChange={(checked) =>
-                  setFormData({ ...formData, kycVerified: checked as boolean })
-                }
-              />
-              <Label htmlFor="kycVerified">KYC Verified</Label>
             </div>
           </div>
 

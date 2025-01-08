@@ -15,8 +15,6 @@ export interface Manager {
   designation: string;
   phone: string;
   address: string;
-  emailVerified: boolean;
-  kycVerified: boolean;
   userType: "manager";
   uid: string;
   createdAt: Date;

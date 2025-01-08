@@ -124,7 +124,11 @@ export const createPackageWithInvoice = async (
     const packageRef = collection(db, "packages");
     const packageDoc = await addDoc(packageRef, packageData);
 
-    await notifyPackageAdded(packageDoc.id, packageData.invoiceNo);
+    await notifyPackageAdded(
+      packageDoc.id,
+      packageData.invoiceNo,
+      updatedByName
+    );
     // Prepare invoice data
     const invoiceData: Invoice = {
       packageId,

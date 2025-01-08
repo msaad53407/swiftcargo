@@ -170,8 +170,6 @@ export function PaymentTable() {
     }
     return (
         <div className="space-y-4">
-
-
             <div className="rounded-lg border">
                 <Table>
                     <TableHeader>

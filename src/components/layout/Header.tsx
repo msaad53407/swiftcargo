@@ -47,3 +47,4 @@ export function Header({ toggleSidebar }: HeaderProps) {
     </header>
   );
 }
+
