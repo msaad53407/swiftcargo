@@ -5,7 +5,14 @@ import { Input } from '@/components/ui/input';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Lock, Mail } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -14,12 +21,19 @@ interface SignInForm {
   password: string;
 }
 
+interface ResetPasswordForm {
+  email: string;
+}
+
 export default function SignIn() {
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
+  const [isResetting, setIsResetting] = useState(false);
   const [error, setError] = useState('');
+  const [isResetModalOpen, setIsResetModalOpen] = useState(false);
   const { register, handleSubmit } = useForm<SignInForm>();
-  const { signIn } = useAuth();
+  const { register: registerReset, handleSubmit: handleSubmitReset } = useForm<ResetPasswordForm>();
+  const { signIn, resetPassword } = useAuth();
 
   const onSubmit = async (data: SignInForm) => {
     setIsLoading(true);
@@ -34,6 +48,20 @@ export default function SignIn() {
       setError('Invalid email or password');
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleResetPassword = async (data: ResetPasswordForm) => {
+    setIsResetting(true);
+    try {
+      await resetPassword(data.email);
+      toast.success("Password reset email sent! Please check your inbox.");
+      setIsResetModalOpen(false);
+    } catch (error) {
+      console.error(error);
+      toast.error('Failed to send reset email. Please check your email address.');
+    } finally {
+      setIsResetting(false);
     }
   };
 
@@ -94,14 +122,17 @@ export default function SignIn() {
                   type="submit"
                   className="w-full rounded-full bg-[#49B698] h-12 text-base sm:text-lg text-white"
                   disabled={isLoading}
-                // style={{
-                //   background:
-                //     "linear-gradient(129.49deg, #FFEEAD 0%, #C8B056 97.89%)",
-                // }}
                 >
                   {isLoading ? "Signing in..." : "Log in"}
                 </Button>
               </form>
+
+              <button
+                onClick={() => setIsResetModalOpen(true)}
+                className="mt-4 text-sm text-[#49B698] hover:text-[#40B093] transition-colors w-full text-center"
+              >
+                Forgot your password?
+              </button>
             </div>
           </div>
         </div>
@@ -114,7 +145,45 @@ export default function SignIn() {
           backgroundImage: 'url(/login_image.png)'
         }}
       />
+
+      {/* Reset Password Modal */}
+      <Dialog open={isResetModalOpen} onOpenChange={setIsResetModalOpen}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Reset Password</DialogTitle>
+            <DialogDescription>
+              Enter your email address and we'll send you a link to reset your password.
+            </DialogDescription>
+          </DialogHeader>
+          <form onSubmit={handleSubmitReset(handleResetPassword)}>
+            <div className="grid gap-4 py-4">
+              <div className="relative">
+                <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+                <Input
+                  {...registerReset('email')}
+                  type="email"
+                  placeholder="Email"
+                  className="pl-10"
+                  required
+                />
+              </div>
+            </div>
+            <DialogFooter>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setIsResetModalOpen(false)}
+                disabled={isResetting}
+              >
+                Cancel
+              </Button>
+              <Button type="submit" disabled={isResetting}>
+                {isResetting ? "Sending..." : "Send Reset Link"}
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
-

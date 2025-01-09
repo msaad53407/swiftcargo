@@ -136,7 +136,7 @@ export function FilterPopover({
                                         <SelectValue placeholder="Select status" />
                                     </SelectTrigger>
                                     <SelectContent>
-                                        <SelectItem value="accepted">Accepted</SelectItem>
+                                        <SelectItem value="Accepted">Accepted</SelectItem>
                                         <SelectItem value="arrived-at-tash-airport">Arrived at Tash Airport</SelectItem>
                                         <SelectItem value="departed-from-tash-airport">Departed from Tash Airport</SelectItem>
                                         <SelectItem value="arrived-at-jfk-airport">Arrived at JFK Airport</SelectItem>

@@ -348,6 +348,7 @@ export function PackageTable({ packageAdded, setPackageAdded, download, setDownl
           db={db}
           loadPackages={loadPackages}
           currentPage={currentPage}
+          packages={packages}
         />
         <div className="flex items-center gap-2">
           <div className="relative w-full sm:w-auto">

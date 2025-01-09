@@ -5,7 +5,8 @@ import {
     signInWithEmailAndPassword,
     onAuthStateChanged,
     signOut,
-    type User as FirebaseUser
+    type User as FirebaseUser,
+    sendPasswordResetEmail
 } from 'firebase/auth';
 import { db, auth } from "../firebase/config.js"
 import { collection, doc, getDoc, getDocs, query, where } from 'firebase/firestore';
@@ -148,12 +149,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         await signOut(auth);
         Cookies.remove('user');
     };
+    const resetPassword = async (email: string) => {
+        return sendPasswordResetEmail(auth, email);
+    };
+
 
     const value = {
         currentUser,
         loading,
         signIn,
-        logout
+        logout,
+        resetPassword,
     };
 
     return (

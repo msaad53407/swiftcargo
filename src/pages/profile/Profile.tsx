@@ -107,18 +107,7 @@ function ManagerDetails({ manager }: { manager: Manager }) {
             <DetailItem icon={Briefcase} label="Designation" value={manager.designation} />
             <DetailItem icon={Phone} label="Phone" value={manager.phone} />
             <DetailItem icon={MapPin} label="Address" value={manager.address} />
-            <DetailItem
-                icon={CheckCircle2}
-                label="Email Verified"
-                value={manager.emailVerified ? 'Yes' : 'No'}
-                valueColor={manager.emailVerified ? 'text-green-600' : 'text-red-600'}
-            />
-            <DetailItem
-                icon={CheckCircle2}
-                label="KYC Verified"
-                value={manager.kycVerified ? 'Yes' : 'No'}
-                valueColor={manager.kycVerified ? 'text-green-600' : 'text-red-600'}
-            />
+
             <DetailItem
                 icon={AlertCircle}
                 label="Account Status"

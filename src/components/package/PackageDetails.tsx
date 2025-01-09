@@ -19,6 +19,7 @@ import { notifyPackageStatusUpdated } from "@/utils/notificaiton.js"
 import Loader from "../Loader.js"
 import { useAuth } from "@/contexts/AuthContext.js"
 import { Input } from "../ui/input.js"
+import PackagePrintButton from "./PackagePrintButton.js"
 
 interface Sender {
     name: string;
@@ -116,27 +117,38 @@ export function PackageDetails({ packageId }: { packageId: string }) {
         }
     }
 
+    const calculatePaymentStatus = (total, pending) => {
+        if (pending === 0) return "Paid";
+        if (pending === total) return "Unpaid";
+        return "Partially Paid";
+    };
+
     const handleSave = async () => {
-        if (!editedData) return
-        setIsSaving(true)
+        if (!editedData) return;
+        setIsSaving(true);
 
         try {
-            const packagesCollectionRef = collection(db, "packages")
-            const q = query(packagesCollectionRef, where("id", "==", packageId))
-            const querySnapshot = await getDocs(q)
+            const packagesCollectionRef = collection(db, "packages");
+            const q = query(packagesCollectionRef, where("id", "==", packageId));
+            const querySnapshot = await getDocs(q);
 
             if (!querySnapshot.empty) {
-                const doc = querySnapshot.docs[0]
-                const docRef = doc.ref
+                const doc = querySnapshot.docs[0];
+                const docRef = doc.ref;
+
+                // Calculate the paymentStatus based on amount values
+                const { total, pending } = editedData.amount;
+                const paymentStatus = calculatePaymentStatus(total, pending);
 
                 await updateDoc(docRef, {
                     ...editedData,
+                    paymentStatus, // Set the dynamically calculated paymentStatus
                     updatedAt: new Date().toISOString(),
                     updatedBy: {
                         name: currentUser?.name || '',
                         email: currentUser?.email || ''
                     }
-                })
+                });
 
                 if (editedData.status !== packageData?.status) {
                     await notifyPackageStatusUpdated(
@@ -144,21 +156,20 @@ export function PackageDetails({ packageId }: { packageId: string }) {
                         editedData.invoiceNo,
                         editedData.status || '',
                         currentUser?.name || ''
-                    )
+                    );
                 }
 
-                toast.success("Package updated successfully")
-                setIsEditing(false)
-                fetchPackageData()
+                toast.success("Package updated successfully");
+                setIsEditing(false);
+                fetchPackageData();
             }
         } catch (error) {
-            toast.error("Error updating package")
-            console.error(error)
+            toast.error("Error updating package");
+            console.error(error);
         } finally {
-            setIsSaving(false)
+            setIsSaving(false);
         }
-    }
-
+    };
     if (isLoading) return <Loader />
     if (!packageData || !editedData) return <div>No package data found</div>
 
@@ -184,7 +195,7 @@ export function PackageDetails({ packageId }: { packageId: string }) {
 
     return (
         <div className="space-y-6">
-            <div className="flex justify-start">
+            <div className="flex justify-between gap-4">
                 <Button onClick={() => isEditing ? handleSave() : setIsEditing(true)} disabled={isSaving}>
                     {isSaving ? (
                         <div className="flex items-center gap-2">
@@ -198,6 +209,7 @@ export function PackageDetails({ packageId }: { packageId: string }) {
                         Cancel
                     </Button>
                 )}
+                <PackagePrintButton pkg={packageData} />
             </div>
 
             <Card>
@@ -277,7 +289,12 @@ export function PackageDetails({ packageId }: { packageId: string }) {
                         </div>
                         <div className="space-y-4">
                             {renderField("Content Detail", packageData.contentDetail, "contentDetail")}
-                            {renderField("Payment Status", packageData.paymentStatus, "paymentStatus")}
+                            {!isEditing && (<div className="space-y-2">
+                                <Label className="text-muted-foreground">Payment Status</Label>
+                                <p className="font-medium">{packageData.paymentStatus}</p>
+                            </div>
+                            )}
+                            {/* {renderField("Payment Status", packageData.paymentStatus, "paymentStatus")} */}
                             <div className="space-y-2">
                                 <Label className="text-muted-foreground">Delivery Status</Label>
                                 <Select

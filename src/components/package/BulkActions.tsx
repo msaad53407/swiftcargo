@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Trash2, RefreshCw, Loader2 } from 'lucide-react';
+import { Trash2, RefreshCw, Loader2, Printer } from 'lucide-react';
 import {
     Dialog,
     DialogContent,
@@ -21,6 +21,7 @@ import { toast } from "sonner"
 import { collection, getDocs, query, updateDoc, where } from "firebase/firestore"
 import { bulkDeletePackages } from '@/utils/packageUtils';
 import { notifyPackageStatusUpdated } from '@/utils/notificaiton';
+import { handleBulkPrint } from './BulkPkgPrintButton';
 
 export const bulkUpdatePackageStatus = async (db, packageIds, newStatus, updatedBy) => {
     try {
@@ -149,10 +150,12 @@ export function BulkActions({
     currentUser,
     db,
     loadPackages,
-    currentPage
+    currentPage,
+    packages
 }) {
     const [isStatusModalOpen, setIsStatusModalOpen] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
+    const [selectedAction, setSelectedAction] = useState('');
 
     const handleBulkAction = async (action: string) => {
         if (!selectedPackages.length) {
@@ -160,18 +163,32 @@ export function BulkActions({
             return;
         }
 
-        if (action === 'delete') {
-            if (window.confirm(`Are you sure you want to delete ${selectedPackages.length} packages?`)) {
-                const success = await bulkDeletePackages(db, selectedPackages);
-                if (success) {
-                    loadPackages(currentPage);
-                    onBulkAction([]);
+        setSelectedAction(action);
+
+        switch (action) {
+            case 'delete':
+                if (window.confirm(`Are you sure you want to delete ${selectedPackages.length} packages?`)) {
+                    const success = await bulkDeletePackages(db, selectedPackages);
+                    if (success) {
+                        loadPackages(currentPage);
+                        onBulkAction([]);
+                    }
                 }
+                break;
+            case 'updateStatus':
+                setIsStatusModalOpen(true);
+                break;
+            case 'print': {
+                // Filter the full package data to get only selected packages
+                const selectedPackageData = packages.filter(pkg =>
+                    selectedPackages.includes(pkg.id)
+                );
+                handleBulkPrint(selectedPackageData);
+                break;
             }
-        } else if (action === 'updateStatus') {
-            setIsStatusModalOpen(true);
         }
     };
+
 
     const handleStatusUpdate = async (newStatus: string) => {
         setIsLoading(true);
@@ -196,6 +213,17 @@ export function BulkActions({
         }
     };
 
+    const getButtonLabel = () => {
+        switch (selectedAction) {
+            case 'delete':
+                return 'Delete Selected';
+            case 'updateStatus':
+                return 'Update Status';
+            default:
+                return 'Apply';
+        }
+    };
+
     return (
         <>
             <div className="flex items-center gap-2">
@@ -216,13 +244,19 @@ export function BulkActions({
                                 <span>Update Status</span>
                             </div>
                         </SelectItem>
+                        <SelectItem value="print">
+                            <div className="flex items-center gap-2">
+                                <Printer className="h-4 w-4" />
+                                <span>Print Selected</span>
+                            </div>
+                        </SelectItem>
                     </SelectContent>
                 </Select>
                 <Button
                     variant="outline"
                     size="sm"
-                    onClick={() => handleBulkAction('updateStatus')}
-                    disabled={isLoading}
+                    onClick={() => handleBulkAction(selectedAction)}
+                    disabled={isLoading || !selectedAction}
                 >
                     {isLoading ? (
                         <>
@@ -230,7 +264,7 @@ export function BulkActions({
                             Applying...
                         </>
                     ) : (
-                        'Apply'
+                        getButtonLabel()
                     )}
                 </Button>
             </div>
