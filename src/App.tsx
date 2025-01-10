@@ -32,11 +32,12 @@ function DashboardLayout({ children }: { children: React.ReactNode }) {
 }
 
 function App() {
+
   return (
     <AuthProvider>
       <Router>
         <Routes>
-          <Route path="/" element={<SignIn />} />
+          {/* <Route path="/" element={<SignIn />} /> */}
           <Route path="/signin" element={<SignIn />} />
           <Route
             path="/dashboard"
@@ -59,7 +60,7 @@ function App() {
             }
           />
           <Route
-            path="/packages"
+            path="/"
             element={
               <ProtectedRoute allowedRoles={['admin', 'manager']}>
                 <DashboardLayout>

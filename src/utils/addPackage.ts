@@ -17,6 +17,8 @@ interface Receiver {
 interface Amount {
   total: number;
   pending: number;
+  cargoFee: number;
+  shippingFee: number;
 }
 
 interface Package {
@@ -106,6 +108,8 @@ export const createPackageWithInvoice = async (
       amount: {
         total: Number.parseFloat(rawData.totalAmount),
         pending: Number.parseFloat(rawData.dueAmount),
+        cargoFee: Number.parseFloat(rawData.cargoFee),
+        shippingFee: Number.parseFloat(rawData.shippingFee),
       },
       paymentStatus: calculatePaymentStatus(
         Number.parseFloat(rawData.totalAmount),

@@ -6,7 +6,7 @@ import { toast } from 'sonner';
 
 const menuItems = [
   { icon: LayoutDashboard, label: 'Dashboard', path: '/dashboard' },
-  { icon: Package, label: 'Packages Management', path: '/packages' },
+  { icon: Package, label: 'Packages Management', path: '/' },
   { icon: Bell, label: 'Notification', path: '/notifications' },
   { icon: Users, label: 'Employees', path: '/employees' },
   // { icon: FileText, label: 'Invoice Management', path: '/invoices' },

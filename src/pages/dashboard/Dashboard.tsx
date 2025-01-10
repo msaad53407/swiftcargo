@@ -180,12 +180,12 @@ export default function Dashboard() {
 
 
 
-            // Calculate total profit
-            const paidInvoices = invoices.filter(
-                (invoice) => invoice.paymentStatus.toLowerCase() === "paid"
-            );
+            // // Calculate total profit
+            // const paidInvoices = invoices.filter(
+            //     (invoice) => invoice.paymentStatus.toLowerCase() === "paid"
+            // );
 
-            const totalProfit = paidInvoices.reduce(
+            const totalProfit = invoices.reduce(
                 (sum, invoice) => sum + invoice.amount.total,
                 0
             );
@@ -275,7 +275,7 @@ export default function Dashboard() {
                 </Card>
 
                 {/* Payment Status Card */}
-                <Card>
+                {/* <Card>
                     <CardHeader>
                         <CardTitle className="text-base lg:text-lg font-medium">Package Status</CardTitle>
                     </CardHeader>
@@ -324,7 +324,7 @@ export default function Dashboard() {
                             </ResponsiveContainer>
                         </div>
                     </CardContent>
-                </Card>
+                </Card> */}
             </div>
 
             {/* Stats Cards */}

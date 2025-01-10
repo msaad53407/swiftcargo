@@ -74,23 +74,34 @@ const generatePackageHTML = (pkg, currentDate) => `
       </div>
     </div>
 
-    <div class="section" style="margin-top: 20px;">
-      <div class="section-title">Payment Information</div>
-      <div class="details-grid" style="grid-template-columns: repeat(3, 1fr);">
-        <div>
-          <div class="label">Total Amount:</div>
-          <div class="value">$${pkg.amount.total.toFixed(2)}</div>
-        </div>
-        <div>
-          <div class="label">Pending Amount:</div>
-          <div class="value">$${pkg.amount.pending.toFixed(2)}</div>
-        </div>
-        <div>
-          <div class="label">Status:</div>
-          <div class="value">${pkg.paymentStatus}</div>
-        </div>
-      </div>
-    </div>
+          <div class="section" style="margin-top: 20px;">
+                <div class="section-title">Payment Information</div>
+                <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px;">
+                    <!-- Left Column -->
+                    <div class="details-grid" style="gap: 8px;">
+                        <div class="label">Total Amount:</div>
+                        <div class="value">$${pkg.amount.total.toFixed(2)}</div>
+                        
+                        <div class="label">Pending Amount:</div>
+                        <div class="value">$${pkg.amount.pending.toFixed(2)}</div>
+                        
+                        <div class="label">Payment Status:</div>
+                        <div class="value">${pkg.paymentStatus}</div>
+                    </div>
+                    
+                    <!-- Right Column -->
+                    <div class="details-grid" style="gap: 8px;">
+                        <div class="label">Cargo Fee:</div>
+                        <div class="value">$${pkg.amount.cargoFee.toFixed(2)}</div>
+                        
+                        <div class="label">Shipping Fee:</div>
+                        <div class="value">$${pkg.amount.shippingFee.toFixed(2)}</div>
+                        
+                        <div class="label">Total Fees:</div>
+                        <div class="value">$${(pkg.amount.cargoFee + pkg.amount.shippingFee).toFixed(2)}</div>
+                    </div>
+                </div>
+            </div>
 
     <div class="footer">
       <div style="margin-bottom: 10px;">

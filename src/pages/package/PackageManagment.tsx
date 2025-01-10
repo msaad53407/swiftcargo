@@ -15,7 +15,7 @@ function PackageManagment() {
 
     const [download, setDownload] = useState(false)
     const { currentUser, loading } = useAuth();
-    console.log("curern", currentUser?.name)
+
 
     const [packageAdded, setPackageAdded] = useState(false)
     const handleAddPackage = async (data: typeof formData) => {
@@ -51,15 +51,15 @@ function PackageManagment() {
                         <Download size={20} />
                         Export
                     </Button>
-                    {currentUser?.userType === 'admin' && (
-                        <Button
-                            className="w-full lg:w-auto"
-                            onClick={() => setIsAddDialogOpen(true)}
-                        >
-                            <Plus size={20} />
-                            Add Package
-                        </Button>
-                    )}
+
+                    <Button
+                        className="w-full lg:w-auto"
+                        onClick={() => setIsAddDialogOpen(true)}
+                    >
+                        <Plus size={20} />
+                        Add Package
+                    </Button>
+
                 </div>
             </div>
 

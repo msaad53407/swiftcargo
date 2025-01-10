@@ -36,6 +36,8 @@ interface Receiver {
 interface Amount {
     total: number;
     pending: number;
+    cargoFee: number;
+    shippingFee: number;
 }
 
 interface Package {
@@ -244,6 +246,22 @@ export function PackageDetails({ packageId }: { packageId: string }) {
                             {isEditing ? (
                                 <>
                                     <div className="space-y-2">
+                                        <Label className="text-muted-foreground">Cargo Fee</Label>
+                                        <Input
+                                            type="number"
+                                            value={editedData.amount.cargoFee}
+                                            onChange={(e) => handleInputChange("cargoFee", parseFloat(e.target.value), "amount")}
+                                        />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Label className="text-muted-foreground">Shipping Fee</Label>
+                                        <Input
+                                            type="number"
+                                            value={editedData.amount.shippingFee}
+                                            onChange={(e) => handleInputChange("shippingFee", parseFloat(e.target.value), "amount")}
+                                        />
+                                    </div>
+                                    <div className="space-y-2">
                                         <Label className="text-muted-foreground">Total Amount</Label>
                                         <Input
                                             type="number"
@@ -259,9 +277,23 @@ export function PackageDetails({ packageId }: { packageId: string }) {
                                             onChange={(e) => handleInputChange("pending", parseFloat(e.target.value), "amount")}
                                         />
                                     </div>
+
                                 </>
                             ) : (
                                 <>
+                                    {!isEditing && (<div className="space-y-2">
+                                        <Label className="text-muted-foreground">Payment Status</Label>
+                                        <p className="font-medium">{packageData.paymentStatus}</p>
+                                    </div>
+                                    )}
+                                    <div className="space-y-2">
+                                        <Label className="text-muted-foreground">Cargo Fee</Label>
+                                        <p className="font-medium">${packageData.amount.cargoFee}</p>
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Label className="text-muted-foreground">Shipping Fee</Label>
+                                        <p className="font-medium">${packageData.amount.shippingFee}</p>
+                                    </div>
                                     <div className="space-y-2">
                                         <Label className="text-muted-foreground">Total Amount</Label>
                                         <p className="font-medium">${packageData.amount.total}</p>
@@ -270,30 +302,14 @@ export function PackageDetails({ packageId }: { packageId: string }) {
                                         <Label className="text-muted-foreground">Pending Amount</Label>
                                         <p className="font-medium">${packageData.amount.pending}</p>
                                     </div>
-                                    <div className="space-y-4 md:col-span-2">
-                                        <div className="space-y-2">
-                                            <Label className="text-muted-foreground">Updated By</Label>
-                                            <p className="font-medium">
-                                                {packageData.updatedBy?.name} ({packageData.updatedBy?.email})
-                                            </p>
-                                        </div>
-                                        <div className="space-y-2">
-                                            <Label className="text-muted-foreground">Last Updated</Label>
-                                            <p className="font-medium">
-                                                {packageData.updatedAt ? new Date(packageData.updatedAt).toLocaleString() : '-'}
-                                            </p>
-                                        </div>
-                                    </div>
+
+
                                 </>
                             )}
                         </div>
                         <div className="space-y-4">
                             {renderField("Content Detail", packageData.contentDetail, "contentDetail")}
-                            {!isEditing && (<div className="space-y-2">
-                                <Label className="text-muted-foreground">Payment Status</Label>
-                                <p className="font-medium">{packageData.paymentStatus}</p>
-                            </div>
-                            )}
+
                             {/* {renderField("Payment Status", packageData.paymentStatus, "paymentStatus")} */}
                             <div className="space-y-2">
                                 <Label className="text-muted-foreground">Delivery Status</Label>
@@ -316,6 +332,20 @@ export function PackageDetails({ packageId }: { packageId: string }) {
                                         <SelectItem value="cancelled">Cancelled</SelectItem>
                                     </SelectContent>
                                 </Select>
+                            </div>
+                            <div className="space-y-4 md:col-span-2">
+                                <div className="space-y-2">
+                                    <Label className="text-muted-foreground">Updated By</Label>
+                                    <p className="font-medium">
+                                        {packageData.updatedBy?.name} ({packageData.updatedBy?.email})
+                                    </p>
+                                </div>
+                                <div className="space-y-2">
+                                    <Label className="text-muted-foreground">Last Updated</Label>
+                                    <p className="font-medium">
+                                        {packageData.updatedAt ? new Date(packageData.updatedAt).toLocaleString() : '-'}
+                                    </p>
+                                </div>
                             </div>
                         </div>
                     </div>

@@ -15,10 +15,12 @@ import {
 } from "@/components/ui/dialog";
 import { Lock, Mail } from 'lucide-react';
 import { toast } from 'sonner';
+import { Checkbox } from '@/components/ui/checkbox';
 
 interface SignInForm {
   email: string;
   password: string;
+  rememberMe: boolean;
 }
 
 interface ResetPasswordForm {
@@ -41,7 +43,7 @@ export default function SignIn() {
     try {
       await signIn(data.email, data.password);
       toast.success("Login successful!");
-      navigate('/packages');
+      navigate('/');
     } catch (error) {
       console.error(error);
       toast.error('Invalid email or password');
@@ -115,6 +117,15 @@ export default function SignIn() {
                       className="pl-10 h-12 text-base sm:text-lg w-full"
                       required
                     />
+                  </div>
+                  <div className="flex items-center space-x-3">
+                    <Checkbox
+                      {...register('rememberMe')}
+                      id="rememberMe"
+                    />
+                    <label htmlFor="rememberMe" className="text-sm">
+                      Remember me
+                    </label>
                   </div>
                 </div>
 

@@ -47,6 +47,8 @@ export function AddPackageDialog({ isOpen, onClose, onSubmit, isLoading }: AddPa
         invoice: '',
         totalAmount: '',
         dueAmount: '',
+        cargoFee: '',
+        shippingFee: '',
         notes: ''
     })
 
@@ -69,6 +71,8 @@ export function AddPackageDialog({ isOpen, onClose, onSubmit, isLoading }: AddPa
                 invoice: '',
                 totalAmount: '',
                 dueAmount: '',
+                cargoFee: '',
+                shippingFee: '',
                 notes: ''
             })
         }
@@ -223,6 +227,27 @@ export function AddPackageDialog({ isOpen, onClose, onSubmit, isLoading }: AddPa
                                 required
                             />
                         </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="cargoFee">Cargo Fee</Label>
+                            <Input
+                                id="cargoFee"
+                                value={formData.cargoFee}
+                                onChange={(e) => setFormData({ ...formData, cargoFee: e.target.value })}
+                                placeholder="$ 0"
+                                required
+                            />
+                        </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="shippingFee">Shipping Fee</Label>
+                            <Input
+                                id="shippingFee"
+                                value={formData.shippingFee}
+                                onChange={(e) => setFormData({ ...formData, shippingFee: e.target.value })}
+                                placeholder="$ 0"
+                                required
+                            />
+                        </div>
+
                     </div>
 
                     {/* Notes Section */}

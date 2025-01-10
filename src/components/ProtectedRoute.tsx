@@ -1,6 +1,7 @@
 // src/components/ProtectedRoute.tsx
 import { useAuth } from '@/contexts/AuthContext';
 import { Navigate } from 'react-router-dom';
+import Loader from './Loader';
 
 
 interface ProtectedRouteProps {
@@ -12,7 +13,7 @@ export const ProtectedRoute = ({ children, allowedRoles }: ProtectedRouteProps) 
     const { currentUser, loading } = useAuth();
 
     if (loading) {
-        return <div>Loading...</div>;
+        return <Loader />;
     }
 
 
