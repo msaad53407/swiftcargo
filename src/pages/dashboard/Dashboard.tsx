@@ -164,29 +164,24 @@ export default function Dashboard() {
     const [profitData, setProfitData] = useState<any[]>([]);
     const [invoiceData, setInvoiceData] = useState<any[]>([]);
     // Fetch invoice data from Firestore
-    const fetchInvoices = async () => {
+    const fetchPackages = async () => {
         try {
-            const querySnapshot = await getDocs(collection(db, "invoices"));
-            const invoices: Invoice[] = [];
+            const querySnapshot = await getDocs(collection(db, "packages"));
+            const packages: Package[] = [];
             querySnapshot.forEach((doc) => {
-                invoices.push(doc.data() as Invoice);
+                packages.push(doc.data() as Package);
             });
-            // Save the most recent 4 invoices
-            const recentInvoices = invoices
-                .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+
+            // Save the most recent 4 packages
+            const recentPackages = packages
+                .sort((a, b) => new Date(b.createdAt || '').getTime() - new Date(a.createdAt || '').getTime())
                 .slice(0, 4);
 
-            setInvoiceData(recentInvoices);
+            setInvoiceData(recentPackages); // Renamed to setInvoiceData for consistency, though it might be better as setPackageData.
 
-
-
-            // // Calculate total profit
-            // const paidInvoices = invoices.filter(
-            //     (invoice) => invoice.paymentStatus.toLowerCase() === "paid"
-            // );
-
-            const totalProfit = invoices.reduce(
-                (sum, invoice) => sum + invoice.amount.total,
+            // Calculate total profit
+            const totalProfit = packages.reduce(
+                (sum, pkg) => sum + (pkg.amount?.total || 0),
                 0
             );
 
@@ -194,9 +189,9 @@ export default function Dashboard() {
 
             // Generate profit trend data
             const trendData: Record<string, number> = {};
-            paidInvoices.forEach((invoice) => {
-                const date = new Date(invoice.createdAt).toLocaleDateString();
-                trendData[date] = (trendData[date] || 0) + invoice.amount.total;
+            packages.forEach((pkg) => {
+                const date = new Date(pkg.createdAt || '').toLocaleDateString();
+                trendData[date] = (trendData[date] || 0) + (pkg.amount?.total || 0);
             });
 
             const profitData = Object.keys(trendData).map((date) => ({
@@ -217,12 +212,12 @@ export default function Dashboard() {
 
             setGrowth(growth);
         } catch (error) {
-            console.error("Error fetching invoices:", error);
+            console.error("Error fetching packages:", error);
         }
     };
 
     useEffect(() => {
-        fetchInvoices();
+        fetchPackages();
     }, []);
 
 
@@ -422,7 +417,7 @@ export default function Dashboard() {
                                 {invoiceData.map((delivery, index) => (
                                     <tr key={index} className="border-b">
                                         <td className="p-4 whitespace-nowrap">{delivery.invoiceNo}</td>
-                                        <td className="p-4 whitespace-nowrap">{delivery.receiverName}</td>
+                                        <td className="p-4 whitespace-nowrap">{delivery.receiver.name}</td>
                                         <td className="p-4 whitespace-nowrap">{delivery.createdAt}</td>
                                         <td className="p-4 whitespace-nowrap">{delivery.amount.total}</td>
                                         <td className="p-4 whitespace-nowrap">
