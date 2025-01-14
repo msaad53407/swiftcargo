@@ -329,6 +329,7 @@ export function PackageDetails({ packageId }: { packageId: string }) {
                                         <SelectItem value="picked-up-from-jfk-airport">Picked up from JFK Airport</SelectItem>
                                         <SelectItem value="available-for-pick-up">Available for pick up</SelectItem>
                                         <SelectItem value="shipped-to-receivers-destination">Shipped to Receiver's destination</SelectItem>
+                                        <SelectItem value="Delivered">Delivered</SelectItem>
                                         <SelectItem value="cancelled">Cancelled</SelectItem>
                                     </SelectContent>
                                 </Select>

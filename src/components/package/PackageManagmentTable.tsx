@@ -311,36 +311,7 @@ export function PackageTable({ packageAdded, setPackageAdded, download, setDownl
   return (
     <div className="space-y-4">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        {/* {currentUser?.userType === 'admin' ? (
-          <div className="flex items-center gap-2">
-            <Select onValueChange={handleBulkAction}>
-              <SelectTrigger className="w-full sm:w-[230px]">
-                <SelectValue placeholder="Bulk Action" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem
-                  value="delete"
-                  className="text-red-500"
-                >
-                  <div className="flex items-center gap-2">
-                    <Trash2 className="h-4 w-4 text-red-500" />
-                    <span className="text-red-500">Delete Selected</span>
-                  </div>
-                </SelectItem>
-              </SelectContent>
-            </Select>
-            <Button className="text-red-500 hover:text-red-600 hover:border-red-600"
-              variant="outline" size="sm" onClick={() => handleBulkAction('delete')}>
-              Apply
-            </Button>
-          </div>
 
-          In your main component
-          
-        ) : (
-          <div></div>
-          
-        )} */}
         <BulkActions
           selectedPackages={selectedPackages}
           onBulkAction={setSelectedPackages}
@@ -376,8 +347,9 @@ export function PackageTable({ packageAdded, setPackageAdded, download, setDownl
 
 
       {/* Scrollable Table View */}
-      <div className="overflow-x-auto rounded-lg border">
-        <Table className="min-w-[1000px]">
+      <div className="overflow-x-auto rounded-lg">
+
+        <Table className="min-w-[1000px] ">
           <TableHeader>
             <TableRow className="bg-muted/50">
               <TableHead className="w-[50px]">
@@ -388,7 +360,7 @@ export function PackageTable({ packageAdded, setPackageAdded, download, setDownl
               </TableHead>
               <TableHead className="whitespace-nowrap">Invoice No</TableHead>
               <TableHead className="whitespace-nowrap">Receiver Detail</TableHead>
-              <TableHead className="whitespace-nowrap">Sender Detail</TableHead>
+              <TableHead className="whitespace-nowrap">Address to</TableHead>
               <TableHead className="whitespace-nowrap">Date</TableHead>
               <TableHead className="whitespace-nowrap">Status</TableHead>
               <TableHead className="whitespace-nowrap">Payment</TableHead>
@@ -398,7 +370,7 @@ export function PackageTable({ packageAdded, setPackageAdded, download, setDownl
           </TableHeader>
           <TableBody>
             {filteredPackages.map((pkg) => (
-              <TableRow key={pkg.id}>
+              <TableRow className="bg-white" key={pkg.id}>
                 <TableCell>
                   <Checkbox
                     checked={selectedPackages.includes(pkg.id)}
@@ -422,18 +394,9 @@ export function PackageTable({ packageAdded, setPackageAdded, download, setDownl
                   </div>
                 </TableCell>
                 <TableCell className="whitespace-nowrap p-4">
-                  <div className="space-y-1 p-4">
-                    <p className="font-medium">{pkg.sender.name}</p>
-                    <div className="flex items-center text-sm text-muted-foreground">
-                      {/* <MapPin className="mr-1 h-3 w-3 flex-shrink-0" /> */}
-                      {/* <span className="truncate max-w-[150px]">{pkg.sender.address}</span> */}
-                    </div>
-                    <div className="flex items-center text-sm text-muted-foreground">
-                      <Phone className="mr-1 h-3 w-3 flex-shrink-0" />
-                      <span>{pkg.sender.phone}</span>
-                    </div>
-                  </div>
-
+                  <p className="text-sm text-muted-foreground truncate max-w-[200px]">
+                    {pkg.receiver.address}
+                  </p>
                 </TableCell>
                 <TableCell className="whitespace-nowrap p-4">
                   <div>

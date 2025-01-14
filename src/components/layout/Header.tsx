@@ -16,7 +16,7 @@ export function Header({ toggleSidebar }: HeaderProps) {
       <div className="flex items-center lg:hidden">
 
         <h1 className="ml-3 text-2xl font-bold">
-          Ummah<span className="text-[#40B093]">cargo</span>.
+          Ummah<span className="text-[#40B093]"> Cargo</span>
         </h1>
       </div>
 

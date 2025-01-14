@@ -73,7 +73,7 @@ export default function SignIn() {
       <div className="w-full lg:w-1/2 flex flex-col p-4 sm:p-8">
         <div className="flex justify-between items-center mb-8 lg:mb-16">
           <h1 className="text-xl sm:text-2xl font-bold">
-            Ummah<span className="text-[#40B093]">cargo</span>.
+            Ummah<span className="text-[#40B093]"> Cargo</span>
           </h1>
         </div>
 

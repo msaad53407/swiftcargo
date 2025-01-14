@@ -49,15 +49,15 @@ export default function EmployeesPage() {
             <Filter size={20} />
             Filter
           </Button> */}
-          {currentUser?.userType === 'admin' && (
-            <Button
 
-              onClick={() => setIsAddDialogOpen(true)}
-            >
-              <Plus size={20} />
-              Add Employee
-            </Button>
-          )}
+          <Button
+
+            onClick={() => setIsAddDialogOpen(true)}
+          >
+            <Plus size={20} />
+            Add Employee
+          </Button>
+
         </div>
       </div>
 
