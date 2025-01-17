@@ -50,7 +50,7 @@ export function Sidebar({ open, setOpen }: SidebarProps) {
       >
         <div className="h-full flex flex-col">
           {/* Header */}
-          <div className="flex items-center justify-between p-4">
+          <div className="flex items-center justify-between p-4 sticky top-0 bg-white z-10 border-b">
             <h1 className="text-2xl font-bold">
               Ummah<span className="text-[#40B093]"> Cargo</span>
             </h1>
@@ -85,7 +85,7 @@ export function Sidebar({ open, setOpen }: SidebarProps) {
           </nav>
 
           {/* Logout Button */}
-          <div className="p-4 border-t border-gray-200">
+          <div className="p-4 border-t border-gray-200 sticky bottom-0 bg-white z-10">
             <button
               onClick={handleLogout}
               className="flex items-center gap-3 px-4 py-3 w-full text-sm text-gray-700 hover:bg-gray-100 rounded-lg"

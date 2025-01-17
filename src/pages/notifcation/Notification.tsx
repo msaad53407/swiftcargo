@@ -151,9 +151,9 @@ export default function NotificationsPage() {
     )
 
     return (
-        <div className="p-2 sm:p-6 h-full overflow-hidden">
+        <div className="p-2 sm:p-6 h-full">
             <div className="mx-auto h-full flex flex-col">
-                <Card className="w-full bg-white shadow-lg flex-grow overflow-hidden flex flex-col">
+                <Card className="w-full bg-white shadow-lg flex-grow flex flex-col">
                     <CardHeader className="flex flex-col sm:flex-row items-start sm:items-center justify-between space-y-2 sm:space-y-0 pb-4">
                         <div>
                             <CardTitle className="text-xl font-semibold">Notifications</CardTitle>
@@ -195,14 +195,14 @@ export default function NotificationsPage() {
                                     </span>
                                 </TabsTrigger>
                             </TabsList>
-                            <div className="h-full overflow-y-auto">
-                                <TabsContent value="all" className="mt-0 h-full ">
+                            <div className="flex-1 overflow-y-auto relative">
+                                <TabsContent value="all" className="mt-0 absolute inset-0">
                                     <NotificationList notifications={filteredNotifications} />
                                 </TabsContent>
-                                <TabsContent value="unread" className="mt-0 h-full">
+                                <TabsContent value="unread" className="mt-0 absolute inset-0">
                                     <NotificationList notifications={filteredNotifications} />
                                 </TabsContent>
-                                <TabsContent value="read" className="mt-0 h-full">
+                                <TabsContent value="read" className="mt-0 absolute inset-0">
                                     <NotificationList notifications={filteredNotifications} />
                                 </TabsContent>
                             </div>

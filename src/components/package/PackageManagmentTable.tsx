@@ -310,7 +310,7 @@ export function PackageTable({ packageAdded, setPackageAdded, download, setDownl
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between px-4 md:px-0">
 
         <BulkActions
           selectedPackages={selectedPackages}
@@ -347,9 +347,9 @@ export function PackageTable({ packageAdded, setPackageAdded, download, setDownl
 
 
       {/* Scrollable Table View */}
-      <div className="overflow-x-auto rounded-lg">
+      <div className="-mx-4 md:mx-0 overflow-x-auto">
 
-        <Table className="min-w-[1000px] ">
+        <Table className="min-w-[1000px]">
           <TableHeader>
             <TableRow className="bg-muted/50">
               <TableHead className="w-[50px]">
