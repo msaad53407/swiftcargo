@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 
 import { doc, getDoc } from 'firebase/firestore'
-import { db } from '../../firebase/config.js'
+import { db } from '../../firebase/config.ts'
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
@@ -170,7 +170,7 @@ function ProfileSkeleton() {
     )
 }
 
-function ErrorMessage({ message }: { message: string }) {
+export function ErrorMessage({ message }: { message: string }) {
     return (
         <div className="container mx-auto p-6">
             <Card className="max-w-3xl mx-auto bg-red-50">

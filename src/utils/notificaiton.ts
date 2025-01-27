@@ -7,7 +7,7 @@ import {
   deleteDoc,
   writeBatch,
 } from "firebase/firestore";
-import { db } from "../firebase/config.js"; // Adjust this import based on your Firebase config
+import { db } from "../firebase/config.ts"; // Adjust this import based on your Firebase config
 
 type NotificationType =
   | "EMPLOYEE_ADDED"

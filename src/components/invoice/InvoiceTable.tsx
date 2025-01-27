@@ -12,7 +12,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select"
-import { db } from "../../firebase/config.js"
+import { db } from "../../firebase/config.ts"
 import { fetchInvoicesWithPagination } from "@/utils/invoiceUtils"
 import Loader from "../Loader.js"
 import { InvoiceDetails } from "./InvoiceDetails .js"

@@ -5,7 +5,7 @@ import { collection, getCountFromServer, getDocs } from "firebase/firestore"
 import { Package, Users, FileText, TrendingUp, Clock, Target, Activity } from 'lucide-react'
 import { useEffect, useState } from "react"
 import { Line, LineChart, ResponsiveContainer, Tooltip, PieChart, Pie, Cell } from "recharts"
-import { db } from "../../firebase/config.js"
+import { db } from "../../firebase/config.ts"
 import { Skeleton } from "@/components/ui/skeleton.js"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select.js"
 // Sample data for the profit chart

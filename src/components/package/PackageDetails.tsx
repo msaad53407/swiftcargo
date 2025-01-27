@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { collection, doc, getDoc, getDocs, query, updateDoc, where } from "firebase/firestore"
-import { db } from "../../firebase/config.js"
+import { db } from "../../firebase/config.ts"
 import { MoreHorizontal } from 'lucide-react'
 import { Button } from "@/components/ui/button"
 import {

@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { collection, getDocs, query, updateDoc, where } from "firebase/firestore"
-import { db } from "../../firebase/config.js"
+import { db } from "../../firebase/config.ts"
 import { Button } from "@/components/ui/button"
 import {
     Select,

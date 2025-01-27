@@ -12,7 +12,7 @@ import {
   updateDoc,
   where,
 } from "firebase/firestore";
-import { auth, db } from "../firebase/config.js";
+import { auth, db } from "../firebase/config.ts";
 import bcrypt from "bcryptjs";
 import { notifyEmployeeAdded } from "./notificaiton.js";
 
