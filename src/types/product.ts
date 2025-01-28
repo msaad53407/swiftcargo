@@ -19,7 +19,7 @@ export type Color = {
 export type Variation = {
   id: string;
   size: string;
-  colors: string[];
+  colors: Color[];
 };
 
 type ProductErrorType = {

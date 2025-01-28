@@ -1,48 +1,101 @@
-import { Download, Eye, EyeOff, Pencil, Settings2, Trash2 } from "lucide-react";
-import * as React from "react";
+import { Eye, EyeOff, Pencil, PlusIcon, Settings2, Trash2, Upload } from "lucide-react";
 
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import type { Product } from "@/types/product";
+import { useProducts } from "@/hooks/useProducts";
+import { toggleProductVisibility } from "@/utils/product";
+import Papa from "papaparse";
 import { Link } from "react-router-dom";
-
-import { deleteProduct, toggleProductVisibility } from "@/utils/product";
 import { toast } from "sonner";
+import DeleteAlertModal from "./DeleteAlertModal";
+import { TableSkeleton as ProductsTableSkeleton } from "./ProductsTableSkeleton";
 
-export type ProductsTableProps = {
-  data: Product[];
-};
+export function ProductsTable() {
+  const {
+    products,
+    actionLoading,
+    currentPage,
+    loading,
+    filteredData,
+    totalPages,
+    searchQuery,
+    setSearchQuery,
+    setActionLoading,
+    setCurrentPage,
+  } = useProducts();
 
-export function ProductsTable({ data }: ProductsTableProps) {
-  const [searchQuery, setSearchQuery] = React.useState("");
-  const [currentPage, setCurrentPage] = React.useState(1);
-  const [actionLoading, setActionLoading] = React.useState(false);
-  const itemsPerPage = 8;
+  if (loading) {
+    return (
+      <div className="space-y-4">
+        <div className="flex justify-between items-center">
+          <div>
+            <h1 className="text-2xl font-semibold">Product Management</h1>
+            <p className="text-sm text-muted-foreground">Departmental Member's Information Details</p>
+          </div>
+          <div className="flex gap-2">
+            <Button variant="outline" size="icon" className="flex gap-2 w-fit px-2" disabled>
+              <Upload className="h-6 w-6" />
+              <span>Export</span>
+            </Button>
+            <Button asChild>
+              <Link to="/ecommerce/products/add">
+                <PlusIcon className="h-6 w-6" />
+                <span className="sr-only">Add</span>
+              </Link>
+            </Button>
+          </div>
+        </div>
 
-  const filteredData = React.useMemo(() => {
-    return data.filter(
-      (product) =>
-        product.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        product.sku.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        product.name.toLowerCase().includes(searchQuery.toLowerCase()),
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2 flex-1 max-w-sm">
+            <Input
+              placeholder="Type to Search for orders"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+            <Button variant="outline" size="icon">
+              <Settings2 className="h-4 w-4" />
+            </Button>
+          </div>
+        </div>
+
+        <ProductsTableSkeleton />
+      </div>
     );
-  }, [data, searchQuery]);
+  }
 
-  const totalPages = Math.ceil(filteredData.length / itemsPerPage);
-  const paginatedData = filteredData.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+  if (products.length === 0)
+    return (
+      <div className="container py-10 flex h-screen justify-center items-center">
+        <p>No products found</p>
+      </div>
+    );
+
+  const exportToCSV = () => {
+    const csvData = products.map((product) => ({
+      ID: product.id,
+      Name: product.name,
+      SKU: product.sku,
+      Description: product.description,
+      Image: product.image || " ",
+      Visibility: product.visibility ? "Visible" : "Hidden",
+      CreatedAt: product.createdAt,
+      UpdatedAt: product.updatedAt,
+    }));
+
+    const csv = Papa.unparse(csvData);
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+
+    const link = document.createElement("a");
+    link.setAttribute("href", url);
+    link.setAttribute("download", "products.csv");
+    link.style.visibility = "hidden";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
 
   const toggleVisibility = async (id: string) => {
     setActionLoading(true);
@@ -57,17 +110,37 @@ export function ProductsTable({ data }: ProductsTableProps) {
     toast.error("Failed to update product visibility!");
   };
 
-  const deleteProductHandler = async (id: string) => {
-    setActionLoading(true);
-    const result = await deleteProduct(id);
-    if (result) {
-      setActionLoading(false);
-      toast.success("Product deleted successfully!");
-      return;
+  // Generate pagination numbers
+  const generatePaginationNumbers = () => {
+    const delta = 3; // Number of pages to show before and after current page
+    const range: (number | string)[] = [];
+
+    range.push(1);
+
+    if (currentPage > delta + 2) {
+      range.push("...");
     }
 
-    setActionLoading(false);
-    toast.error("Failed to delete product!");
+    // Calculate start and end of range around current page
+    const rangeStart = Math.max(2, currentPage - delta);
+    const rangeEnd = Math.min(totalPages - 1, currentPage + delta);
+
+    for (let i = rangeStart; i <= rangeEnd; i++) {
+      if (i !== 1 && i !== totalPages) {
+        range.push(i);
+      }
+    }
+
+    if (currentPage < totalPages - (delta + 1)) {
+      range.push("...");
+    }
+
+    // Always show last page
+    if (totalPages > 1) {
+      range.push(totalPages);
+    }
+
+    return range;
   };
 
   return (
@@ -78,29 +151,30 @@ export function ProductsTable({ data }: ProductsTableProps) {
           <p className="text-sm text-muted-foreground">Departmental Member's Information Details</p>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline" size="icon">
-            <Download className="h-4 w-4" />
-            <span className="sr-only">Export</span>
+          <Button variant="outline" size="icon" className="flex gap-2 w-fit px-2" onClick={exportToCSV}>
+            <Upload className="h-6 w-6" />
+            <span>Export</span>
           </Button>
           <Button asChild>
             <Link to="/ecommerce/products/add">
-              <span>Add Product</span>
+              <PlusIcon className="h-6 w-6" />
+              <span className="sr-only">Add</span>
             </Link>
           </Button>
         </div>
       </div>
 
-      <div className="flex items-center justify-between">
+      <div className="flex w-full items-center justify-between">
         <div className="flex items-center gap-2 flex-1 max-w-sm">
           <Input
             placeholder="Type to Search for orders"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
           />
-          <Button variant="outline" size="icon">
-            <Settings2 className="h-4 w-4" />
-          </Button>
         </div>
+        <Button variant="outline" size="icon">
+          <Settings2 className="h-4 w-4" />
+        </Button>
       </div>
 
       <div className="border rounded-lg">
@@ -115,57 +189,55 @@ export function ProductsTable({ data }: ProductsTableProps) {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {paginatedData.map((product) => (
-              <TableRow key={product.id}>
-                <TableCell className="font-medium text-blue-600">#{product.id}</TableCell>
-                <TableCell>{new Date(product.createdAt).toDateString()}</TableCell>
-                <TableCell>
-                  <div className="flex items-center gap-2">
-                    {product?.image && <img src={product.image} alt={product.name} className="w-8 h-8 rounded-full" />}
-                    {product.name}
-                  </div>
-                </TableCell>
-                <TableCell>#{product.sku}</TableCell>
-                <TableCell>
-                  <div className="flex justify-end gap-2">
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-8 w-8"
-                      disabled={actionLoading}
-                      onClick={() => toggleVisibility(product.id)}
-                    >
-                      {product.visibility ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
-                    </Button>
-                    <Button variant="ghost" size="icon" className="h-8 w-8 text-green-600">
-                      <Pencil className="h-4 w-4" />
-                    </Button>
-                    <AlertDialog>
-                      <AlertDialogTrigger asChild>
-                        <Button variant="ghost" size="icon" className="h-8 w-8 text-red-600">
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </AlertDialogTrigger>
-                      <AlertDialogContent>
-                        <AlertDialogHeader>
-                          <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-                          <AlertDialogDescription>
-                            This action cannot be undone. This will permanently delete the selected product and all its
-                            variations.
-                          </AlertDialogDescription>
-                        </AlertDialogHeader>
-                        <AlertDialogFooter>
-                          <AlertDialogCancel>Cancel</AlertDialogCancel>
-                          <AlertDialogAction onClick={() => deleteProductHandler(product.id)}>
-                            Continue
-                          </AlertDialogAction>
-                        </AlertDialogFooter>
-                      </AlertDialogContent>
-                    </AlertDialog>
-                  </div>
+            {filteredData.length > 0 ? (
+              filteredData.map((product) => (
+                <TableRow key={product.id}>
+                  <TableCell className="font-medium text-blue-600">#{product.id}</TableCell>
+                  <TableCell>{new Date(product.createdAt).toDateString()}</TableCell>
+                  <TableCell>
+                    <div className="flex items-center gap-2">
+                      {product?.image && (
+                        <img src={product.image} alt={product.name} className="w-8 h-8 rounded-full" />
+                      )}
+                      {product.name}
+                    </div>
+                  </TableCell>
+                  <TableCell>#{product.sku}</TableCell>
+                  <TableCell>
+                    <div className="flex justify-end gap-2">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8"
+                        disabled={actionLoading}
+                        onClick={() => toggleVisibility(product.id)}
+                      >
+                        {product.visibility ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
+                      </Button>
+                      <Button variant="ghost" size="icon" className="h-8 w-8 text-green-600" asChild>
+                        <Link to={`/ecommerce/products/update/${product.id}`}>
+                          <Pencil className="h-4 w-4" />
+                        </Link>
+                      </Button>
+                      <DeleteAlertModal
+                        id={product.id}
+                        trigger={
+                          <Button variant="ghost" size="icon" className="h-8 w-8 text-red-600">
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        }
+                      />
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ))
+            ) : (
+              <TableRow>
+                <TableCell colSpan={5} className="h-24 text-center">
+                  No results.
                 </TableCell>
               </TableRow>
-            ))}
+            )}
           </TableBody>
         </Table>
 
@@ -177,21 +249,31 @@ export function ProductsTable({ data }: ProductsTableProps) {
           >
             Previous
           </Button>
-          <div className="flex items-center gap-2">
-            <Select value={currentPage.toString()} onValueChange={(value) => setCurrentPage(Number(value))}>
-              <SelectTrigger className="w-[100px]">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {Array.from({ length: totalPages }, (_, i) => (
-                  <SelectItem key={i + 1} value={(i + 1).toString()}>
-                    Page {i + 1}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <span className="text-sm text-muted-foreground">of {totalPages} pages</span>
+
+          <div className="flex items-center gap-1">
+            {generatePaginationNumbers().map((pageNum, idx) => {
+              if (pageNum === "...") {
+                return (
+                  <span key={`ellipsis-${idx}`} className="px-3 py-2">
+                    ...
+                  </span>
+                );
+              }
+
+              return (
+                <Button
+                  key={pageNum}
+                  variant={currentPage === pageNum ? "default" : "outline"}
+                  size="icon"
+                  className="h-8 w-8"
+                  onClick={() => setCurrentPage(Number(pageNum))}
+                >
+                  {pageNum}
+                </Button>
+              );
+            })}
           </div>
+
           <Button
             variant="outline"
             onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}

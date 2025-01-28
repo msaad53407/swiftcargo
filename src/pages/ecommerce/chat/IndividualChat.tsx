@@ -8,7 +8,6 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { useAuth } from "@/contexts/AuthContext";
 import { useChat } from "@/hooks/useChat";
 import { ErrorMessage } from "@/pages/profile/Profile";
-import { Member, Message } from "@/types/chat";
 import { formatTimestampToTime } from "@/utils/date";
 import { Menu, MoreVertical, Send } from "lucide-react";
 import { FormEvent, useState } from "react";

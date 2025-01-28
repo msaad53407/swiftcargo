@@ -1,22 +1,23 @@
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
-import { z } from "zod";
+import { ImageDropzone } from "@/components/ImageDropzone";
+import Variations from "@/components/products/Variations";
 import { Button } from "@/components/ui/button";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { ImageDropzone } from "@/components/ImageDropzone";
-import Variations from "@/components/products/Variations";
-import { useState } from "react";
-import { toast } from "sonner";
-import { addProduct, addProductSchema, uploadImage } from "@/utils/product";
 import { Textarea } from "@/components/ui/textarea";
-import { Color, Variation } from "@/types/product";
+import { AddProductErrorType, Color, Variation } from "@/types/product";
+import { addProduct, addProductSchema, ProductFormValues, uploadImage } from "@/utils/product";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useState } from "react";
+import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
-
-type ProductFormValues = z.infer<typeof addProductSchema>;
+import { toast } from "sonner";
 
 export default function AddProduct() {
   const [colorVariations, setColorVariations] = useState<Record<string, Color[]>>({});
+  const [formErrors, setFormErrors] = useState<AddProductErrorType>({
+    product: null,
+    variations: [],
+  });
   const [submitting, setSubmitting] = useState(false);
   const navigate = useNavigate();
 
@@ -50,14 +51,19 @@ export default function AddProduct() {
     for (const key in colorVariations) {
       const variant = {
         size: key,
-        colors: colorVariations[key].map((color) => color.hexCode),
+        colors: colorVariations[key],
       };
       variantsSelected.push(variant);
     }
     setSubmitting(true);
     const result = await addProduct(data, variantsSelected);
-    console.log(result);
     if (!result?.success) {
+      if (typeof result.error === "object") {
+        setFormErrors({
+          product: result.error?.product,
+          variations: result.error?.variations || [],
+        });
+      }
       toast.error("Failed to add product");
       setSubmitting(false);
       return;

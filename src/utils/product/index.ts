@@ -1,18 +1,21 @@
 import { useAuth } from "@/contexts/AuthContext";
 import { db } from "@/firebase/config";
+import { Optional } from "@/types";
 import { AddProductErrorType, Color, Product, Variation, VariationErrorType } from "@/types/product";
 import {
   addDoc,
   collection,
   deleteDoc,
   doc,
+  getCountFromServer,
   getDoc,
   getDocs,
+  limit,
   orderBy,
   query,
-  serverTimestamp,
+  startAfter,
   updateDoc,
-  limit,
+  writeBatch,
 } from "firebase/firestore";
 
 import z from "zod";
@@ -45,14 +48,41 @@ export const getProduct = async (id: string): Promise<Product | null> => {
   }
 };
 
-export const getProducts = async (maxLimit: 10): Promise<Product[]> => {
+export const getProducts = async (
+  maxLimit: number = 10,
+  pageNumber: number = 1,
+): Promise<{ products: Product[]; total: number }> => {
   try {
-    const q = query(collection(db, "products"), orderBy("createdAt", "desc"), limit(maxLimit));
-    const querySnapshot = await getDocs(q);
+    // First get total count
+    const totalSnapshot = await getCountFromServer(collection(db, "products"));
+    const total = totalSnapshot.data().count;
+
+    // Base query
+    let queryConstraints: any = [orderBy("createdAt", "desc"), limit(maxLimit)];
+
+    // If it's not the first page, we need all previous pages' last docs
+    if (pageNumber > 1) {
+      // Get the last doc of the previous page
+      const previousPageQuery = query(
+        collection(db, "products"),
+        orderBy("createdAt", "desc"),
+        limit(maxLimit * (pageNumber - 1)),
+      );
+      const previousPageDocs = await getDocs(previousPageQuery);
+      const lastVisibleDoc = previousPageDocs.docs[previousPageDocs.docs.length - 1];
+
+      if (lastVisibleDoc) {
+        queryConstraints.push(startAfter(lastVisibleDoc));
+      }
+    }
+
+    // Execute the query with all constraints
+    const paginatedQuery = query(collection(db, "products"), ...queryConstraints);
+    const querySnapshot = await getDocs(paginatedQuery);
+
     const products = await Promise.all(
       querySnapshot.docs.map(async (doc) => {
         const variations = await getDocs(collection(db, "products", doc.id, "variations"));
-
         return {
           id: doc.id,
           name: doc.data()?.name,
@@ -70,10 +100,11 @@ export const getProducts = async (maxLimit: 10): Promise<Product[]> => {
         };
       }),
     );
-    return products;
+
+    return { products, total };
   } catch (error) {
     console.error("Error fetching products:", error);
-    return [];
+    return { products: [], total: 0 };
   }
 };
 
@@ -88,9 +119,23 @@ export const addProductSchema = z.object({
   visibility: z.boolean().default(true),
 });
 
+export const updateProductSchema = addProductSchema.extend({
+  id: z.string(),
+});
+
+export type ProductFormValues = z.infer<typeof addProductSchema>;
+
+export type UpdateProductFormValues = z.infer<typeof updateProductSchema>;
+
 export const variationsSchema = z.object({
   size: z.string(),
-  colors: z.array(z.string()),
+  colors: z.array(
+    z.object({
+      id: z.string(),
+      name: z.string(),
+      hexCode: z.string(),
+    }),
+  ),
 });
 
 export const addProduct = async (
@@ -109,7 +154,6 @@ export const addProduct = async (
 
   variations.forEach((variation, index) => {
     const variationResult = variationsSchema.safeParse(variation);
-    console.log(variationResult);
     if (!variationResult.success) {
       errors.variations[index] = variationResult.error.flatten().fieldErrors as VariationErrorType;
     }
@@ -126,8 +170,8 @@ export const addProduct = async (
   try {
     const productRef = await addDoc(collection(db, "products"), {
       ...productResult.data,
-      createdAt: serverTimestamp(),
-      updatedAt: serverTimestamp(),
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
     });
 
     for (const variation of variations) {
@@ -146,19 +190,66 @@ export const addProduct = async (
   }
 };
 
-export const updateProduct = async (id: string, productData: Partial<Product>, variations: Variation[]) => {
+export const updateProduct = async (
+  id: string,
+  product: Omit<Product, "id" | "createdAt" | "updatedAt" | "variations">,
+  updatedVariations: Optional<Variation, "id">[],
+) => {
   try {
-    await updateDoc(doc(db, "products", id), {
-      name: productData.name,
-      description: productData.description,
-      image: productData.image,
-      visibility: productData.visibility,
-      sku: productData.sku,
-      updatedAt: serverTimestamp(),
+    const errors: AddProductErrorType = {
+      product: null,
+      variations: [],
+    };
+
+    const productResult = addProductSchema.safeParse(product);
+    if (!productResult.success) {
+      errors.product = productResult.error.flatten().fieldErrors;
+    }
+
+    updatedVariations.forEach((variation, index) => {
+      const variationResult = variationsSchema.safeParse(variation);
+      if (!variationResult.success) {
+        errors.variations[index] = variationResult.error.flatten().fieldErrors as VariationErrorType;
+      }
     });
 
-    for (const variation of variations) {
+    const hasErrors = errors.product !== null || errors.variations.some((variationError) => variationError !== null);
+    if (hasErrors) {
+      return {
+        success: false,
+        error: errors,
+      };
+    }
+
+    await updateDoc(doc(db, "products", id), {
+      name: product.name,
+      description: product.description,
+      image: product.image,
+      sku: product.sku,
+      updatedAt: new Date().toISOString(),
+    });
+
+    const existingVariations: Variation[] = updatedVariations.filter((v): v is Variation => v.id !== "");
+
+    const variationsToDelete = existingVariations.filter((v) => v.colors.length === 0);
+
+    const variationsLeftAfterDeletion = existingVariations.filter((v) => v.colors.length > 0);
+
+    for (const variation of variationsToDelete) {
+      await deleteDoc(doc(db, "products", id, "variations", variation.id));
+    }
+
+    // update existing variations
+    for (const variation of variationsLeftAfterDeletion) {
       await updateDoc(doc(db, "products", id, "variations", variation.id), variation);
+    }
+
+    const newVariations = updatedVariations.filter((v) => !v.id);
+
+    // add new variations
+    for (const variation of newVariations) {
+      // TODO fix ids not appearing in new variations added from update page
+      await addDoc(collection(db, "products", id, "variations"), variation);
     }
 
     return {
@@ -204,7 +295,16 @@ export const toggleProductVisibility = async (id: string) => {
 
 export const deleteProduct = async (id: string) => {
   try {
-    await deleteDoc(doc(db, "products", id));
+    const productRef = doc(db, "products", id);
+    await deleteDoc(productRef);
+
+    const variationsRef = collection(productRef, "variations");
+    const variationsQuery = await getDocs(variationsRef);
+    const variationsBatch = writeBatch(db);
+    variationsQuery.docs.forEach((variationDoc) => {
+      variationsBatch.delete(variationDoc.ref);
+    });
+    await variationsBatch.commit();
     return true;
   } catch (error) {
     console.error("Error deleting product:", error);

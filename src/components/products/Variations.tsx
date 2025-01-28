@@ -2,19 +2,21 @@ import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import useColors from "@/hooks/useColors";
-import { Color } from "@/types/product";
+import { Color, VariationErrorType } from "@/types/product";
 import { Plus } from "lucide-react";
 import { useState } from "react";
 import { Separator } from "../ui/separator";
 import ColorPickerModal from "./ColorPickerModal";
 import Loader from "../Loader";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "../ui/tooltip";
 
 interface VariationsProps {
   colors: Record<string, Color[]>;
   onChange: (colors: Record<string, Color[]>) => void;
+  // fieldErrors: VariationErrorType[];
 }
 
-const SIZES = ["XS", "S", "M", "L", "XL", "XXL", "3XL"];
+export const SIZES = ["XS", "S", "M", "L", "XL", "XXL", "3XL"] as const;
 
 export default function Variations({ colors, onChange }: VariationsProps) {
   const [selectedSize, setSelectedSize] = useState("XS");
@@ -22,7 +24,7 @@ export default function Variations({ colors, onChange }: VariationsProps) {
   const { colors: predefinedColors, loading } = useColors();
 
   const addColor = (color: Color) => {
-    const existingColor = colors[selectedSize as keyof typeof colors];
+    const existingColor = colors[selectedSize]?.find((c) => c.id === color.id);
     if (existingColor) {
       return;
     }
@@ -98,12 +100,21 @@ export default function Variations({ colors, onChange }: VariationsProps) {
               <div className="grid grid-cols-7 gap-2">
                 {predefinedColors.length > 0 ? (
                   predefinedColors.map((color, index) => (
-                    <button
-                      key={`${color.hexCode}-${index}`}
-                      className="w-8 h-8 rounded-full border hover:ring-2 ring-offset-2 transition-all"
-                      style={{ backgroundColor: color.hexCode }}
-                      onClick={() => addColor(color)}
-                    />
+                    <TooltipProvider disableHoverableContent>
+                      <Tooltip delayDuration={100}>
+                        <TooltipTrigger>
+                          <button
+                            key={`${color.hexCode}-${index}`}
+                            className="w-8 h-8 rounded-full border hover:ring-2 ring-offset-2 transition-all"
+                            style={{ backgroundColor: color.hexCode }}
+                            onClick={() => addColor(color)}
+                          />
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>{color.name}</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
                   ))
                 ) : (
                   <h4 className="text-sm text-muted-foreground">No Colors found. Start by adding a new Color</h4>
@@ -123,18 +134,28 @@ export default function Variations({ colors, onChange }: VariationsProps) {
                   <div className="w-12 border p-2 rounded-lg text-center font-medium bg-gray-200">{size}</div>
                   <div className="flex gap-2 flex-wrap">
                     {sizeColors.map((color, index) => (
-                      <div
-                        key={`${color}-${index}`}
-                        className="w-8 h-8 rounded-lg border relative"
-                        style={{ backgroundColor: color.hexCode }}
-                      >
-                        <span
-                          className="absolute -top-1 -right-1 h-4 w-4 text-xs flex justify-center items-center bg-red-500 text-white p-1 rounded-full cursor-pointer"
-                          onClick={() => removeColor(size, color)}
-                        >
-                          X
-                        </span>
-                      </div>
+                      <TooltipProvider>
+                        {/* {fieldErrors[].} */}
+                        <Tooltip delayDuration={100}>
+                          <TooltipTrigger onClick={(e) => e.preventDefault()} className="cursor-default">
+                            <div
+                              key={`${color}-${index}`}
+                              className="w-8 h-8 rounded-lg border relative"
+                              style={{ backgroundColor: color.hexCode }}
+                            >
+                              <span
+                                className="absolute -top-1 -right-1 h-4 w-4 text-xs flex justify-center items-center bg-red-500 text-white p-1 rounded-full cursor-pointer"
+                                onClick={() => removeColor(size, color)}
+                              >
+                                X
+                              </span>
+                            </div>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p>{color.name}</p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
                     ))}
                   </div>
                 </div>

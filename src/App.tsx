@@ -20,6 +20,7 @@ import PackageManagment from "./pages/package/PackageManagment";
 import ProfilePage from "./pages/profile/Profile";
 import ChatPage from "./pages/ecommerce/chat";
 import ChatLayout from "./components/layout/ChatLayout";
+import EditProductPage from "./pages/ecommerce/products/UpdateProduct";
 
 function DashboardLayout({ type, children }: { type?: "default" | "ecommerce"; children: React.ReactNode }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -110,6 +111,7 @@ function App() {
                   <Route path="dashboard" element={<EcommerceDashboard />} />
                   <Route path="products" element={<ProductsPage />} />
                   <Route path="products/add" element={<AddProduct />} />
+                  <Route path="products/update/:id" element={<EditProductPage />} />
                   <Route path="orders" element={<OrdersPage />} />
                   <Route path="notifications" element={<NotificationsPage />} />
                   <Route
