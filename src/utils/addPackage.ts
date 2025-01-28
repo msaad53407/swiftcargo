@@ -83,7 +83,7 @@ export const createPackageWithInvoice = async (
   rawData: any,
   db: any,
   updatedByName: string,
-  updatedByEmail: string
+  updatedByEmail: string,
 ) => {
   try {
     // Generate package ID
@@ -113,7 +113,7 @@ export const createPackageWithInvoice = async (
       },
       paymentStatus: calculatePaymentStatus(
         Number.parseFloat(rawData.totalAmount),
-        Number.parseFloat(rawData.dueAmount)
+        Number.parseFloat(rawData.dueAmount),
       ),
       status: "Accepted",
       updatedBy: {
@@ -128,11 +128,7 @@ export const createPackageWithInvoice = async (
     const packageRef = collection(db, "packages");
     const packageDoc = await addDoc(packageRef, packageData);
 
-    await notifyPackageAdded(
-      packageDoc.id,
-      packageData.invoiceNo,
-      updatedByName
-    );
+    await notifyPackageAdded(packageDoc.id, packageData.invoiceNo, updatedByName);
     // Prepare invoice data
     const invoiceData: Invoice = {
       packageId,

@@ -1,15 +1,6 @@
 import { collection } from "firebase/firestore";
 
-import {
-  getDocs,
-  query,
-  orderBy,
-  deleteDoc,
-  limit,
-  startAfter,
-  where,
-  getCountFromServer,
-} from "firebase/firestore";
+import { getDocs, query, orderBy, deleteDoc, limit, startAfter, where, getCountFromServer } from "firebase/firestore";
 import { toast } from "sonner";
 // Define TypeScript interfaces
 interface Sender {
@@ -66,10 +57,7 @@ export const deletePackage = async (db: any, packageId: string) => {
     const invoicesRef = collection(db, "invoices");
 
     const packageQuery = query(packagesRef, where("id", "==", packageId));
-    const invoiceQuery = query(
-      invoicesRef,
-      where("packageId", "==", packageId)
-    );
+    const invoiceQuery = query(invoicesRef, where("packageId", "==", packageId));
 
     const packageDocs = await getDocs(packageQuery);
     const invoiceDocs = await getDocs(invoiceQuery);
@@ -107,11 +95,7 @@ export const bulkDeletePackages = async (db: any, packageIds: string[]) => {
   }
 };
 
-export const fetchPackagesWithPagination = async (
-  db: any,
-  page: number = 1,
-  itemsPerPage: number = ITEMS_PER_PAGE
-) => {
+export const fetchPackagesWithPagination = async (db: any, page: number = 1, itemsPerPage: number = ITEMS_PER_PAGE) => {
   try {
     const packagesRef = collection(db, "packages");
 
@@ -121,27 +105,20 @@ export const fetchPackagesWithPagination = async (
     const totalPages = Math.ceil(totalItems / itemsPerPage);
 
     // Create query
-    const q = query(
-      packagesRef,
-      orderBy("createdAt", "desc"),
-      limit(itemsPerPage)
-    );
+    const q = query(packagesRef, orderBy("createdAt", "desc"), limit(itemsPerPage));
 
     // If not first page, need to skip previous items
     if (page > 1) {
       const skipItems = (page - 1) * itemsPerPage;
-      const documentsSnapshot = await getDocs(
-        query(packagesRef, orderBy("createdAt", "desc"), limit(skipItems))
-      );
-      const lastVisible =
-        documentsSnapshot.docs[documentsSnapshot.docs.length - 1];
+      const documentsSnapshot = await getDocs(query(packagesRef, orderBy("createdAt", "desc"), limit(skipItems)));
+      const lastVisible = documentsSnapshot.docs[documentsSnapshot.docs.length - 1];
 
       if (lastVisible) {
         const paginatedQuery = query(
           packagesRef,
           orderBy("createdAt", "desc"),
           startAfter(lastVisible),
-          limit(itemsPerPage)
+          limit(itemsPerPage),
         );
         const paginatedDocs = await getDocs(paginatedQuery);
         return {

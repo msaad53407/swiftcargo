@@ -1,10 +1,10 @@
-import { useState } from 'react';
-import { useForm } from 'react-hook-form';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { useNavigate } from 'react-router-dom';
-import { useAuth } from '@/contexts/AuthContext';
-import { Alert, AlertDescription } from '@/components/ui/alert';
+import { useState } from "react";
+import { useForm } from "react-hook-form";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "@/contexts/AuthContext";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import {
   Dialog,
   DialogContent,
@@ -13,9 +13,9 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Lock, Mail } from 'lucide-react';
-import { toast } from 'sonner';
-import { Checkbox } from '@/components/ui/checkbox';
+import { Lock, Mail } from "lucide-react";
+import { toast } from "sonner";
+import { Checkbox } from "@/components/ui/checkbox";
 
 interface SignInForm {
   email: string;
@@ -31,7 +31,7 @@ export default function SignIn() {
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
   const [isResetting, setIsResetting] = useState(false);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
   const [isResetModalOpen, setIsResetModalOpen] = useState(false);
   const { register, handleSubmit } = useForm<SignInForm>();
   const { register: registerReset, handleSubmit: handleSubmitReset } = useForm<ResetPasswordForm>();
@@ -39,15 +39,15 @@ export default function SignIn() {
 
   const onSubmit = async (data: SignInForm) => {
     setIsLoading(true);
-    setError('');
+    setError("");
     try {
       await signIn(data.email, data.password);
       toast.success("Login successful!");
-      navigate('/');
+      navigate("/");
     } catch (error) {
       console.error(error);
-      toast.error('Invalid email or password');
-      setError('Invalid email or password');
+      toast.error("Invalid email or password");
+      setError("Invalid email or password");
     } finally {
       setIsLoading(false);
     }
@@ -61,7 +61,7 @@ export default function SignIn() {
       setIsResetModalOpen(false);
     } catch (error) {
       console.error(error);
-      toast.error('Failed to send reset email. Please check your email address.');
+      toast.error("Failed to send reset email. Please check your email address.");
     } finally {
       setIsResetting(false);
     }
@@ -84,9 +84,7 @@ export default function SignIn() {
               <h1 className="text-3xl sm:text-3xl lg:text-5xl font-bold tracking-tight leading-tight">
                 WELCOME TO Ummah Cargo
               </h1>
-              <p className="text-gray-500 text-base sm:text-lg">
-                Welcome to Ummah Cargo dashboard system
-              </p>
+              <p className="text-gray-500 text-base sm:text-lg">Welcome to Ummah Cargo dashboard system</p>
             </div>
             {error && (
               <Alert variant="destructive">
@@ -101,7 +99,7 @@ export default function SignIn() {
                   <div className="relative">
                     <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
                     <Input
-                      {...register('email')}
+                      {...register("email")}
                       type="email"
                       placeholder="Email"
                       className="pl-10 h-12 text-base sm:text-lg w-full"
@@ -111,7 +109,7 @@ export default function SignIn() {
                   <div className="relative">
                     <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
                     <Input
-                      {...register('password')}
+                      {...register("password")}
                       type="password"
                       placeholder="Password"
                       className="pl-10 h-12 text-base sm:text-lg w-full"
@@ -119,10 +117,7 @@ export default function SignIn() {
                     />
                   </div>
                   <div className="flex items-center space-x-3">
-                    <Checkbox
-                      {...register('rememberMe')}
-                      id="rememberMe"
-                    />
+                    <Checkbox {...register("rememberMe")} id="rememberMe" />
                     <label htmlFor="rememberMe" className="text-sm">
                       Remember me
                     </label>
@@ -153,7 +148,7 @@ export default function SignIn() {
       <div
         className="hidden lg:block w-1/2 bg-cover bg-center"
         style={{
-          backgroundImage: 'url(/login_image.png)'
+          backgroundImage: "url(/login_image.png)",
         }}
       />
 
@@ -170,22 +165,11 @@ export default function SignIn() {
             <div className="grid gap-4 py-4">
               <div className="relative">
                 <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
-                <Input
-                  {...registerReset('email')}
-                  type="email"
-                  placeholder="Email"
-                  className="pl-10"
-                  required
-                />
+                <Input {...registerReset("email")} type="email" placeholder="Email" className="pl-10" required />
               </div>
             </div>
             <DialogFooter>
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => setIsResetModalOpen(false)}
-                disabled={isResetting}
-              >
+              <Button type="button" variant="outline" onClick={() => setIsResetModalOpen(false)} disabled={isResetting}>
                 Cancel
               </Button>
               <Button type="submit" disabled={isResetting}>

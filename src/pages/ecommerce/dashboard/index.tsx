@@ -9,281 +9,251 @@ import { Line, LineChart, ResponsiveContainer, Tooltip } from "recharts";
 import { db } from "../../../firebase/config";
 // Sample data for the profit chart
 const profitData = Array.from({ length: 30 }, (_, i) => ({
-	date: `2024-01-${i + 1}`,
-	value: Math.floor(Math.random() * 1000) + 70000,
+  date: `2024-01-${i + 1}`,
+  value: Math.floor(Math.random() * 1000) + 70000,
 }));
 
 const recentDeliveries = [
-	{
-		invoiceNo: "#567834",
-		customer: "James Martin",
-		date: "02/11/2024",
-		amount: "45788.75 USD",
-		status: "Paid",
-	},
-	// Add more delivery data as needed
+  {
+    invoiceNo: "#567834",
+    customer: "James Martin",
+    date: "02/11/2024",
+    amount: "45788.75 USD",
+    status: "Paid",
+  },
+  // Add more delivery data as needed
 ];
 interface DashboardStats {
-	totalPackages: number;
-	totalEmployees: number;
-	totalInvoices: number;
-	isLoading: boolean;
-	error: string | null;
+  totalPackages: number;
+  totalEmployees: number;
+  totalInvoices: number;
+  isLoading: boolean;
+  error: string | null;
 }
 interface Package {
-	paymentStatus: string; // This will allow any status, not just "Paid" or "Pending"
+  paymentStatus: string; // This will allow any status, not just "Paid" or "Pending"
 }
 
 interface Invoice {
-	packageId: string;
-	invoiceNo: string;
-	status: string;
-	receiverName: string;
-	paymentStatus: string;
-	amount: {
-		total: number;
-		pending: number;
-	};
-	createdAt: string;
-	updatedAt: string;
+  packageId: string;
+  invoiceNo: string;
+  status: string;
+  receiverName: string;
+  paymentStatus: string;
+  amount: {
+    total: number;
+    pending: number;
+  };
+  createdAt: string;
+  updatedAt: string;
 }
 
 export default function EcommerceDashboard() {
-	const [paymentStatusData, setPaymentStatusData] = useState<any[]>([]);
-	const [selectedStatus, setSelectedStatus] = useState<string | null>(null); // State for selected status
-	const [statusCount, setStatusCount] = useState<Record<string, number>>({}); // Status count map
+  const [paymentStatusData, setPaymentStatusData] = useState<any[]>([]);
+  const [selectedStatus, setSelectedStatus] = useState<string | null>(null); // State for selected status
+  const [statusCount, setStatusCount] = useState<Record<string, number>>({}); // Status count map
 
-	const statusColors = {
-		PENDING: "#FF5722",
-		"on-the-way": "#FFC107",
-		delivered: "#4CAF50",
-		cancelled: "#9E9E9E",
-	};
-	// Function to fetch payment status data from Firestore
-	const fetchPaymentStatusData = async () => {
-		try {
-			const querySnapshot = await getDocs(collection(db, "packages"));
-			const statusCount: Record<string, number> = {};
+  const statusColors = {
+    PENDING: "#FF5722",
+    "on-the-way": "#FFC107",
+    delivered: "#4CAF50",
+    cancelled: "#9E9E9E",
+  };
+  // Function to fetch payment status data from Firestore
+  const fetchPaymentStatusData = async () => {
+    try {
+      const querySnapshot = await getDocs(collection(db, "packages"));
+      const statusCount: Record<string, number> = {};
 
-			querySnapshot.forEach((doc) => {
-				const packageData: Package = doc.data() as Package;
-				const status = packageData.status;
+      querySnapshot.forEach((doc) => {
+        const packageData: Package = doc.data() as Package;
+        const status = packageData.status;
 
-				// Count the occurrences of each unique payment status
-				if (statusCount[status]) {
-					statusCount[status]++;
-				} else {
-					statusCount[status] = 1;
-				}
-			});
+        // Count the occurrences of each unique payment status
+        if (statusCount[status]) {
+          statusCount[status]++;
+        } else {
+          statusCount[status] = 1;
+        }
+      });
 
-			// Set the status count data
-			setStatusCount(statusCount);
+      // Set the status count data
+      setStatusCount(statusCount);
 
-			// Convert the statusCount object to an array suitable for the PieChart
-			const chartData = Object.keys(statusCount).map((status) => ({
-				name: status,
-				value: statusCount[status],
-				color: statusColors[status] || "#888888", // Default color if status has no assigned color
-			}));
+      // Convert the statusCount object to an array suitable for the PieChart
+      const chartData = Object.keys(statusCount).map((status) => ({
+        name: status,
+        value: statusCount[status],
+        color: statusColors[status] || "#888888", // Default color if status has no assigned color
+      }));
 
-			setPaymentStatusData(chartData);
-		} catch (error) {
-			console.error("Error fetching payment status data: ", error);
-		}
-	};
+      setPaymentStatusData(chartData);
+    } catch (error) {
+      console.error("Error fetching payment status data: ", error);
+    }
+  };
 
-	useEffect(() => {
-		fetchPaymentStatusData();
-	}, []);
+  useEffect(() => {
+    fetchPaymentStatusData();
+  }, []);
 
-	// Filter data based on the selected status
-	const filteredData = selectedStatus
-		? paymentStatusData.filter((data) => data.name === selectedStatus)
-		: paymentStatusData;
+  // Filter data based on the selected status
+  const filteredData = selectedStatus
+    ? paymentStatusData.filter((data) => data.name === selectedStatus)
+    : paymentStatusData;
 
-	const [stats, setStats] = useState<DashboardStats>({
-		totalPackages: 0,
-		totalEmployees: 0,
-		totalInvoices: 0,
-		isLoading: true,
-		error: null,
-	});
+  const [stats, setStats] = useState<DashboardStats>({
+    totalPackages: 0,
+    totalEmployees: 0,
+    totalInvoices: 0,
+    isLoading: true,
+    error: null,
+  });
 
-	useEffect(() => {
-		async function fetchStats() {
-			try {
-				// Get counts from different collections
-				const packagesSnapshot = await getCountFromServer(
-					collection(db, "packages")
-				);
-				const employeesSnapshot = await getCountFromServer(
-					collection(db, "managers")
-				);
-				const invoicesSnapshot = await getCountFromServer(
-					collection(db, "invoices")
-				);
+  useEffect(() => {
+    async function fetchStats() {
+      try {
+        // Get counts from different collections
+        const packagesSnapshot = await getCountFromServer(collection(db, "packages"));
+        const employeesSnapshot = await getCountFromServer(collection(db, "managers"));
+        const invoicesSnapshot = await getCountFromServer(collection(db, "invoices"));
 
-				setStats({
-					totalPackages: packagesSnapshot.data().count,
-					totalEmployees: employeesSnapshot.data().count,
-					totalInvoices: invoicesSnapshot.data().count,
-					isLoading: false,
-					error: null,
-				});
-			} catch (error) {
-				setStats((prev) => ({
-					...prev,
-					isLoading: false,
-					error: "Failed to fetch dashboard statistics",
-				}));
-			}
-		}
+        setStats({
+          totalPackages: packagesSnapshot.data().count,
+          totalEmployees: employeesSnapshot.data().count,
+          totalInvoices: invoicesSnapshot.data().count,
+          isLoading: false,
+          error: null,
+        });
+      } catch (error) {
+        setStats((prev) => ({
+          ...prev,
+          isLoading: false,
+          error: "Failed to fetch dashboard statistics",
+        }));
+      }
+    }
 
-		fetchStats();
-	}, []);
+    fetchStats();
+  }, []);
 
-	const StatsCardSkeleton = () => (
-		<Card>
-			<CardContent className="pt-6">
-				<div className="flex items-center justify-between">
-					<div className="flex items-center gap-4">
-						<Skeleton className="h-10 w-10 rounded-lg" />
-						<div>
-							<Skeleton className="h-8 w-24" />
-							<Skeleton className="h-4 w-32 mt-1" />
-						</div>
-					</div>
-					<Skeleton className="h-6 w-16" />
-				</div>
-			</CardContent>
-		</Card>
-	);
-	//inovice data
+  const StatsCardSkeleton = () => (
+    <Card>
+      <CardContent className="pt-6">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <Skeleton className="h-10 w-10 rounded-lg" />
+            <div>
+              <Skeleton className="h-8 w-24" />
+              <Skeleton className="h-4 w-32 mt-1" />
+            </div>
+          </div>
+          <Skeleton className="h-6 w-16" />
+        </div>
+      </CardContent>
+    </Card>
+  );
+  //inovice data
 
-	const [totalProfit, setTotalProfit] = useState<number>(0);
-	const [growth, setGrowth] = useState<number>(0);
-	const [profitData, setProfitData] = useState<any[]>([]);
-	const [invoiceData, setInvoiceData] = useState<any[]>([]);
-	// Fetch invoice data from Firestore
-	const fetchPackages = async () => {
-		try {
-			const querySnapshot = await getDocs(collection(db, "packages"));
-			const packages: Package[] = [];
-			querySnapshot.forEach((doc) => {
-				packages.push(doc.data() as Package);
-			});
+  const [totalProfit, setTotalProfit] = useState<number>(0);
+  const [growth, setGrowth] = useState<number>(0);
+  const [profitData, setProfitData] = useState<any[]>([]);
+  const [invoiceData, setInvoiceData] = useState<any[]>([]);
+  // Fetch invoice data from Firestore
+  const fetchPackages = async () => {
+    try {
+      const querySnapshot = await getDocs(collection(db, "packages"));
+      const packages: Package[] = [];
+      querySnapshot.forEach((doc) => {
+        packages.push(doc.data() as Package);
+      });
 
-			// Save the most recent 4 packages
-			const recentPackages = packages
-				.sort(
-					(a, b) =>
-						new Date(b.createdAt || "").getTime() -
-						new Date(a.createdAt || "").getTime()
-				)
-				.slice(0, 4);
+      // Save the most recent 4 packages
+      const recentPackages = packages
+        .sort((a, b) => new Date(b.createdAt || "").getTime() - new Date(a.createdAt || "").getTime())
+        .slice(0, 4);
 
-			setInvoiceData(recentPackages); // Renamed to setInvoiceData for consistency, though it might be better as setPackageData.
+      setInvoiceData(recentPackages); // Renamed to setInvoiceData for consistency, though it might be better as setPackageData.
 
-			// Calculate total profit
-			const totalProfit = packages.reduce(
-				(sum, pkg) => sum + (pkg.amount?.total || 0),
-				0
-			);
+      // Calculate total profit
+      const totalProfit = packages.reduce((sum, pkg) => sum + (pkg.amount?.total || 0), 0);
 
-			setTotalProfit(totalProfit);
+      setTotalProfit(totalProfit);
 
-			// Generate profit trend data
-			const trendData: Record<string, number> = {};
-			packages.forEach((pkg) => {
-				const date = new Date(pkg.createdAt || "").toLocaleDateString();
-				trendData[date] = (trendData[date] || 0) + (pkg.amount?.total || 0);
-			});
+      // Generate profit trend data
+      const trendData: Record<string, number> = {};
+      packages.forEach((pkg) => {
+        const date = new Date(pkg.createdAt || "").toLocaleDateString();
+        trendData[date] = (trendData[date] || 0) + (pkg.amount?.total || 0);
+      });
 
-			const profitData = Object.keys(trendData).map((date) => ({
-				date,
-				value: trendData[date],
-			}));
+      const profitData = Object.keys(trendData).map((date) => ({
+        date,
+        value: trendData[date],
+      }));
 
-			setProfitData(profitData);
+      setProfitData(profitData);
 
-			// Mock growth percentage calculation (for simplicity)
-			const lastWeekProfit = profitData
-				.slice(-7)
-				.reduce((sum, d) => sum + d.value, 0);
-			const previousWeekProfit = profitData
-				.slice(-14, -7)
-				.reduce((sum, d) => sum + d.value, 0);
+      // Mock growth percentage calculation (for simplicity)
+      const lastWeekProfit = profitData.slice(-7).reduce((sum, d) => sum + d.value, 0);
+      const previousWeekProfit = profitData.slice(-14, -7).reduce((sum, d) => sum + d.value, 0);
 
-			const growth =
-				previousWeekProfit > 0
-					? ((lastWeekProfit - previousWeekProfit) / previousWeekProfit) * 100
-					: 100;
+      const growth = previousWeekProfit > 0 ? ((lastWeekProfit - previousWeekProfit) / previousWeekProfit) * 100 : 100;
 
-			setGrowth(growth);
-		} catch (error) {
-			console.error("Error fetching packages:", error);
-		}
-	};
+      setGrowth(growth);
+    } catch (error) {
+      console.error("Error fetching packages:", error);
+    }
+  };
 
-	useEffect(() => {
-		fetchPackages();
-	}, []);
+  useEffect(() => {
+    fetchPackages();
+  }, []);
 
-	return (
-		<div className="p-4 space-y-6 lg:p-6">
-			<div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
-				<div>
-					<h1 className="text-xl lg:text-2xl font-bold">Overview Dashboard</h1>
-					{/* Add a responsive description if needed */}
-					{/* <p className="text-muted-foreground text-sm lg:text-base">
+  return (
+    <div className="p-4 space-y-6 lg:p-6">
+      <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
+        <div>
+          <h1 className="text-xl lg:text-2xl font-bold">Overview Dashboard</h1>
+          {/* Add a responsive description if needed */}
+          {/* <p className="text-muted-foreground text-sm lg:text-base">
               Hi Admin, take a look at your performance and analytics
             </p> */}
-				</div>
-				{/* Responsive Action Section */}
-				{/* <div className="flex gap-2 lg:gap-4 flex-wrap"> */}
-			</div>
+        </div>
+        {/* Responsive Action Section */}
+        {/* <div className="flex gap-2 lg:gap-4 flex-wrap"> */}
+      </div>
 
-			{/* Main Analytics Section */}
-			<div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-				{/* Total Profit Card */}
-				<Card className="col-span-1 lg:col-span-2">
-					<CardHeader>
-						<CardTitle className="text-base lg:text-lg font-medium">
-							Total Profit
-						</CardTitle>
-					</CardHeader>
-					<CardContent>
-						<div className="space-y-4">
-							<div>
-								<div className="text-3xl lg:text-4xl font-bold">
-									${totalProfit.toFixed(2)}
-								</div>
-								<div className="flex items-center gap-2 text-sm text-green-500">
-									<TrendingUp className="h-4 w-4" />
-									{growth.toFixed(2)}%
-								</div>
-							</div>
-							<div className="h-48 lg:h-[200px]">
-								<ResponsiveContainer width="100%" height="100%">
-									<LineChart data={profitData}>
-										<Tooltip />
-										<Line
-											type="monotone"
-											dataKey="value"
-											stroke="#10B981"
-											strokeWidth={2}
-											dot={false}
-										/>
-									</LineChart>
-								</ResponsiveContainer>
-							</div>
-						</div>
-					</CardContent>
-				</Card>
+      {/* Main Analytics Section */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+        {/* Total Profit Card */}
+        <Card className="col-span-1 lg:col-span-2">
+          <CardHeader>
+            <CardTitle className="text-base lg:text-lg font-medium">Total Profit</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              <div>
+                <div className="text-3xl lg:text-4xl font-bold">${totalProfit.toFixed(2)}</div>
+                <div className="flex items-center gap-2 text-sm text-green-500">
+                  <TrendingUp className="h-4 w-4" />
+                  {growth.toFixed(2)}%
+                </div>
+              </div>
+              <div className="h-48 lg:h-[200px]">
+                <ResponsiveContainer width="100%" height="100%">
+                  <LineChart data={profitData}>
+                    <Tooltip />
+                    <Line type="monotone" dataKey="value" stroke="#10B981" strokeWidth={2} dot={false} />
+                  </LineChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
 
-				{/* Payment Status Card */}
-				{/* <Card>
+        {/* Payment Status Card */}
+        {/* <Card>
                     <CardHeader>
                         <CardTitle className="text-base lg:text-lg font-medium">Package Status</CardTitle>
                     </CardHeader>
@@ -333,144 +303,115 @@ export default function EcommerceDashboard() {
                         </div>
                     </CardContent>
                 </Card> */}
-			</div>
+      </div>
 
-			{/* Stats Cards */}
-			<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-				{stats.isLoading ? (
-					<>
-						<StatsCardSkeleton />
-						<StatsCardSkeleton />
-						<StatsCardSkeleton />
-					</>
-				) : (
-					<>
-						{/* Total Packages */}
-						<Card>
-							<CardContent className="pt-4 lg:pt-6">
-								<div className="flex items-center justify-between gap-2">
-									<div className="flex items-center gap-4">
-										<div className="p-2 bg-purple-100 rounded-lg">
-											<Package className="h-5 w-5 lg:h-6 lg:w-6 text-purple-500" />
-										</div>
-										<div>
-											<div className="text-xl lg:text-2xl font-bold">
-												{stats.totalPackages.toLocaleString()}
-											</div>
-											<div className="text-sm lg:text-base text-muted-foreground">
-												Total Packages
-											</div>
-										</div>
-									</div>
-								</div>
-							</CardContent>
-						</Card>
+      {/* Stats Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        {stats.isLoading ? (
+          <>
+            <StatsCardSkeleton />
+            <StatsCardSkeleton />
+            <StatsCardSkeleton />
+          </>
+        ) : (
+          <>
+            {/* Total Packages */}
+            <Card>
+              <CardContent className="pt-4 lg:pt-6">
+                <div className="flex items-center justify-between gap-2">
+                  <div className="flex items-center gap-4">
+                    <div className="p-2 bg-purple-100 rounded-lg">
+                      <Package className="h-5 w-5 lg:h-6 lg:w-6 text-purple-500" />
+                    </div>
+                    <div>
+                      <div className="text-xl lg:text-2xl font-bold">{stats.totalPackages.toLocaleString()}</div>
+                      <div className="text-sm lg:text-base text-muted-foreground">Total Packages</div>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
 
-						{/* Total Employees */}
-						<Card>
-							<CardContent className="pt-4 lg:pt-6">
-								<div className="flex items-center justify-between gap-2">
-									<div className="flex items-center gap-4">
-										<div className="p-2 bg-orange-100 rounded-lg">
-											<Users className="h-5 w-5 lg:h-6 lg:w-6 text-orange-500" />
-										</div>
-										<div>
-											<div className="text-xl lg:text-2xl font-bold">
-												{stats.totalEmployees.toLocaleString()}
-											</div>
-											<div className="text-sm lg:text-base text-muted-foreground">
-												Total Employees
-											</div>
-										</div>
-									</div>
-								</div>
-							</CardContent>
-						</Card>
-						{/* Additional Cards */}
-						<Card>
-							<CardContent className="pt-6">
-								<div className="flex items-center justify-between">
-									<div className="flex items-center gap-4">
-										<div className="p-2 bg-green-100 rounded-lg">
-											<FileText className="h-6 w-6 text-green-500" />
-										</div>
-										<div>
-											<div className="text-2xl font-bold">
-												{stats.totalInvoices.toLocaleString()}
-											</div>
-											<div className="text-sm text-muted-foreground">
-												Invoice Sent
-											</div>
-										</div>
-									</div>
-								</div>
-							</CardContent>
-						</Card>
-					</>
-				)}
-			</div>
+            {/* Total Employees */}
+            <Card>
+              <CardContent className="pt-4 lg:pt-6">
+                <div className="flex items-center justify-between gap-2">
+                  <div className="flex items-center gap-4">
+                    <div className="p-2 bg-orange-100 rounded-lg">
+                      <Users className="h-5 w-5 lg:h-6 lg:w-6 text-orange-500" />
+                    </div>
+                    <div>
+                      <div className="text-xl lg:text-2xl font-bold">{stats.totalEmployees.toLocaleString()}</div>
+                      <div className="text-sm lg:text-base text-muted-foreground">Total Employees</div>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+            {/* Additional Cards */}
+            <Card>
+              <CardContent className="pt-6">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-4">
+                    <div className="p-2 bg-green-100 rounded-lg">
+                      <FileText className="h-6 w-6 text-green-500" />
+                    </div>
+                    <div>
+                      <div className="text-2xl font-bold">{stats.totalInvoices.toLocaleString()}</div>
+                      <div className="text-sm text-muted-foreground">Invoice Sent</div>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </>
+        )}
+      </div>
 
-			{/* Recent Deliveries Table */}
-			<Card>
-				<CardHeader>
-					<CardTitle>Recent Packages</CardTitle>
-				</CardHeader>
-				<CardContent>
-					<div className="relative w-full overflow-x-auto">
-						<table className="w-full text-sm">
-							<thead>
-								<tr className="border-b">
-									<th className="h-12 px-4 text-left whitespace-nowrap">
-										Invoice No.
-									</th>
-									<th className="h-12 px-4 text-left whitespace-nowrap">
-										Customer
-									</th>
-									<th className="h-12 px-4 text-left whitespace-nowrap">
-										Date
-									</th>
-									<th className="h-12 px-4 text-left whitespace-nowrap">
-										Amount
-									</th>
-									<th className="h-12 px-4 text-left whitespace-nowrap">
-										Status
-									</th>
-								</tr>
-							</thead>
-							<tbody>
-								{invoiceData.map((delivery, index) => (
-									<tr key={index} className="border-b">
-										<td className="p-4 whitespace-nowrap">
-											{delivery.invoiceNo}
-										</td>
-										<td className="p-4 whitespace-nowrap">
-											{delivery.receiver.name}
-										</td>
-										<td className="p-4 whitespace-nowrap">
-											{delivery.createdAt}
-										</td>
-										<td className="p-4 whitespace-nowrap">
-											{delivery.amount.total}
-										</td>
-										<td className="p-4 whitespace-nowrap">
-											<span
-												className={`px-2 py-1 rounded-full text-xs ${
-													delivery.status === "Paid"
-														? "bg-green-100 text-green-600"
-														: delivery.status === "Partially Paid"
-														? "bg-yellow-100 text-yellow-600"
-														: "bg-red-100 text-red-600"
-												}`}>
-												{delivery.status}
-											</span>
-										</td>
-									</tr>
-								))}
-							</tbody>
-						</table>
-					</div>
-				</CardContent>
-			</Card>
-		</div>
-	);
+      {/* Recent Deliveries Table */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Recent Packages</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="relative w-full overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b">
+                  <th className="h-12 px-4 text-left whitespace-nowrap">Invoice No.</th>
+                  <th className="h-12 px-4 text-left whitespace-nowrap">Customer</th>
+                  <th className="h-12 px-4 text-left whitespace-nowrap">Date</th>
+                  <th className="h-12 px-4 text-left whitespace-nowrap">Amount</th>
+                  <th className="h-12 px-4 text-left whitespace-nowrap">Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                {invoiceData.map((delivery, index) => (
+                  <tr key={index} className="border-b">
+                    <td className="p-4 whitespace-nowrap">{delivery.invoiceNo}</td>
+                    <td className="p-4 whitespace-nowrap">{delivery.receiver.name}</td>
+                    <td className="p-4 whitespace-nowrap">{delivery.createdAt}</td>
+                    <td className="p-4 whitespace-nowrap">{delivery.amount.total}</td>
+                    <td className="p-4 whitespace-nowrap">
+                      <span
+                        className={`px-2 py-1 rounded-full text-xs ${
+                          delivery.status === "Paid"
+                            ? "bg-green-100 text-green-600"
+                            : delivery.status === "Partially Paid"
+                              ? "bg-yellow-100 text-yellow-600"
+                              : "bg-red-100 text-red-600"
+                        }`}
+                      >
+                        {delivery.status}
+                      </span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
 }

@@ -6,10 +6,7 @@ interface SuspendUserResult {
   error?: string;
 }
 
-export const suspendUserAccount = async (
-  uid: string,
-  email: string
-): Promise<SuspendUserResult> => {
+export const suspendUserAccount = async (uid: string, email: string): Promise<SuspendUserResult> => {
   try {
     // Initialize Firebase services
 
@@ -36,10 +33,7 @@ export const suspendUserAccount = async (
 };
 
 // Optional: Add a function to reactivate suspended users
-export const reactivateUserAccount = async (
-  uid: string,
-  email: string
-): Promise<SuspendUserResult> => {
+export const reactivateUserAccount = async (uid: string, email: string): Promise<SuspendUserResult> => {
   try {
     const db = getFirestore();
 

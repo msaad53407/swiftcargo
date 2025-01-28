@@ -1,17 +1,5 @@
-import {
-  createUserWithEmailAndPassword,
-  fetchSignInMethodsForEmail,
-  sendEmailVerification,
-} from "firebase/auth";
-import {
-  collection,
-  doc,
-  getDocs,
-  query,
-  setDoc,
-  updateDoc,
-  where,
-} from "firebase/firestore";
+import { createUserWithEmailAndPassword, fetchSignInMethodsForEmail, sendEmailVerification } from "firebase/auth";
+import { collection, doc, getDocs, query, setDoc, updateDoc, where } from "firebase/firestore";
 import { auth, db } from "../firebase/config.ts";
 import bcrypt from "bcryptjs";
 import { notifyEmployeeAdded } from "./notificaiton.js";
@@ -34,9 +22,7 @@ interface ManagerData extends Omit<EmployeeData, "password"> {
   createdAt: Date;
 }
 
-export const createOrReactivateEmployee = async (
-  employeeData: EmployeeData
-): Promise<void> => {
+export const createOrReactivateEmployee = async (employeeData: EmployeeData): Promise<void> => {
   try {
     // Check if user exists in managers collection
     const managersRef = collection(db, "managers");
@@ -61,10 +47,7 @@ export const createOrReactivateEmployee = async (
         updatedAt: new Date(),
       };
 
-      await updateDoc(
-        doc(db, "managers", existingManagerId),
-        updatedManagerData
-      );
+      await updateDoc(doc(db, "managers", existingManagerId), updatedManagerData);
 
       return Promise.resolve();
     }
@@ -73,11 +56,7 @@ export const createOrReactivateEmployee = async (
     const hashedPassword = await bcrypt.hash(employeeData.password, 10);
 
     // Create user in Firebase Authentication
-    const userCredential = await createUserWithEmailAndPassword(
-      auth,
-      employeeData.email,
-      employeeData.password
-    );
+    const userCredential = await createUserWithEmailAndPassword(auth, employeeData.email, employeeData.password);
 
     // Prepare manager data for Firestore
     const managerData: ManagerData = {
@@ -103,7 +82,7 @@ export const createOrReactivateEmployee = async (
     // Handle specific Firebase errors
     if (error.code === "auth/email-already-in-use") {
       throw new Error(
-        "An account with this email already exists but couldn't be reactivated. Please check the manager collection."
+        "An account with this email already exists but couldn't be reactivated. Please check the manager collection.",
       );
     }
     if (error.code === "auth/invalid-email") {

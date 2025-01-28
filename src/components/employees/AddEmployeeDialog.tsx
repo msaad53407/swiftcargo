@@ -1,40 +1,28 @@
-import { useState } from 'react';
-import { X } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Checkbox } from '@/components/ui/checkbox';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-
+import { useState } from "react";
+import { X } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 interface AddEmployeeDialogProps {
   isOpen: boolean;
   onClose: () => void;
   onSubmit: (data: any) => void;
-  isLoading: boolean
+  isLoading: boolean;
 }
 
 export function AddEmployeeDialog({ isOpen, onClose, onSubmit, isLoading }: AddEmployeeDialogProps) {
   const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    password: '',
-    department: '',
-    designation: '',
-    phone: '',
-    address: '',
+    name: "",
+    email: "",
+    password: "",
+    department: "",
+    designation: "",
+    phone: "",
+    address: "",
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -45,14 +33,13 @@ export function AddEmployeeDialog({ isOpen, onClose, onSubmit, isLoading }: AddE
     if (!isLoading) {
       onClose();
       setFormData({
-        name: '',
-        email: '',
-        password: '',
-        department: '',
-        designation: '',
-        phone: '',
-        address: '',
-
+        name: "",
+        email: "",
+        password: "",
+        department: "",
+        designation: "",
+        phone: "",
+        address: "",
       });
     }
   };
@@ -61,7 +48,6 @@ export function AddEmployeeDialog({ isOpen, onClose, onSubmit, isLoading }: AddE
       <DialogContent className="sm:max-w-[625px]">
         <DialogHeader>
           <DialogTitle>Add Employee</DialogTitle>
-
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="grid grid-cols-2 gap-4">
@@ -151,7 +137,7 @@ export function AddEmployeeDialog({ isOpen, onClose, onSubmit, isLoading }: AddE
                 Cancel
               </Button>
               <Button type="submit" disabled={isLoading}>
-                {isLoading ? <p className="animate-spin h-5 w-5" >Adding </p> : "Add Employee"}
+                {isLoading ? <p className="animate-spin h-5 w-5">Adding </p> : "Add Employee"}
               </Button>
             </div>
           </div>
@@ -160,4 +146,3 @@ export function AddEmployeeDialog({ isOpen, onClose, onSubmit, isLoading }: AddE
     </Dialog>
   );
 }
-

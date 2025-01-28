@@ -1,13 +1,4 @@
-import {
-  collection,
-  getDocs,
-  query,
-  orderBy,
-  limit,
-  startAfter,
-  where,
-  getCountFromServer,
-} from "firebase/firestore";
+import { collection, getDocs, query, orderBy, limit, startAfter, where, getCountFromServer } from "firebase/firestore";
 
 // Define TypeScript interfaces for invoices
 interface Invoice {
@@ -54,7 +45,7 @@ export const fetchAllInvoices = async (db: any): Promise<Invoice[]> => {
 export const fetchInvoicesWithPagination = async (
   db: any,
   page: number = 1,
-  itemsPerPage: number = ITEMS_PER_PAGE
+  itemsPerPage: number = ITEMS_PER_PAGE,
 ): Promise<PaginatedInvoiceResponse> => {
   try {
     const invoicesRef = collection(db, "invoices");
@@ -65,27 +56,20 @@ export const fetchInvoicesWithPagination = async (
     const totalPages = Math.ceil(totalItems / itemsPerPage);
 
     // Create base query
-    const q = query(
-      invoicesRef,
-      orderBy("createdAt", "desc"),
-      limit(itemsPerPage)
-    );
+    const q = query(invoicesRef, orderBy("createdAt", "desc"), limit(itemsPerPage));
 
     // Handle pagination
     if (page > 1) {
       const skipItems = (page - 1) * itemsPerPage;
-      const documentsSnapshot = await getDocs(
-        query(invoicesRef, orderBy("createdAt", "desc"), limit(skipItems))
-      );
-      const lastVisible =
-        documentsSnapshot.docs[documentsSnapshot.docs.length - 1];
+      const documentsSnapshot = await getDocs(query(invoicesRef, orderBy("createdAt", "desc"), limit(skipItems)));
+      const lastVisible = documentsSnapshot.docs[documentsSnapshot.docs.length - 1];
 
       if (lastVisible) {
         const paginatedQuery = query(
           invoicesRef,
           orderBy("createdAt", "desc"),
           startAfter(lastVisible),
-          limit(itemsPerPage)
+          limit(itemsPerPage),
         );
         const paginatedDocs = await getDocs(paginatedQuery);
         return {
@@ -111,10 +95,7 @@ export const fetchInvoicesWithPagination = async (
 /**
  * Fetch a single invoice by packageId
  */
-export const fetchInvoiceByPackageId = async (
-  db: any,
-  packageId: string
-): Promise<Invoice | null> => {
+export const fetchInvoiceByPackageId = async (db: any, packageId: string): Promise<Invoice | null> => {
   try {
     const invoicesRef = collection(db, "invoices");
     const q = query(invoicesRef, where("packageId", "==", packageId));
@@ -134,17 +115,10 @@ export const fetchInvoiceByPackageId = async (
 /**
  * Fetch invoices by status
  */
-export const fetchInvoicesByStatus = async (
-  db: any,
-  status: string
-): Promise<Invoice[]> => {
+export const fetchInvoicesByStatus = async (db: any, status: string): Promise<Invoice[]> => {
   try {
     const invoicesRef = collection(db, "invoices");
-    const q = query(
-      invoicesRef,
-      where("status", "==", status),
-      orderBy("createdAt", "desc")
-    );
+    const q = query(invoicesRef, where("status", "==", status), orderBy("createdAt", "desc"));
 
     const querySnapshot = await getDocs(q);
     return querySnapshot.docs.map((doc) => doc.data() as Invoice);
@@ -157,17 +131,10 @@ export const fetchInvoicesByStatus = async (
 /**
  * Fetch invoices by payment status
  */
-export const fetchInvoicesByPaymentStatus = async (
-  db: any,
-  paymentStatus: string
-): Promise<Invoice[]> => {
+export const fetchInvoicesByPaymentStatus = async (db: any, paymentStatus: string): Promise<Invoice[]> => {
   try {
     const invoicesRef = collection(db, "invoices");
-    const q = query(
-      invoicesRef,
-      where("paymentStatus", "==", paymentStatus),
-      orderBy("createdAt", "desc")
-    );
+    const q = query(invoicesRef, where("paymentStatus", "==", paymentStatus), orderBy("createdAt", "desc"));
 
     const querySnapshot = await getDocs(q);
     return querySnapshot.docs.map((doc) => doc.data() as Invoice);

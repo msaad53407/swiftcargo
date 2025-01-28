@@ -1,12 +1,4 @@
-import {
-  addDoc,
-  collection,
-  serverTimestamp,
-  doc,
-  updateDoc,
-  deleteDoc,
-  writeBatch,
-} from "firebase/firestore";
+import { addDoc, collection, serverTimestamp, doc, updateDoc, deleteDoc, writeBatch } from "firebase/firestore";
 import { db } from "../firebase/config.ts"; // Adjust this import based on your Firebase config
 
 type NotificationType =
@@ -23,12 +15,7 @@ interface NotificationData {
   metadata?: Record<string, any>;
 }
 
-export async function createNotification({
-  type,
-  title,
-  description,
-  metadata = {},
-}: NotificationData) {
+export async function createNotification({ type, title, description, metadata = {} }: NotificationData) {
   try {
     await addDoc(collection(db, "notifications"), {
       type,
@@ -87,11 +74,7 @@ export const notifyEmployeeAdded = (employeeName: string) => {
   });
 };
 
-export const notifyPackageAdded = (
-  packageId: string,
-  invoiceNumber: string,
-  updatedBy: string
-) => {
+export const notifyPackageAdded = (packageId: string, invoiceNumber: string, updatedBy: string) => {
   return createNotification({
     type: "PACKAGE_ADDED",
     title: "New Package Created",
@@ -100,10 +83,7 @@ export const notifyPackageAdded = (
   });
 };
 
-export const notifyPackageDeleted = (
-  packageId: string,
-  packageName: string
-) => {
+export const notifyPackageDeleted = (packageId: string, packageName: string) => {
   return createNotification({
     type: "PACKAGE_DELETED",
     title: "Package Deleted",
@@ -116,7 +96,7 @@ export const notifyPackageStatusUpdated = (
   packageId: string,
   invoiceNumber: string,
   newStatus: string,
-  updatedBy: string
+  updatedBy: string,
 ) => {
   return createNotification({
     type: "PACKAGE_STATUS_UPDATED",

@@ -1,61 +1,45 @@
-"use client"
+"use client";
 
-import { Button } from "@/components/ui/button"
-import { Checkbox } from "@/components/ui/checkbox"
-import {
-    Popover,
-    PopoverContent,
-    PopoverTrigger,
-} from "@/components/ui/popover"
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from "@/components/ui/select"
-import { ListFilter } from 'lucide-react'
-import { useState } from "react"
+import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { ListFilter } from "lucide-react";
+import { useState } from "react";
 
 interface FilterPopoverProps {
-    filters: FilterValues
-    onApplyFilter: (filters: FilterValues) => void
-    onResetFilter: () => void
-    onSaveFilter: () => void
+  filters: FilterValues;
+  onApplyFilter: (filters: FilterValues) => void;
+  onResetFilter: () => void;
+  onSaveFilter: () => void;
 }
 
 export interface FilterValues {
-
-    department: string
-    designation: string
+  department: string;
+  designation: string;
 }
 
-export function FilterPopover({
-    filters,
-    onApplyFilter,
-    onResetFilter,
-    onSaveFilter,
-}: FilterPopoverProps) {
-    const [localFilters, setLocalFilters] = useState<FilterValues>(filters)
+export function FilterPopover({ filters, onApplyFilter, onResetFilter, onSaveFilter }: FilterPopoverProps) {
+  const [localFilters, setLocalFilters] = useState<FilterValues>(filters);
 
-    const handleApplyFilter = () => {
-        onApplyFilter(localFilters)
-    }
+  const handleApplyFilter = () => {
+    onApplyFilter(localFilters);
+  };
 
-    return (
-        <Popover>
-            <PopoverTrigger asChild>
-                <Button variant="ghost" size="icon">
-                    <ListFilter className="h-4 w-4" />
-                </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-80" align="end">
-                <div className="grid gap-4">
-                    <div className="space-y-2">
-                        <h4 className="font-medium leading-none">Filter Members</h4>
-                    </div>
-                    <div className="grid gap-2">
-                        {/* <div className="flex items-center space-x-4">
+  return (
+    <Popover>
+      <PopoverTrigger asChild>
+        <Button variant="ghost" size="icon">
+          <ListFilter className="h-4 w-4" />
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent className="w-80" align="end">
+        <div className="grid gap-4">
+          <div className="space-y-2">
+            <h4 className="font-medium leading-none">Filter Members</h4>
+          </div>
+          <div className="grid gap-2">
+            {/* <div className="flex items-center space-x-4">
                             <div className="flex items-center space-x-2">
                                 <Checkbox
                                     id="email"
@@ -87,40 +71,36 @@ export function FilterPopover({
                                 </label>
                             </div>
                         </div> */}
-                        <div className="grid gap-2">
-                            <div className="grid gap-1">
-                                <label className="text-sm">Department</label>
-                                <Select
-                                    value={localFilters.department}
-                                    onValueChange={(value) =>
-                                        setLocalFilters({ ...localFilters, department: value })
-                                    }
-                                >
-                                    <SelectTrigger>
-                                        <SelectValue placeholder="Select department" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="manager">Manager</SelectItem>
-                                        <SelectItem value="admin    ">Admin</SelectItem>
-
-                                    </SelectContent>
-                                </Select>
-                            </div>
-                        </div>
-                        <Button onClick={handleApplyFilter} className="w-full">
-                            Filter
-                        </Button>
-                        <div className="flex justify-between">
-                            <Button variant="outline" size="sm" onClick={onResetFilter}>
-                                Reset Filter
-                            </Button>
-
-                        </div>
-                    </div>
-                </div>
-            </PopoverContent>
-        </Popover>
-    )
+            <div className="grid gap-2">
+              <div className="grid gap-1">
+                <label className="text-sm">Department</label>
+                <Select
+                  value={localFilters.department}
+                  onValueChange={(value) => setLocalFilters({ ...localFilters, department: value })}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select department" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="manager">Manager</SelectItem>
+                    <SelectItem value="admin    ">Admin</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            <Button onClick={handleApplyFilter} className="w-full">
+              Filter
+            </Button>
+            <div className="flex justify-between">
+              <Button variant="outline" size="sm" onClick={onResetFilter}>
+                Reset Filter
+              </Button>
+            </div>
+          </div>
+        </div>
+      </PopoverContent>
+    </Popover>
+  );
 }
 
-export default FilterPopover
+export default FilterPopover;

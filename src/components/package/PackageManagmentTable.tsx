@@ -1,56 +1,48 @@
-"use client"
+"use client";
 
-import { useEffect, useState } from "react"
-import { MoreHorizontal, ChevronLeft, ChevronRight, Search, Settings2, Phone, MapPin, Trash2 } from 'lucide-react'
-import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table"
-import { Button } from "@/components/ui/button"
-import { Checkbox } from "@/components/ui/checkbox"
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
-import { Input } from "@/components/ui/input"
-import { Card, CardContent } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { fetchAllPackages } from "@/utils/getPackages"
-import { db } from "../../firebase/config.ts"
-import { bulkDeletePackages, deletePackage, fetchPackagesWithPagination } from "@/utils/packageUtils.js"
-import { PackageDetails } from "./PackageDetails.js"
-import TableSkeleton from "../SkeltonTable.js"
-import Loader from "../Loader.js"
+import { useEffect, useState } from "react";
+import { MoreHorizontal, ChevronLeft, ChevronRight, Search, Settings2, Phone, MapPin, Trash2 } from "lucide-react";
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table";
+import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Input } from "@/components/ui/input";
+import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { fetchAllPackages } from "@/utils/getPackages";
+import { db } from "../../firebase/config.ts";
+import { bulkDeletePackages, deletePackage, fetchPackagesWithPagination } from "@/utils/packageUtils.js";
+import { PackageDetails } from "./PackageDetails.js";
+import TableSkeleton from "../SkeltonTable.js";
+import Loader from "../Loader.js";
 import * as Papa from "papaparse";
-import { useAuth } from "@/contexts/AuthContext.js"
-import FilterPopover, { FilterValues } from "../package/filter-popover.js"
-import { toast } from "sonner"
-import { BulkActions } from "./BulkActions.js"
-
-
+import { useAuth } from "@/contexts/AuthContext.js";
+import FilterPopover, { FilterValues } from "../package/filter-popover.js";
+import { toast } from "sonner";
+import { BulkActions } from "./BulkActions.js";
 
 interface Package {
-  id: string
+  id: string;
   sender: {
-    name: string
-    address: string
-    phone: string
-  }
+    name: string;
+    address: string;
+    phone: string;
+  };
   receiver: {
-    name: string
-    address: string
-    phone: string
-  }
-  invoiceNo: string
-  dateOfAcceptance: string
-  packageWeight: string
-  contentDetail: string
-  paymentStatus: "Paid" | "Pending"
+    name: string;
+    address: string;
+    phone: string;
+  };
+  invoiceNo: string;
+  dateOfAcceptance: string;
+  packageWeight: string;
+  contentDetail: string;
+  paymentStatus: "Paid" | "Pending";
   amount: {
-    total: number
-    pending: number
-  }
-  status: string
+    total: number;
+    pending: number;
+  };
+  status: string;
 }
 
 interface PackageTableProps {
@@ -75,12 +67,12 @@ export function PackageTable({ packageAdded, setPackageAdded, download, setDownl
       const result = await fetchPackagesWithPagination(db, page);
 
       setPackages(result.packages);
-      setFilteredPackages(result.packages)
+      setFilteredPackages(result.packages);
       setTotalPages(result.totalPages);
       setCurrentPage(result.currentPage);
       setError(null);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'An error occurred while fetching packages');
+      setError(err instanceof Error ? err.message : "An error occurred while fetching packages");
     } finally {
       setLoading(false);
     }
@@ -90,20 +82,19 @@ export function PackageTable({ packageAdded, setPackageAdded, download, setDownl
     loadPackages();
   }, []);
   useEffect(() => {
-
     if (packageAdded === true) {
-      loadPackages()
+      loadPackages();
 
-      setPackageAdded(false)
+      setPackageAdded(false);
     }
-  }, [packageAdded])
+  }, [packageAdded]);
 
   //filters login
-  const [searchQuery, setSearchQuery] = useState("")
-  const [activeFilters, setActiveFilters] = useState<FilterValues | null>(null)
+  const [searchQuery, setSearchQuery] = useState("");
+  const [activeFilters, setActiveFilters] = useState<FilterValues | null>(null);
 
   useEffect(() => {
-    let result = [...packages]
+    let result = [...packages];
 
     // Apply search
     if (searchQuery) {
@@ -111,75 +102,70 @@ export function PackageTable({ packageAdded, setPackageAdded, download, setDownl
         (pkg) =>
           pkg.sender.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
           pkg.receiver.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          pkg.invoiceNo.toLowerCase().includes(searchQuery.toLowerCase())
-      )
+          pkg.invoiceNo.toLowerCase().includes(searchQuery.toLowerCase()),
+      );
     }
 
     // Apply filters
     if (activeFilters) {
       // Filter by status
       if (activeFilters.status) {
-        result = result.filter(
-          (pkg) => pkg.status.toLowerCase() === activeFilters.status.toLowerCase()
-        )
+        result = result.filter((pkg) => pkg.status.toLowerCase() === activeFilters.status.toLowerCase());
       }
 
       // Filter by payment status
       if (activeFilters.paymentStatus.paid || activeFilters.paymentStatus.pending) {
-
         result = result.filter((pkg) => {
           // If both checkboxes are checked, show all
           if (activeFilters.paymentStatus.paid && activeFilters.paymentStatus.pending) {
-            return true
+            return true;
           }
           // If only paid is checked
           if (activeFilters.paymentStatus.paid) {
-            return pkg.paymentStatus === "Paid"
+            return pkg.paymentStatus === "Paid";
           }
           // If only pending is checked
           if (activeFilters.paymentStatus.pending) {
-            return pkg.paymentStatus === "Partially Paid"
+            return pkg.paymentStatus === "Partially Paid";
           }
           // If neither is checked, show none
-          return false
-        })
+          return false;
+        });
       }
     }
 
-
-
-    setFilteredPackages(result)
-  }, [searchQuery, activeFilters, packages])
+    setFilteredPackages(result);
+  }, [searchQuery, activeFilters, packages]);
 
   const handleApplyFilter = (filters: FilterValues) => {
-
-    setActiveFilters(filters)
-  }
+    setActiveFilters(filters);
+  };
 
   const handleResetFilter = () => {
-    setActiveFilters(null)
-  }
+    setActiveFilters(null);
+  };
   const handleSaveFilter = () => {
     // Implement save filter functionality
     // toast({
     //   title: "Success",
     //   description: "Filter settings have been saved",
     // })
-  }
+  };
   const handleDelete = async (id: string) => {
-
-    if (window.confirm('Are you sure you want to delete this package?')) {
+    if (window.confirm("Are you sure you want to delete this package?")) {
       const success = await deletePackage(db, id);
       if (success) {
         loadPackages(currentPage);
-        setSelectedPackages(prev => prev.filter(pkgId => pkgId !== id));
+        setSelectedPackages((prev) => prev.filter((pkgId) => pkgId !== id));
       }
     }
   };
 
   const handleBulkAction = async (action: string) => {
-    if (!selectedPackages.length > 0) { toast.error("Please Select atleast 1 package") }
-    if (action === 'delete' && selectedPackages.length > 0) {
+    if (!selectedPackages.length > 0) {
+      toast.error("Please Select atleast 1 package");
+    }
+    if (action === "delete" && selectedPackages.length > 0) {
       if (window.confirm(`Are you sure you want to delete ${selectedPackages.length} packages?`)) {
         const success = await bulkDeletePackages(db, selectedPackages);
         if (success) {
@@ -214,7 +200,7 @@ export function PackageTable({ packageAdded, setPackageAdded, download, setDownl
         if (i - l === 2) {
           rangeWithDots.push(l + 1);
         } else if (i - l !== 1) {
-          rangeWithDots.push('...');
+          rangeWithDots.push("...");
         }
       }
       rangeWithDots.push(i);
@@ -224,35 +210,33 @@ export function PackageTable({ packageAdded, setPackageAdded, download, setDownl
     return rangeWithDots;
   };
 
-
   const handleSelectAll = (checked: boolean) => {
     if (checked) {
-      setSelectedPackages(packages.map((pkg) => pkg.id))
+      setSelectedPackages(packages.map((pkg) => pkg.id));
     } else {
-      setSelectedPackages([])
+      setSelectedPackages([]);
     }
-  }
+  };
 
   const handleSelect = (id: string) => {
     if (selectedPackages.includes(id)) {
-      setSelectedPackages(selectedPackages.filter((pkgId) => pkgId !== id))
+      setSelectedPackages(selectedPackages.filter((pkgId) => pkgId !== id));
     } else {
-      setSelectedPackages([...selectedPackages, id])
+      setSelectedPackages([...selectedPackages, id]);
     }
-  }
+  };
   const [selectedPackageId, setSelectedPackageId] = useState<string | null>(null);
 
   const handleViewDetails = (packageId: string) => {
-
     setSelectedPackageId(packageId);
   };
 
   useEffect(() => {
     if (download) {
-      exportToCSV()
-      setDownload(false)
+      exportToCSV();
+      setDownload(false);
     }
-  }, [download])
+  }, [download]);
   const exportToCSV = () => {
     const csvData = packages.map((pkg) => ({
       ID: pkg.id,
@@ -285,21 +269,16 @@ export function PackageTable({ packageAdded, setPackageAdded, download, setDownl
     document.body.removeChild(link);
   };
   const handleBackToTable = () => {
-    loadPackages()
+    loadPackages();
     setSelectedPackageId(null);
   };
   if (loading) {
-    return <Loader />
+    return <Loader />;
   }
   if (selectedPackageId) {
     return (
       <div>
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={handleBackToTable}
-          className="mb-4"
-        >
+        <Button variant="ghost" size="sm" onClick={handleBackToTable} className="mb-4">
           <ChevronLeft className="h-4 w-4 mr-2" />
           Back to Packages
         </Button>
@@ -311,7 +290,6 @@ export function PackageTable({ packageAdded, setPackageAdded, download, setDownl
   return (
     <div className="space-y-4">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between px-4 md:px-0">
-
         <BulkActions
           selectedPackages={selectedPackages}
           onBulkAction={setSelectedPackages}
@@ -332,23 +310,23 @@ export function PackageTable({ packageAdded, setPackageAdded, download, setDownl
             />
           </div>
           <FilterPopover
-            filters={activeFilters || {
-              paymentStatus: {
-                paid: false,
-                pending: false
-              },
-              status: ""
-            }}
+            filters={
+              activeFilters || {
+                paymentStatus: {
+                  paid: false,
+                  pending: false,
+                },
+                status: "",
+              }
+            }
             onApplyFilter={handleApplyFilter}
             onResetFilter={handleResetFilter}
           />
         </div>
       </div>
 
-
       {/* Scrollable Table View */}
       <div className="-mx-4 md:mx-0 overflow-x-auto">
-
         <Table className="min-w-[1000px]">
           <TableHeader>
             <TableRow className="bg-muted/50">
@@ -372,10 +350,7 @@ export function PackageTable({ packageAdded, setPackageAdded, download, setDownl
             {filteredPackages.map((pkg) => (
               <TableRow className="bg-white" key={pkg.id}>
                 <TableCell>
-                  <Checkbox
-                    checked={selectedPackages.includes(pkg.id)}
-                    onCheckedChange={() => handleSelect(pkg.id)}
-                  />
+                  <Checkbox checked={selectedPackages.includes(pkg.id)} onCheckedChange={() => handleSelect(pkg.id)} />
                 </TableCell>
                 <TableCell>
                   <span className="text-blue-600">{pkg.invoiceNo}</span>
@@ -394,22 +369,16 @@ export function PackageTable({ packageAdded, setPackageAdded, download, setDownl
                   </div>
                 </TableCell>
                 <TableCell className="whitespace-nowrap p-4">
-                  <p className="text-sm text-muted-foreground truncate max-w-[200px]">
-                    {pkg.receiver.address}
-                  </p>
+                  <p className="text-sm text-muted-foreground truncate max-w-[200px]">{pkg.receiver.address}</p>
                 </TableCell>
                 <TableCell className="whitespace-nowrap p-4">
                   <div>
                     <p>{pkg.dateOfAcceptance}</p>
-                    <p className="text-sm text-muted-foreground">
-                      Weight: {pkg.packageWeight}
-                    </p>
+                    <p className="text-sm text-muted-foreground">Weight: {pkg.packageWeight}</p>
                   </div>
                 </TableCell>
                 <TableCell className="whitespace-nowrap p-4">
-                  <p className="text-sm text-muted-foreground truncate max-w-[200px]">
-                    {pkg.status}
-                  </p>
+                  <p className="text-sm text-muted-foreground truncate max-w-[200px]">{pkg.status}</p>
                 </TableCell>
                 <TableCell className="whitespace-nowrap p-4">{pkg.paymentStatus}</TableCell>
                 <TableCell className="whitespace-nowrap p-4">
@@ -465,7 +434,5 @@ export function PackageTable({ packageAdded, setPackageAdded, download, setDownl
         </div>
       </div>
     </div>
-
-  )
+  );
 }
-

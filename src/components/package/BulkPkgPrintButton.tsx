@@ -246,7 +246,7 @@ export const handleBulkPrint = (packages) => {
         <style>${getCommonStyles()}</style>
       </head>
       <body>
-        ${packages.map(pkg => generatePackageHTML(pkg, currentDate)).join('')}
+        ${packages.map((pkg) => generatePackageHTML(pkg, currentDate)).join("")}
         <script>
           window.onload = function() { window.print(); };
         </script>
@@ -263,10 +263,7 @@ const PkgPrintButton = ({ pkg }) => {
   const handlePrint = () => handleBulkPrint([pkg]);
 
   return (
-    <Button
-      onClick={handlePrint}
-      className="flex items-center gap-2 bg-blue-900 hover:bg-blue-800"
-    >
+    <Button onClick={handlePrint} className="flex items-center gap-2 bg-blue-900 hover:bg-blue-800">
       <Printer className="h-4 w-4" />
       <span>Print Package Details</span>
     </Button>

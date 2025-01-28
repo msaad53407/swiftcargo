@@ -1,63 +1,55 @@
-"use client"
+"use client";
 
-import { useEffect, useState } from "react"
-import { MoreHorizontal, Check, ChevronLeft, ChevronRight, Search, Settings2, Trash2 } from 'lucide-react'
-import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar"
-import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table"
-import { Button } from "@/components/ui/button"
-import { Checkbox } from "@/components/ui/checkbox"
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
-import { Input } from "@/components/ui/input"
+import { useEffect, useState } from "react";
+import { MoreHorizontal, Check, ChevronLeft, ChevronRight, Search, Settings2, Trash2 } from "lucide-react";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table";
+import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Input } from "@/components/ui/input";
 
-import { FilterPopover, type FilterValues } from "./filter-popover"
+import { FilterPopover, type FilterValues } from "./filter-popover";
 //import { FilterDialog, type FilterValues } from "./filter-dialog"
-import { fetchManagers, type Manager } from "@/utils/manager"
+import { fetchManagers, type Manager } from "@/utils/manager";
 
-import { deleteUserAccount, suspendUserAccount } from "@/utils/deleteEmployee"
-import TableSkeleton from "../SkeltonTable"
-import Loader from "../Loader"
-import { useAuth } from "@/contexts/AuthContext"
-import { toast } from "sonner"
+import { deleteUserAccount, suspendUserAccount } from "@/utils/deleteEmployee";
+import TableSkeleton from "../SkeltonTable";
+import Loader from "../Loader";
+import { useAuth } from "@/contexts/AuthContext";
+import { toast } from "sonner";
 
 interface Employee {
-  id: string
-  name: string
-  email: string
-  department: string
-  designation: string
-  phone: string
-  emailVerified: boolean
-  kycVerified: boolean
-  status: "Active" | "Pending" | "Suspended"
-  avatar?: string
-  suspended: boolean
+  id: string;
+  name: string;
+  email: string;
+  department: string;
+  designation: string;
+  phone: string;
+  emailVerified: boolean;
+  kycVerified: boolean;
+  status: "Active" | "Pending" | "Suspended";
+  avatar?: string;
+  suspended: boolean;
 }
 
 export function EmployeeTable({ employeeAdded, setEmployeeAdded }) {
-  const { currentUser } = useAuth()
+  const { currentUser } = useAuth();
 
-  const [employees, setEmployees] = useState<Manager[]>([])
-  const [filteredEmployees, setFilteredEmployees] = useState<Manager[]>([])
-  const [isLoading, setIsLoading] = useState(true)
-  const [selectedEmployees, setSelectedEmployees] = useState<string[]>([])
-  const [searchQuery, setSearchQuery] = useState("")
-  const [bulkAction, setBulkAction] = useState("")
-  const [activeFilters, setActiveFilters] = useState<FilterValues | null>(null)
-
-
+  const [employees, setEmployees] = useState<Manager[]>([]);
+  const [filteredEmployees, setFilteredEmployees] = useState<Manager[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [selectedEmployees, setSelectedEmployees] = useState<string[]>([]);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [bulkAction, setBulkAction] = useState("");
+  const [activeFilters, setActiveFilters] = useState<FilterValues | null>(null);
 
   const loadManagers = async () => {
     setIsLoading(true);
     try {
       const fetchedManagers = await fetchManagers();
       // Filter out suspended managers
-      const activeManagers = fetchedManagers.filter(manager => !manager.suspended);
+      const activeManagers = fetchedManagers.filter((manager) => !manager.suspended);
 
       setEmployees(activeManagers);
       setFilteredEmployees(activeManagers);
@@ -69,10 +61,10 @@ export function EmployeeTable({ employeeAdded, setEmployeeAdded }) {
   };
   useEffect(() => {
     if (employeeAdded === true) {
-      loadManagers()
-      setEmployeeAdded(false)
+      loadManagers();
+      setEmployeeAdded(false);
     }
-  }, [employeeAdded])
+  }, [employeeAdded]);
   // If you need to see all managers including suspended ones, you can create a separate function
   const loadAllManagers = async () => {
     setIsLoading(true);
@@ -88,8 +80,8 @@ export function EmployeeTable({ employeeAdded, setEmployeeAdded }) {
   };
 
   useEffect(() => {
-    loadManagers()
-  }, [])
+    loadManagers();
+  }, []);
 
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
@@ -105,7 +97,6 @@ export function EmployeeTable({ employeeAdded, setEmployeeAdded }) {
   const handlePageChange = (page) => {
     setCurrentPage(page);
   };
-
 
   // Generate pages with ellipsis
   const generatePageNumbers = () => {
@@ -126,10 +117,8 @@ export function EmployeeTable({ employeeAdded, setEmployeeAdded }) {
     return pages;
   };
 
-
-
   useEffect(() => {
-    let result = [...employees]
+    let result = [...employees];
 
     // Apply search
     if (searchQuery) {
@@ -137,24 +126,21 @@ export function EmployeeTable({ employeeAdded, setEmployeeAdded }) {
         (employee) =>
           employee.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
           employee.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          employee.department.toLowerCase().includes(searchQuery.toLowerCase())
-      )
+          employee.department.toLowerCase().includes(searchQuery.toLowerCase()),
+      );
     }
 
     // Apply filters
     if (activeFilters) {
       if (activeFilters.department) {
-
         result = result.filter(
-          (employee) =>
-            employee.department.toLowerCase() === activeFilters.department.toLowerCase()
-        )
+          (employee) => employee.department.toLowerCase() === activeFilters.department.toLowerCase(),
+        );
       }
       if (activeFilters.designation) {
         result = result.filter(
-          (employee) =>
-            employee.designation.toLowerCase() === activeFilters.designation.toLowerCase()
-        )
+          (employee) => employee.designation.toLowerCase() === activeFilters.designation.toLowerCase(),
+        );
       }
       // if (activeFilters.kycVerified) {
       //   result = result.filter((employee) => employee.kycVerified)
@@ -166,53 +152,53 @@ export function EmployeeTable({ employeeAdded, setEmployeeAdded }) {
       // Note: Implement hasBalance filter based on your data structure
     }
 
-    setFilteredEmployees(result)
-  }, [searchQuery, activeFilters, employees])
+    setFilteredEmployees(result);
+  }, [searchQuery, activeFilters, employees]);
 
   const handleSelectAll = (checked: boolean) => {
     if (checked) {
-      setSelectedEmployees(filteredEmployees.map((emp) => emp.uid))
+      setSelectedEmployees(filteredEmployees.map((emp) => emp.uid));
     } else {
-      setSelectedEmployees([])
+      setSelectedEmployees([]);
     }
-  }
+  };
 
   const handleSelect = (id: string) => {
     if (selectedEmployees.includes(id)) {
-      setSelectedEmployees(selectedEmployees.filter((empId) => empId !== id))
+      setSelectedEmployees(selectedEmployees.filter((empId) => empId !== id));
     } else {
-      setSelectedEmployees([...selectedEmployees, id])
+      setSelectedEmployees([...selectedEmployees, id]);
     }
-  }
+  };
 
   const handleBulkAction = async () => {
     if (selectedEmployees.length === 0) {
-      toast.error("Please select at least one employee")
-      return
+      toast.error("Please select at least one employee");
+      return;
     }
     if (bulkAction === "delete") {
       try {
         for (const id of selectedEmployees) {
-          const employee = employees.find((emp) => emp.uid === id)
+          const employee = employees.find((emp) => emp.uid === id);
           if (employee) {
-            await handleDelete(employee.uid, employee.email, "manager")
+            await handleDelete(employee.uid, employee.email, "manager");
           }
         }
 
-        setSelectedEmployees([])
+        setSelectedEmployees([]);
       } catch (error) {
-        toast.error("Failed to delete selected employees")
+        toast.error("Failed to delete selected employees");
       }
     }
-  }
+  };
 
   const handleApplyFilter = (filters: FilterValues) => {
-    setActiveFilters(filters)
-  }
+    setActiveFilters(filters);
+  };
 
   const handleResetFilter = () => {
-    setActiveFilters(null)
-  }
+    setActiveFilters(null);
+  };
 
   const handleSaveFilter = () => {
     // Implement save filter functionality
@@ -220,52 +206,47 @@ export function EmployeeTable({ employeeAdded, setEmployeeAdded }) {
     //   title: "Success",
     //   description: "Filter settings have been saved",
     // })
-  }
+  };
 
   const handleDelete = async (id: string, email: string, userType: string) => {
     const result = await suspendUserAccount(id, email);
 
     if (result.success) {
-      toast.success("User is Deleted Successfully")
-      loadManagers()
+      toast.success("User is Deleted Successfully");
+      loadManagers();
     } else {
-      toast.success(`Failed to delete user: ${result.error}`)
-
+      toast.success(`Failed to delete user: ${result.error}`);
     }
   };
 
-
   if (isLoading) {
-    return <Loader />
+    return <Loader />;
   }
 
   const getStatusColor = (status: Employee["status"]) => {
     switch (status) {
       case "Active":
-        return "text-green-600 bg-green-50"
+        return "text-green-600 bg-green-50";
       case "Pending":
-        return "text-red-600 bg-red-50"
+        return "text-red-600 bg-red-50";
       case "Suspended":
-        return "text-yellow-600 bg-yellow-50"
+        return "text-yellow-600 bg-yellow-50";
       default:
-        return "text-gray-600 bg-gray-50"
+        return "text-gray-600 bg-gray-50";
     }
-  }
+  };
 
   return (
     <div className="space-y-4">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        {currentUser?.userType === 'admin' ? (
+        {currentUser?.userType === "admin" ? (
           <div className="flex items-center gap-2">
             <Select value={bulkAction} onValueChange={setBulkAction}>
               <SelectTrigger className="w-[230px]">
                 <SelectValue placeholder="Bulk Action" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem
-                  value="delete"
-                  className="text-red-500"
-                >
+                <SelectItem value="delete" className="text-red-500">
                   <div className="flex items-center gap-2">
                     <Trash2 className="h-4 w-4 text-red-500" />
                     <span className="text-red-500">Delete Selected</span>
@@ -282,9 +263,9 @@ export function EmployeeTable({ employeeAdded, setEmployeeAdded }) {
               Apply
             </Button>
           </div>
-        ) : <div></div>}
-
-
+        ) : (
+          <div></div>
+        )}
 
         <div className="flex items-center gap-2">
           <div className="relative w-full sm:w-auto">
@@ -311,10 +292,7 @@ export function EmployeeTable({ employeeAdded, setEmployeeAdded }) {
             <TableRow className="bg-muted/50">
               <TableHead className="w-[50px] whitespace-nowrap">
                 <Checkbox
-                  checked={
-                    selectedEmployees.length > 0 &&
-                    selectedEmployees.length === filteredEmployees.length
-                  }
+                  checked={selectedEmployees.length > 0 && selectedEmployees.length === filteredEmployees.length}
                   onCheckedChange={(checked) => handleSelectAll(checked as boolean)}
                 />
               </TableHead>
@@ -338,11 +316,7 @@ export function EmployeeTable({ employeeAdded, setEmployeeAdded }) {
                 <TableCell className="whitespace-nowrap">
                   <div className="flex items-center gap-3 ">
                     <Avatar className="h-8 w-8">
-
-                      <AvatarFallback className="bg-blue-100 text-blue-600">
-                        {employee.name.charAt(0)}
-                      </AvatarFallback>
-
+                      <AvatarFallback className="bg-blue-100 text-blue-600">{employee.name.charAt(0)}</AvatarFallback>
                     </Avatar>
                     <div>
                       <p className="font-medium">{employee.name}</p>
@@ -441,8 +415,6 @@ export function EmployeeTable({ employeeAdded, setEmployeeAdded }) {
           </Button>
         </div>
       </div>
-
     </div>
-  )
+  );
 }
-

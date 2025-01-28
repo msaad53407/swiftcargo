@@ -251,10 +251,7 @@ const PkgPrintButton = ({ pkg }) => {
   };
 
   return (
-    <Button
-      onClick={handlePrint}
-
-    >
+    <Button onClick={handlePrint}>
       <Printer className="h-4 w-4" />
       <span>Print</span>
     </Button>
