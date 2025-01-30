@@ -5,6 +5,7 @@ import {
   LayoutDashboard,
   LogOut,
   MessageSquareTextIcon,
+  NotebookTabs,
   Package,
   Plus,
   Settings,
@@ -34,6 +35,7 @@ const ECommerceMenuItems = [
     label: "Chat",
     path: "/ecommerce/chat",
   },
+  { icon: NotebookTabs, label: "Policies", path: "/ecommerce/policies" },
   { icon: Settings, label: "Setting", path: "/ecommerce/settings" },
 ];
 

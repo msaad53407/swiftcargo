@@ -7,20 +7,22 @@ import SignIn from "@/pages/auth/SignIn";
 import EmployeesPage from "@/pages/employees/EmployeesPage";
 import { useState } from "react";
 import { Navigate, Route, BrowserRouter as Router, Routes } from "react-router-dom";
+import ChatLayout from "./components/layout/ChatLayout";
 import { ToastProvider } from "./components/providers/ToastProvider";
 import Dashboard from "./pages/dashboard/Dashboard";
-import AddProduct from "./pages/ecommerce/products/AddProduct";
+import ChatPage from "./pages/ecommerce/chat";
 import IndividualChatPage from "./pages/ecommerce/chat/IndividualChat";
 import EcommerceDashboard from "./pages/ecommerce/dashboard";
-import NotificationsPage from "./pages/ecommerce/notifications";
+import EcommerceNotificationsPage from "./pages/ecommerce/notifications";
+import NotificationsPage from "./pages/notifcation/Notification";
 import OrdersPage from "./pages/ecommerce/orders";
+import PoliciesPage from "./pages/ecommerce/policies";
 import ProductsPage from "./pages/ecommerce/products";
+import AddProduct from "./pages/ecommerce/products/AddProduct";
+import EditProductPage from "./pages/ecommerce/products/UpdateProduct";
 import SettingsPage from "./pages/ecommerce/settings";
 import PackageManagment from "./pages/package/PackageManagment";
 import ProfilePage from "./pages/profile/Profile";
-import ChatPage from "./pages/ecommerce/chat";
-import ChatLayout from "./components/layout/ChatLayout";
-import EditProductPage from "./pages/ecommerce/products/UpdateProduct";
 
 function DashboardLayout({ type, children }: { type?: "default" | "ecommerce"; children: React.ReactNode }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -46,31 +48,31 @@ function App() {
           <Route
             path="/dashboard"
             element={
-              <ProtectedRoute allowedRoles={["admin", "manager"]}>
-                <DashboardLayout>
-                  <Dashboard />
-                </DashboardLayout>
-              </ProtectedRoute>
+              // <ProtectedRoute allowedRoles={["admin", "manager"]}>
+              <DashboardLayout>
+                <Dashboard />
+              </DashboardLayout>
+              // </ProtectedRoute>
             }
           />
           <Route
             path="/employees"
             element={
-              <ProtectedRoute allowedRoles={["admin", "manager"]}>
-                <DashboardLayout>
-                  <EmployeesPage />
-                </DashboardLayout>
-              </ProtectedRoute>
+              // <ProtectedRoute allowedRoles={["admin", "manager"]}>
+              <DashboardLayout>
+                <EmployeesPage />
+              </DashboardLayout>
+              // </ProtectedRoute>
             }
           />
           <Route
             path="/"
             element={
-              <ProtectedRoute allowedRoles={["admin", "manager"]}>
-                <DashboardLayout>
-                  <PackageManagment />
-                </DashboardLayout>
-              </ProtectedRoute>
+              // <ProtectedRoute allowedRoles={["admin", "manager"]}>
+              <DashboardLayout>
+                <PackageManagment />
+              </DashboardLayout>
+              // </ProtectedRoute>
             }
           />
           {/* <Route
@@ -86,21 +88,21 @@ function App() {
           <Route
             path="/notifications"
             element={
-              <ProtectedRoute allowedRoles={["admin", "manager"]}>
-                <DashboardLayout>
-                  <NotificationsPage />
-                </DashboardLayout>
-              </ProtectedRoute>
+              // <ProtectedRoute allowedRoles={["admin", "manager"]}>
+              <DashboardLayout>
+                <NotificationsPage />
+              </DashboardLayout>
+              // </ProtectedRoute>
             }
           />
           <Route
             path="/settings"
             element={
-              <ProtectedRoute allowedRoles={["admin", "manager"]}>
-                <DashboardLayout>
-                  <ProfilePage />
-                </DashboardLayout>
-              </ProtectedRoute>
+              // <ProtectedRoute allowedRoles={["admin", "manager"]}>
+              <DashboardLayout>
+                <ProfilePage />
+              </DashboardLayout>
+              // </ProtectedRoute>
             }
           />
           <Route
@@ -113,7 +115,7 @@ function App() {
                   <Route path="products/add" element={<AddProduct />} />
                   <Route path="products/update/:id" element={<EditProductPage />} />
                   <Route path="orders" element={<OrdersPage />} />
-                  <Route path="notifications" element={<NotificationsPage />} />
+                  <Route path="notifications" element={<EcommerceNotificationsPage />} />
                   <Route
                     path="chat"
                     element={
@@ -131,6 +133,7 @@ function App() {
                     }
                   />
                   <Route path="settings" element={<SettingsPage />} />
+                  <Route path="policies" element={<PoliciesPage />} />
                   <Route path="" element={<Navigate to="/ecommerce/dashboard" />} />
                 </Routes>
               </DashboardLayout>

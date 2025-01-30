@@ -27,7 +27,7 @@ export default function useProduct(id: string | undefined) {
       }
     };
 
-    fetchProduct().then((data) => console.log(data));
+    fetchProduct();
   }, [id]);
 
   const transformAndSortVariations = (variations: Variation[]) => {

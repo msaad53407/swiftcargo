@@ -87,7 +87,7 @@ export default function EditProductPage() {
   };
 
   return (
-    <div className="container py-10">
+    <div className="container py-10 px-4">
       <div className="space-y-6">
         <div>
           <h1 className="text-2xl font-semibold">Product Detail</h1>

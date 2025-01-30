@@ -1,4 +1,4 @@
-import { Eye, EyeOff, Pencil, PlusIcon, Settings2, Trash2, Upload } from "lucide-react";
+import { Eye, EyeOff, MoreHorizontal, Pencil, PlusIcon, Settings2, Trash2, Upload } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -10,6 +10,7 @@ import { Link } from "react-router-dom";
 import { toast } from "sonner";
 import DeleteAlertModal from "./DeleteAlertModal";
 import { TableSkeleton as ProductsTableSkeleton } from "./ProductsTableSkeleton";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "../ui/dropdown-menu";
 
 export function ProductsTable() {
   const {
@@ -203,7 +204,7 @@ export function ProductsTable() {
                     </div>
                   </TableCell>
                   <TableCell>#{product.sku}</TableCell>
-                  <TableCell>
+                  <TableCell className="hidden md:flex">
                     <div className="flex justify-end gap-2">
                       <Button
                         variant="ghost"
@@ -228,6 +229,14 @@ export function ProductsTable() {
                         }
                       />
                     </div>
+                  </TableCell>
+                  <TableCell className="md:hidden">
+                    <MobileActionsDropdown
+                      id={product.id}
+                      visibility={product.visibility}
+                      toggleVisibility={toggleVisibility}
+                      actionLoading={actionLoading}
+                    />
                   </TableCell>
                 </TableRow>
               ))
@@ -286,3 +295,58 @@ export function ProductsTable() {
     </div>
   );
 }
+
+const MobileActionsDropdown = ({
+  id,
+  actionLoading,
+  visibility,
+  toggleVisibility,
+}: {
+  id: string;
+  actionLoading: boolean;
+  visibility: boolean;
+  toggleVisibility: (id: string) => void;
+}) => {
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild className="flex md:hidden">
+        <Button variant="outline" size="icon">
+          <MoreHorizontal className="h-4 w-4" />
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent>
+        <DropdownMenuItem>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8"
+            disabled={actionLoading}
+            onClick={() => toggleVisibility(id)}
+          >
+            {visibility ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
+          </Button>
+          <span>{visibility ? "Hide" : "Show"}</span>
+        </DropdownMenuItem>
+        <DropdownMenuItem>
+          <Button variant="ghost" size="icon" className="h-8 w-8 text-green-600" asChild>
+            <Link to={`/ecommerce/products/update/${id}`}>
+              <Pencil className="h-4 w-4" />
+            </Link>
+          </Button>
+          <span>Update</span>
+        </DropdownMenuItem>
+        <DropdownMenuItem>
+          <DeleteAlertModal
+            id={id}
+            trigger={
+              <Button variant="ghost" size="icon" className="h-8 w-8 text-red-600">
+                <Trash2 className="h-4 w-4" />
+              </Button>
+            }
+          />
+          <span>Delete</span>
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+};

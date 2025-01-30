@@ -1,4 +1,3 @@
-import { useAuth } from "@/contexts/AuthContext";
 import { db } from "@/firebase/config";
 import { Optional } from "@/types";
 import { AddProductErrorType, Color, Product, Variation, VariationErrorType } from "@/types/product";
@@ -13,12 +12,19 @@ import {
   limit,
   orderBy,
   query,
+  serverTimestamp,
   startAfter,
   updateDoc,
   writeBatch,
 } from "firebase/firestore";
 
 import z from "zod";
+import {
+  notifyEcommerceProductAdded,
+  notifyEcommerceProductDeleted,
+  notifyEcommerceProductUpdated,
+  notifyEcommerceProductVisibilityUpdated,
+} from "../notificaiton";
 
 export const getProduct = async (id: string): Promise<Product | null> => {
   try {
@@ -37,8 +43,8 @@ export const getProduct = async (id: string): Promise<Product | null> => {
           size: variation.data()?.size,
           colors: variation.data()?.colors,
         })),
-        createdAt: docSnap.data()?.createdAt,
-        updatedAt: docSnap.data()?.updatedAt,
+        createdAt: docSnap.data()?.createdAt.toDate(),
+        updatedAt: docSnap.data()?.updatedAt.toDate(),
       };
     }
     return null;
@@ -95,8 +101,8 @@ export const getProducts = async (
             size: variation.data()?.size,
             colors: variation.data()?.color,
           })),
-          createdAt: doc.data()?.createdAt,
-          updatedAt: doc.data()?.updatedAt,
+          createdAt: doc.data()?.createdAt.toDate(),
+          updatedAt: doc.data()?.updatedAt.toDate(),
         };
       }),
     );
@@ -170,13 +176,20 @@ export const addProduct = async (
   try {
     const productRef = await addDoc(collection(db, "products"), {
       ...productResult.data,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
+      createdAt: serverTimestamp(),
+      updatedAt: serverTimestamp(),
     });
 
     for (const variation of variations) {
       await addDoc(collection(db, "products", productRef.id, "variations"), variation);
     }
+
+    const newProduct = await getProduct(productRef.id);
+
+    if (newProduct) {
+      await notifyEcommerceProductAdded(newProduct);
+    }
+
     return {
       success: true,
       error: null,
@@ -226,7 +239,7 @@ export const updateProduct = async (
       description: product.description,
       image: product.image,
       sku: product.sku,
-      updatedAt: new Date().toISOString(),
+      updatedAt: serverTimestamp(),
     });
 
     const existingVariations: Variation[] = updatedVariations.filter((v): v is Variation => v.id !== "");
@@ -252,6 +265,12 @@ export const updateProduct = async (
       await addDoc(collection(db, "products", id, "variations"), variation);
     }
 
+    const updatedProduct = await getProduct(id);
+
+    if (updatedProduct) {
+      await notifyEcommerceProductUpdated(updatedProduct);
+    }
+
     return {
       success: true,
       error: null,
@@ -268,7 +287,6 @@ export const updateProduct = async (
 export const toggleProductVisibility = async (id: string) => {
   try {
     const product = await getProduct(id);
-    console.log(product);
     if (!product) {
       return {
         success: false,
@@ -279,6 +297,8 @@ export const toggleProductVisibility = async (id: string) => {
     await updateDoc(doc(db, "products", id), {
       visibility: !product.visibility,
     });
+
+    await notifyEcommerceProductVisibilityUpdated(product);
 
     return {
       success: true,
@@ -295,16 +315,31 @@ export const toggleProductVisibility = async (id: string) => {
 
 export const deleteProduct = async (id: string) => {
   try {
-    const productRef = doc(db, "products", id);
-    await deleteDoc(productRef);
+    const product = await getDoc(doc(db, "products", id));
+    await deleteDoc(product.ref);
 
-    const variationsRef = collection(productRef, "variations");
+    const variationsRef = collection(product.ref, "variations");
     const variationsQuery = await getDocs(variationsRef);
     const variationsBatch = writeBatch(db);
     variationsQuery.docs.forEach((variationDoc) => {
       variationsBatch.delete(variationDoc.ref);
     });
     await variationsBatch.commit();
+
+    const productData = {
+      id: product.id,
+      name: product.data()?.name,
+      description: product.data()?.description,
+      image: product.data()?.image,
+      sku: product.data()?.sku,
+      visibility: product.data()?.visibility,
+      variations: product.data()?.variations,
+      createdAt: product.data()?.createdAt.toDate(),
+      updatedAt: product.data()?.updatedAt.toDate(),
+    };
+
+    await notifyEcommerceProductDeleted(productData);
+
     return true;
   } catch (error) {
     console.error("Error deleting product:", error);
@@ -339,11 +374,6 @@ export const getColors = async (): Promise<Color[]> => {
 
 export const uploadImage = async (file: File) => {
   if (!file) return null;
-  const { currentUser } = useAuth();
-
-  if (!currentUser) {
-    return null;
-  }
 
   try {
     const formData = new FormData();

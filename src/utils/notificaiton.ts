@@ -1,15 +1,33 @@
-import { addDoc, collection, serverTimestamp, doc, updateDoc, deleteDoc, writeBatch } from "firebase/firestore";
-import { db } from "../firebase/config.ts"; // Adjust this import based on your Firebase config
+import {
+  addDoc,
+  collection,
+  serverTimestamp,
+  doc,
+  updateDoc,
+  deleteDoc,
+  writeBatch,
+  getDocs,
+} from "firebase/firestore";
+import { db } from "../firebase/config"; // Adjust this import based on your Firebase config
+import { Product } from "@/types/product";
 
-type NotificationType =
-  | "EMPLOYEE_ADDED"
-  | "PACKAGE_ADDED"
-  | "PACKAGE_DELETED"
-  | "PACKAGE_STATUS_UPDATED"
-  | "INVOICE_GENERATED";
+export enum Notifications {
+  EMPLOYEE_ADDED = "EMPLOYEE_ADDED",
+  PACKAGE_ADDED = "PACKAGE_ADDED",
+  PACKAGE_DELETED = "PACKAGE_DELETED",
+  PACKAGE_STATUS_UPDATED = "PACKAGE_STATUS_UPDATED",
+  INVOICE_GENERATED = "INVOICE_GENERATED",
+  ECOMMERCE_PRODUCT_ADDED = "ECOMMERCE_PRODUCT_ADDED",
+  ECOMMERCE_PRODUCT_UPDATED = "ECOMMERCE_PRODUCT_UPDATED",
+  ECOMMERCE_PRODUCT_DELETED = "ECOMMERCE_PRODUCT_DELETED",
+  ECOMMERCE_PRODUCT_VISIBILITY_UPDATED = "ECOMMERCE_PRODUCT_VISIBILITY_UPDATED",
+  ECOMMERCE_ORDER_PLACED = "ECOMMERCE_ORDER_PLACED",
+  ECOMMERCE_ORDER_STATUS_UPDATED = "ECOMMERCE_ORDER_STATUS_UPDATED",
+  ECOMMERCE_ORDER_CANCELLED = "ECOMMERCE_ORDER_CANCELLED",
+}
 
 interface NotificationData {
-  type: NotificationType;
+  type: Notifications;
   title: string;
   description: string;
   metadata?: Record<string, any>;
@@ -44,7 +62,7 @@ export async function markNotificationAsRead(notificationId: string) {
 export async function markAllNotificationsAsRead() {
   try {
     const batch = writeBatch(db);
-    const snapshot = await collection(db, "notifications").get();
+    const snapshot = await getDocs(collection(db, "notifications"));
 
     snapshot.docs.forEach((doc) => {
       batch.update(doc.ref, { read: true });
@@ -67,7 +85,7 @@ export async function deleteNotification(notificationId: string) {
 // Utility functions for different notification types
 export const notifyEmployeeAdded = (employeeName: string) => {
   return createNotification({
-    type: "EMPLOYEE_ADDED",
+    type: Notifications.EMPLOYEE_ADDED,
     title: "New Employee Added",
     description: `${employeeName} has been added to the system`,
     metadata: { employeeName },
@@ -76,7 +94,7 @@ export const notifyEmployeeAdded = (employeeName: string) => {
 
 export const notifyPackageAdded = (packageId: string, invoiceNumber: string, updatedBy: string) => {
   return createNotification({
-    type: "PACKAGE_ADDED",
+    type: Notifications.PACKAGE_ADDED,
     title: "New Package Created",
     description: `Package with Invoice No #${invoiceNumber} has been created By ${updatedBy}`,
     metadata: { packageId, invoiceNumber },
@@ -85,7 +103,7 @@ export const notifyPackageAdded = (packageId: string, invoiceNumber: string, upd
 
 export const notifyPackageDeleted = (packageId: string, packageName: string) => {
   return createNotification({
-    type: "PACKAGE_DELETED",
+    type: Notifications.PACKAGE_DELETED,
     title: "Package Deleted",
     description: `Package ${packageName} has been deleted`,
     metadata: { packageId, packageName },
@@ -99,9 +117,45 @@ export const notifyPackageStatusUpdated = (
   updatedBy: string,
 ) => {
   return createNotification({
-    type: "PACKAGE_STATUS_UPDATED",
+    type: Notifications.PACKAGE_STATUS_UPDATED,
     title: "Package Status Updated",
     description: `Package with Invoice No #${invoiceNumber} status changed to ${newStatus} By ${updatedBy}`,
     metadata: { packageId, invoiceNumber, newStatus },
+  });
+};
+
+export const notifyEcommerceProductAdded = (product: Product) => {
+  return createNotification({
+    type: Notifications.ECOMMERCE_PRODUCT_ADDED,
+    title: "New Product Added",
+    description: `Product ${product.name} has been added`,
+    metadata: { product },
+  });
+};
+
+export const notifyEcommerceProductUpdated = (product: Product) => {
+  return createNotification({
+    type: Notifications.ECOMMERCE_PRODUCT_UPDATED,
+    title: "Product Updated",
+    description: `Product ${product.name} has been updated`,
+    metadata: { product },
+  });
+};
+
+export const notifyEcommerceProductDeleted = (product: Product) => {
+  return createNotification({
+    type: Notifications.ECOMMERCE_PRODUCT_DELETED,
+    title: "Product Deleted",
+    description: `Product ${product.name} has been deleted`,
+    metadata: { product },
+  });
+};
+
+export const notifyEcommerceProductVisibilityUpdated = (product: Product) => {
+  return createNotification({
+    type: Notifications.ECOMMERCE_PRODUCT_VISIBILITY_UPDATED,
+    title: "Product Visibility Updated",
+    description: `Product ${product.name} visibility has been updated from ${product.visibility ? "Visible" : "Hidden"} to ${product.visibility ? "Hidden" : "Visible"}`,
+    metadata: { product },
   });
 };
