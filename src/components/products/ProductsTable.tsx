@@ -11,6 +11,7 @@ import { toast } from "sonner";
 import DeleteAlertModal from "./DeleteAlertModal";
 import { TableSkeleton as ProductsTableSkeleton } from "./ProductsTableSkeleton";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "../ui/dropdown-menu";
+import { generatePaginationNUmbers } from "@/lib/utils";
 
 export function ProductsTable() {
   const {
@@ -111,39 +112,6 @@ export function ProductsTable() {
     toast.error("Failed to update product visibility!");
   };
 
-  // Generate pagination numbers
-  const generatePaginationNumbers = () => {
-    const delta = 3; // Number of pages to show before and after current page
-    const range: (number | string)[] = [];
-
-    range.push(1);
-
-    if (currentPage > delta + 2) {
-      range.push("...");
-    }
-
-    // Calculate start and end of range around current page
-    const rangeStart = Math.max(2, currentPage - delta);
-    const rangeEnd = Math.min(totalPages - 1, currentPage + delta);
-
-    for (let i = rangeStart; i <= rangeEnd; i++) {
-      if (i !== 1 && i !== totalPages) {
-        range.push(i);
-      }
-    }
-
-    if (currentPage < totalPages - (delta + 1)) {
-      range.push("...");
-    }
-
-    // Always show last page
-    if (totalPages > 1) {
-      range.push(totalPages);
-    }
-
-    return range;
-  };
-
   return (
     <div className="space-y-4">
       <div className="flex justify-between items-center">
@@ -186,6 +154,7 @@ export function ProductsTable() {
               <TableHead>Date</TableHead>
               <TableHead>Product</TableHead>
               <TableHead>SKU</TableHead>
+              <TableHead>Supplier</TableHead>
               <TableHead className="text-right">Action</TableHead>
             </TableRow>
           </TableHeader>
@@ -204,7 +173,8 @@ export function ProductsTable() {
                     </div>
                   </TableCell>
                   <TableCell>#{product.sku}</TableCell>
-                  <TableCell className="hidden md:flex">
+                  <TableCell>{product.supplier}</TableCell>
+                  <TableCell className="hidden md:table-cell">
                     <div className="flex justify-end gap-2">
                       <Button
                         variant="ghost"
@@ -260,7 +230,7 @@ export function ProductsTable() {
           </Button>
 
           <div className="flex items-center gap-1">
-            {generatePaginationNumbers().map((pageNum, idx) => {
+            {generatePaginationNUmbers(3, currentPage, totalPages).map((pageNum, idx) => {
               if (pageNum === "...") {
                 return (
                   <span key={`ellipsis-${idx}`} className="px-3 py-2">

@@ -5,6 +5,7 @@ export type Product = {
   image?: string;
   sku: string;
   visibility: boolean;
+  supplier: string;
   variations: Variation[];
   createdAt: string;
   updatedAt: string;

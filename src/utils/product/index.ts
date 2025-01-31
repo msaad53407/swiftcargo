@@ -10,11 +10,13 @@ import {
   getDoc,
   getDocs,
   limit,
+  or,
   orderBy,
   query,
   serverTimestamp,
   startAfter,
   updateDoc,
+  where,
   writeBatch,
 } from "firebase/firestore";
 
@@ -38,6 +40,7 @@ export const getProduct = async (id: string): Promise<Product | null> => {
         image: docSnap.data()?.image,
         sku: docSnap.data()?.sku,
         visibility: docSnap.data()?.visibility,
+        supplier: docSnap.data()?.supplier,
         variations: variations.docs.map((variation) => ({
           id: variation.id,
           size: variation.data()?.size,
@@ -57,6 +60,7 @@ export const getProduct = async (id: string): Promise<Product | null> => {
 export const getProducts = async (
   maxLimit: number = 10,
   pageNumber: number = 1,
+  searchTerm?: string,
 ): Promise<{ products: Product[]; total: number }> => {
   try {
     // First get total count
@@ -64,7 +68,13 @@ export const getProducts = async (
     const total = totalSnapshot.data().count;
 
     // Base query
-    let queryConstraints: any = [orderBy("createdAt", "desc"), limit(maxLimit)];
+    let queryConstraints: any[] = [orderBy("createdAt", "desc"), limit(maxLimit)];
+
+    if (searchTerm) {
+      queryConstraints.push(
+        or(where("name", ">=", searchTerm), where("sku", ">=", searchTerm), where("supplier", ">=", searchTerm)),
+      );
+    }
 
     // If it's not the first page, we need all previous pages' last docs
     if (pageNumber > 1) {
@@ -96,6 +106,7 @@ export const getProducts = async (
           image: doc.data()?.image,
           sku: doc.data()?.sku,
           visibility: doc.data()?.visibility,
+          supplier: doc.data()?.supplier,
           variations: variations.docs.map((variation) => ({
             id: variation.id,
             size: variation.data()?.size,
@@ -122,6 +133,7 @@ export const addProductSchema = z.object({
     // .min(3, { message: "Image URL must be at least 3 characters" }),
     .optional(),
   sku: z.string().min(3, { message: "SKU must be at least 3 characters" }),
+  supplier: z.string().min(3, { message: "Supplier must be at least 3 characters" }),
   visibility: z.boolean().default(true),
 });
 
@@ -237,6 +249,7 @@ export const updateProduct = async (
     await updateDoc(doc(db, "products", id), {
       name: product.name,
       description: product.description,
+      supplier: product.supplier,
       image: product.image,
       sku: product.sku,
       updatedAt: serverTimestamp(),
@@ -333,6 +346,7 @@ export const deleteProduct = async (id: string) => {
       image: product.data()?.image,
       sku: product.data()?.sku,
       visibility: product.data()?.visibility,
+      supplier: product.data()?.supplier,
       variations: product.data()?.variations,
       createdAt: product.data()?.createdAt.toDate(),
       updatedAt: product.data()?.updatedAt.toDate(),

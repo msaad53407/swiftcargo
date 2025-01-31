@@ -11,6 +11,7 @@ export function TableSkeleton() {
             <TableHead>Date</TableHead>
             <TableHead>Product</TableHead>
             <TableHead>SKU</TableHead>
+            <TableHead>Supplier</TableHead>
             <TableHead className="text-right">Action</TableHead>
           </TableRow>
         </TableHeader>
@@ -28,6 +29,9 @@ export function TableSkeleton() {
                   <Skeleton className="h-8 w-8 rounded-full" />
                   <Skeleton className="h-4 w-32" />
                 </div>
+              </TableCell>
+              <TableCell>
+                <Skeleton className="h-4 w-16" />
               </TableCell>
               <TableCell>
                 <Skeleton className="h-4 w-16" />

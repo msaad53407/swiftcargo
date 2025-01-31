@@ -1,7 +1,9 @@
-import React from "react";
+import { OrdersTable } from "@/components/orders/OrdersTable";
 
-const OrdersPage = () => {
-  return <div>OrdersPage</div>;
-};
-
-export default OrdersPage;
+export default function OrdersPage() {
+  return (
+    <div className="container py-10 px-4">
+      <OrdersTable />
+    </div>
+  );
+}

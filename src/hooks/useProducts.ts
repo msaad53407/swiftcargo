@@ -2,7 +2,7 @@ import type { Product } from "@/types/product";
 import { useEffect, useMemo, useState } from "react";
 import { getProducts } from "@/utils/product";
 
-export function useProducts() {
+export function useProducts(searchTerm?: string) {
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [actionLoading, setActionLoading] = useState(false);
@@ -16,12 +16,12 @@ export function useProducts() {
   useEffect(() => {
     setLoading(true);
     const fetchProducts = async () => {
-      const { products, total } = await getProducts(limit, currentPage);
+      const { products, total } = await getProducts(limit, currentPage, searchTerm);
       setProducts(products);
       setTotalProducts(total);
     };
     fetchProducts().then(() => setLoading(false));
-  }, [currentPage]);
+  }, [currentPage, searchTerm]);
 
   const filteredData = useMemo(() => {
     return products.filter(
