@@ -6,23 +6,23 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Textarea } from "@/components/ui/textarea";
+import useOrder from "@/hooks/useOrder";
 import useProduct from "@/hooks/useProduct";
 import { cn } from "@/lib/utils";
-import { OrderStatus, Size } from "@/types/order";
+import { Size } from "@/types/order";
 import { Color } from "@/types/product";
-import { addOrder, addOrderSchema } from "@/utils/order";
+import { addOrderSchema, updateOrder } from "@/utils/order";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { format } from "date-fns";
 import { CalendarIcon, Pencil, Plus, Trash2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Controller, useFieldArray, useForm } from "react-hook-form";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "sonner";
 import { z } from "zod";
 
-export default function CreateOrderPage() {
-  const [searchParams] = useSearchParams();
-  const productId = searchParams.get("product");
+export default function UpdateOrderPage() {
+  const { id: orderId } = useParams<{ id: string }>();
   const navigate = useNavigate();
 
   const [addModalOpen, setAddModalOpen] = useState(false);
@@ -31,30 +31,35 @@ export default function CreateOrderPage() {
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [selectedQuantity, setSelectedQuantity] = useState("");
 
-  const { loading, colorVariations, product } = useProduct(productId || "");
+  const { loading, order } = useOrder(orderId || "");
+  const { loading: productLoading, colorVariations } = useProduct(order?.product.id);
 
   const { control, handleSubmit, setValue, watch } = useForm<z.infer<typeof addOrderSchema>>({
     resolver: zodResolver(addOrderSchema),
     defaultValues: {
       product: {
-        id: productId || "",
-        name: product?.name,
-        sku: product?.sku,
-        supplier: product?.supplier,
+        name: order?.product?.name,
+        sku: order?.product?.sku,
+        supplier: order?.product?.supplier,
       },
-      status: OrderStatus.PENDING,
-      orderVariations: [],
+      status: order?.status,
+      orderVariations: order?.orderVariations || [],
     },
   });
 
+  const orderVariations = watch("orderVariations");
+
   useEffect(() => {
-    if (product) {
-      setValue("product.name", product.name);
-      setValue("product.sku", product.sku);
-      setValue("product.supplier", product.supplier);
-      setValue("product.image", product.image);
+    if (order) {
+      setValue("product.name", order.product.name);
+      setValue("product.sku", order.product.sku);
+      setValue("product.supplier", order.product.supplier);
+      setValue("product.image", order.product.image);
+      setValue("status", order.status);
+      setValue("orderVariations", order.orderVariations);
+      setValue("product.id", order.product.id);
     }
-  }, [product]);
+  }, [order]);
 
   const { fields, append, remove } = useFieldArray({
     control,
@@ -62,26 +67,26 @@ export default function CreateOrderPage() {
   });
 
   useEffect(() => {
-    if (!productId) {
-      toast.error("Product not found");
+    if (!orderId) {
+      toast.error("Order not found");
       setTimeout(() => navigate("/ecommerce/orders"), 1000);
     }
-  }, [productId, navigate]);
+  }, [orderId, navigate]);
 
   const onSubmit = async (data: z.infer<typeof addOrderSchema>) => {
-    const result = await addOrder(data);
+    if (!orderId) return;
+    const result = await updateOrder(orderId, data);
     if (result.success) {
-      toast.success("Order added successfully");
+      toast.success("Order updated successfully");
       navigate("/ecommerce/orders");
     } else {
-      toast.error("Failed to add order");
+      toast.error("Failed to update order");
       console.error(result.errors || result.error);
     }
   };
 
   const handleAddVariation = () => {
     if (!selectedSize || !selectedColor || !watch("product.sku")) return;
-
     if (!selectedQuantity || parseInt(selectedQuantity) <= 0 || isNaN(parseInt(selectedQuantity))) {
       toast.error("Invalid Quantity value");
       return;
@@ -107,27 +112,20 @@ export default function CreateOrderPage() {
     setSelectedQuantity("");
   };
 
-  if (!productId) return null;
+  if (!orderId) return null;
 
   if (loading) return <Loader />;
 
   return (
     <div className="p-6 container space-y-10 bg-card border shadow-sm rounded-xl">
       <div>
-        <h1 className="text-2xl font-semibold">Create Order</h1>
+        <h1 className="text-2xl font-semibold">Update Order</h1>
         <p className="text-muted-foreground">
-          Create a new order for product <b>{product?.name}</b>
+          Update order for <b>{order?.product.name}</b>
         </p>
       </div>
 
-      <form
-        onSubmit={handleSubmit(onSubmit, (errors) => {
-          if (errors) {
-            console.log(errors);
-          }
-        })}
-        className="space-y-6"
-      >
+      <form onSubmit={handleSubmit(onSubmit, (errors) => console.log(errors))} className="space-y-6">
         <div className="grid grid-cols-2 gap-4">
           <div className="space-y-2">
             <Label className="text-sm font-medium">Supplier Name</Label>
@@ -136,8 +134,8 @@ export default function CreateOrderPage() {
               control={control}
               render={({ field, fieldState: { error } }) => (
                 <div>
-                  {error && <p className="text-xs text-red-500">{error.message}</p>}
-                  <Input {...field} disabled placeholder="Enter supplier name" />
+                  {error && <p className="text-sm text-red-500">{error.message}</p>}
+                  <Input {...field} disabled placeholder="Enter Supplier Name" />
                 </div>
               )}
             />
@@ -149,7 +147,7 @@ export default function CreateOrderPage() {
               control={control}
               render={({ field, fieldState: { error } }) => (
                 <div>
-                  {error && <p className="text-xs text-red-500">{error.message}</p>}
+                  {error && <p className="text-sm text-red-500">{error.message}</p>}
                   <Input {...field} disabled placeholder="Enter SKU" />
                 </div>
               )}
@@ -159,39 +157,47 @@ export default function CreateOrderPage() {
 
         <div className="space-y-4">
           <h2 className="text-sm font-medium">Colors in Available Sizes:</h2>
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-            {Object.entries(colorVariations).map(
-              ([size, sizeColors], index) =>
-                sizeColors.length > 0 && (
-                  <div key={size + index.toString()} className="flex flex-col gap-4 border rounded-lg p-4">
-                    <div className="w-12 border p-2 rounded-lg text-center font-medium bg-gray-200">{size}</div>
-                    <div className="flex gap-2 flex-wrap">
-                      {sizeColors.map((color) => (
-                        <div key={color.id} className="relative group">
-                          <div
-                            className="w-6 h-6 rounded-full border cursor-pointer"
-                            style={{ backgroundColor: color.hexCode }}
-                          />
-                          <Button
-                            type="button"
-                            variant="outline"
-                            size="icon"
-                            className="h-4 w-4 absolute -top-2 -right-2 rounded-full hidden group-hover:flex items-center justify-center"
-                            onClick={() => {
-                              setSelectedSize(size as Size);
-                              setSelectedColor(color);
-                              setAddModalOpen(true);
-                            }}
-                          >
-                            <Plus className="h-3 w-3" />
-                          </Button>
-                        </div>
-                      ))}
+          {productLoading ? (
+            <Loader />
+          ) : (
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+              {Object.entries(colorVariations).map(
+                ([size, sizeColors], index) =>
+                  sizeColors.length > 0 && (
+                    <div key={size + index.toString()} className="flex flex-col gap-4 border rounded-lg p-4">
+                      <div className="w-12 border p-2 rounded-lg text-center font-medium bg-gray-200">{size}</div>
+                      <div className="flex gap-2 flex-wrap">
+                        {sizeColors.map((color) => (
+                          <div key={color.id} className="relative group">
+                            <div
+                              className="w-6 h-6 rounded-full border cursor-pointer"
+                              style={{ backgroundColor: color.hexCode }}
+                            />
+                            {!orderVariations.some(
+                              (variation) => variation.color.id === color.id && variation.size === size,
+                            ) && (
+                              <Button
+                                type="button"
+                                variant="outline"
+                                size="icon"
+                                className="h-4 w-4 absolute -top-2 -right-2 rounded-full hidden group-hover:flex items-center justify-center"
+                                onClick={() => {
+                                  setSelectedSize(size as Size);
+                                  setSelectedColor(color);
+                                  setAddModalOpen(true);
+                                }}
+                              >
+                                <Plus className="h-3 w-3" />
+                              </Button>
+                            )}
+                          </div>
+                        ))}
+                      </div>
                     </div>
-                  </div>
-                ),
-            )}
-          </div>
+                  ),
+              )}
+            </div>
+          )}
         </div>
 
         {fields.length > 0 && (
@@ -201,14 +207,14 @@ export default function CreateOrderPage() {
                 <div className="flex items-center justify-between flex-wrap">
                   <div className="flex items-center gap-4 flex-wrap">
                     <span className="text-sm">Size: {field.size}</span>
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 flex-wrap">
                       <span>color:</span>
                       <div className="w-6 h-6 rounded-full border" style={{ backgroundColor: field.color.hexCode }} />
                     </div>
                     <span>Quantity: {field.quantity}</span>
                     <span>{field.date}</span>
                   </div>
-                  <div className="flex items-center gap-2 flex-wrap">
+                  <div className="flex items-center gap-2">
                     <Button type="button" variant="ghost" size="icon" onClick={() => remove(index)}>
                       <Trash2 className="h-4 w-4 text-red-500" />
                     </Button>
@@ -226,8 +232,8 @@ export default function CreateOrderPage() {
                       control={control}
                       render={({ field, fieldState: { error } }) => (
                         <div>
-                          {error && <p className="text-xs text-red-500">{error.message}</p>}
-                          <Input type="number" {...field} />
+                          {error && <p className="text-sm text-red-500">{error.message}</p>}
+                          <Input {...field} type="number" placeholder="Enter Shipped Quantity" />
                         </div>
                       )}
                     />
@@ -239,8 +245,8 @@ export default function CreateOrderPage() {
                       control={control}
                       render={({ field, fieldState: { error } }) => (
                         <div>
-                          {error && <p className="text-xs text-red-500">{error.message}</p>}
-                          <Textarea {...field} />
+                          {error && <p className="text-sm text-red-500">{error.message}</p>}
+                          <Textarea {...field} placeholder="Enter Comments" />
                         </div>
                       )}
                     />
@@ -252,7 +258,7 @@ export default function CreateOrderPage() {
         )}
 
         <Button type="submit" className="w-fit mx-auto">
-          Create Order
+          Update Order
         </Button>
       </form>
 
@@ -276,7 +282,6 @@ export default function CreateOrderPage() {
               </div>
             </div>
             <div className="space-y-2">
-              {/* {errors.orderVariations} */}
               <Label className="text-sm font-medium">Quantity</Label>
               <Input
                 type="number"

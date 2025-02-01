@@ -3,10 +3,10 @@ import { Color, Product } from "./product";
 export type Order = {
   id: string;
   product: Omit<Product, "description" | "createdAt" | "updatedAt" | "visibility">;
-  sku: string;
-  supplier: string;
-  quantity: string;
   status: OrderStatus;
+  orderVariations: OrderVariation[];
+  createdAt: string;
+  updatedAt: string;
 };
 
 export enum OrderStatus {
@@ -29,7 +29,7 @@ export type OrderVariation = {
   color: Color;
   quantity: number;
   date: string;
-  shippedQuantity?: number;
+  shippedQuantity?: string;
   comments?: string;
 };
 

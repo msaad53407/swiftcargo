@@ -1,5 +1,6 @@
-import { deleteProduct } from "@/utils/product";
+import { deleteOrder } from "@/utils/order";
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import {
   AlertDialog,
@@ -12,17 +13,22 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "../ui/alert-dialog";
-import { useNavigate } from "react-router-dom";
 
 const DeleteOrderModal = ({ id, trigger }: { id: string; trigger: React.ReactNode }) => {
   const [actionLoading, setActionLoading] = useState(false);
   const Navigate = useNavigate();
 
-  const deleteProductHandler = async (id: string) => {
+  const deleteOrderHandler = async (id: string) => {
     setActionLoading(true);
-    await Promise.resolve(setTimeout(() => toast.success("Product deleted successfully!"), 1500));
+    const result = await deleteOrder(id);
+    if (result) {
+      toast.success("Product deleted successfully!");
+      setActionLoading(false);
+      Navigate({ pathname: "/ecommerce/orders" });
+      return;
+    }
+
     setActionLoading(false);
-    Navigate({ pathname: "/ecommerce/products" });
     toast.error("Failed to delete product!");
   };
 
@@ -33,14 +39,14 @@ const DeleteOrderModal = ({ id, trigger }: { id: string; trigger: React.ReactNod
         <AlertDialogHeader>
           <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
           <AlertDialogDescription>
-            This action cannot be undone. This will permanently delete the selected product and all its variations.
+            This action cannot be undone. This will permanently delete the selected order.
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
           <AlertDialogCancel>Cancel</AlertDialogCancel>
           <AlertDialogAction
             className="bg-red-600 text-white hover:bg-red-800"
-            onClick={() => deleteProductHandler(id)}
+            onClick={() => deleteOrderHandler(id)}
             disabled={actionLoading}
           >
             Delete

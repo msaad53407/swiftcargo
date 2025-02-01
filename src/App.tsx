@@ -24,6 +24,7 @@ import SettingsPage from "./pages/ecommerce/settings";
 import PackageManagment from "./pages/package/PackageManagment";
 import ProfilePage from "./pages/profile/Profile";
 import CreateOrderPage from "./pages/ecommerce/orders/CreateOrder";
+import UpdateOrderPage from "./pages/ecommerce/orders/UpdateOrder";
 
 function DashboardLayout({ type, children }: { type?: "default" | "ecommerce"; children: React.ReactNode }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -117,6 +118,7 @@ function App() {
                   <Route path="products/update/:id" element={<EditProductPage />} />
                   <Route path="orders" element={<OrdersPage />} />
                   <Route path="orders/add" element={<CreateOrderPage />} />
+                  <Route path="orders/update/:id" element={<UpdateOrderPage />} />
                   <Route path="notifications" element={<EcommerceNotificationsPage />} />
                   <Route
                     path="chat"

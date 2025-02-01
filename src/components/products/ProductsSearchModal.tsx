@@ -26,9 +26,6 @@ const ProductsSearchModal = () => {
     setCurrentPage(1);
   }, [debouncedSearchTerm, totalPages]); // Added totalPages to dependencies
 
-  useEffect(() => {
-    console.log("products", products, currentPage);
-  }, [currentPage]);
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>

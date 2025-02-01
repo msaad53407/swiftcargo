@@ -10,6 +10,8 @@ import {
 } from "firebase/firestore";
 import { db } from "../firebase/config"; // Adjust this import based on your Firebase config
 import { Product } from "@/types/product";
+import { Order } from "@/types/order";
+import { AddOrderType } from "./order";
 
 export enum Notifications {
   EMPLOYEE_ADDED = "EMPLOYEE_ADDED",
@@ -23,7 +25,8 @@ export enum Notifications {
   ECOMMERCE_PRODUCT_VISIBILITY_UPDATED = "ECOMMERCE_PRODUCT_VISIBILITY_UPDATED",
   ECOMMERCE_ORDER_PLACED = "ECOMMERCE_ORDER_PLACED",
   ECOMMERCE_ORDER_STATUS_UPDATED = "ECOMMERCE_ORDER_STATUS_UPDATED",
-  ECOMMERCE_ORDER_CANCELLED = "ECOMMERCE_ORDER_CANCELLED",
+  ECOMMERCE_ORDER_UPDATED = "ECOMMERCE_ORDER_UPDATED",
+  ECOMMERCE_ORDER_DELETED = "ECOMMERCE_ORDER_DELETED",
 }
 
 interface NotificationData {
@@ -157,5 +160,41 @@ export const notifyEcommerceProductVisibilityUpdated = (product: Product) => {
     title: "Product Visibility Updated",
     description: `Product ${product.name} visibility has been updated from ${product.visibility ? "Visible" : "Hidden"} to ${product.visibility ? "Hidden" : "Visible"}`,
     metadata: { product },
+  });
+};
+
+export const notifyEcommerceOrderAdded = (order: AddOrderType) => {
+  return createNotification({
+    type: Notifications.ECOMMERCE_ORDER_PLACED,
+    title: "New Order Added",
+    description: `Order with Product ${order.product.name} has been added`,
+    metadata: { order },
+  });
+};
+
+export const notifyEcommerceOrderStatusUpdated = (order: Order) => {
+  return createNotification({
+    type: Notifications.ECOMMERCE_ORDER_STATUS_UPDATED,
+    title: "Order Status Updated",
+    description: `Order with Product ${order.product.name} status changed to ${order.status}`,
+    metadata: { order },
+  });
+};
+
+export const notifyEcommerceOrderUpdated = (order: AddOrderType) => {
+  return createNotification({
+    type: Notifications.ECOMMERCE_ORDER_UPDATED,
+    title: "Order Updated",
+    description: `Order with Product ${order.product.name} has been updated`,
+    metadata: { order },
+  });
+};
+
+export const notifyEcommerceOrderDeleted = (order: Order) => {
+  return createNotification({
+    type: Notifications.ECOMMERCE_ORDER_DELETED,
+    title: "Order Deleted",
+    description: `Order with Product ${order.product.name} has been deleted`,
+    metadata: { order },
   });
 };
