@@ -1,34 +1,49 @@
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { getProduct, updateProduct, deleteProduct } from "@/utils/product";
+import { useState, useEffect } from "react";
+import type { Color, Variation } from "@/types/product";
 import { SIZES } from "@/components/products/Variations";
-import { Color, Product, Variation } from "@/types/product";
-import { getProduct } from "@/utils/product";
-import { useEffect, useState } from "react";
 
 export default function useProduct(id: string | undefined) {
   const [colorVariations, setColorVariations] = useState<Record<string, Color[]>>({});
-  const [loading, setLoading] = useState(true);
-  const [product, setProduct] = useState<Product | null>(null);
-  const [variations, setVariations] = useState<Variation[]>([]);
+  const queryClient = useQueryClient();
+
+  const {
+    data: product,
+    isLoading,
+    error,
+  } = useQuery({
+    queryKey: ["product", id],
+    queryFn: () => getProduct(id!),
+    enabled: !!id,
+  });
+
+  const updateMutation = useMutation({
+    mutationFn: (data: { productData: any; variations: Variation[] }) =>
+      updateProduct(id!, data.productData, data.variations),
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ["product", id],
+        exact: true,
+      });
+    },
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: () => deleteProduct(id!),
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ["product", id],
+        exact: true,
+      });
+    },
+  });
 
   useEffect(() => {
-    if (!id) return;
-    const fetchProduct = async () => {
-      try {
-        const product = await getProduct(id);
-        setProduct(product);
-        if (product) {
-          setColorVariations(transformAndSortVariations(product.variations));
-          setVariations(product.variations);
-        }
-        return product;
-      } catch (error) {
-        console.error("Error fetching product:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchProduct();
-  }, [id]);
+    if (product) {
+      setColorVariations(transformAndSortVariations(product.variations));
+    }
+  }, [product]);
 
   const transformAndSortVariations = (variations: Variation[]) => {
     return Object.fromEntries(
@@ -41,5 +56,16 @@ export default function useProduct(id: string | undefined) {
     );
   };
 
-  return { colorVariations, loading, product, setColorVariations, variations };
+  return {
+    product,
+    isLoading,
+    error,
+    colorVariations,
+    setColorVariations,
+    updateProduct: updateMutation.mutate,
+    deleteProduct: deleteMutation.mutate,
+    isUpdating: updateMutation.isPending,
+    isDeleting: deleteMutation.isPending,
+    variations: product?.variations,
+  };
 }

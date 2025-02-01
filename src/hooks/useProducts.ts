@@ -1,48 +1,66 @@
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { deleteProduct, getProducts, toggleProductVisibility } from "@/utils/product";
+import { useState, useMemo } from "react";
 import type { Product } from "@/types/product";
-import { useEffect, useMemo, useState } from "react";
-import { getProducts } from "@/utils/product";
 
 export function useProducts(searchTerm?: string) {
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
-  const [actionLoading, setActionLoading] = useState(false);
-  const [products, setProducts] = useState<Product[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [totalProducts, setTotalProducts] = useState(0);
+  const queryClient = useQueryClient();
 
   const limit = 10;
-  const totalPages = Math.ceil(totalProducts / limit);
 
-  useEffect(() => {
-    setLoading(true);
-    const fetchProducts = async () => {
-      const { products, total } = await getProducts(limit, currentPage, searchTerm);
-      setProducts(products);
-      setTotalProducts(total);
-    };
-    fetchProducts().then(() => setLoading(false));
-  }, [currentPage, searchTerm]);
+  const { data, isLoading, error } = useQuery({
+    queryKey: ["products", currentPage, searchTerm],
+    queryFn: () => getProducts(limit, currentPage, searchTerm),
+  });
+
+  const toggleVisibilityMutation = useMutation({
+    mutationFn: toggleProductVisibility,
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ["products", currentPage, searchTerm || null],
+        exact: true,
+      });
+    },
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: (id: string) => deleteProduct(id),
+    onSuccess: () => {
+      console.log(currentPage, searchTerm);
+      queryClient.invalidateQueries({
+        queryKey: ["products", currentPage, searchTerm || null],
+        exact: true,
+      });
+    },
+  });
 
   const filteredData = useMemo(() => {
-    return products.filter(
-      (product) =>
-        product.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        product.sku.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        product.name.toLowerCase().includes(searchQuery.toLowerCase()),
+    return (
+      data?.products.filter(
+        (product: Product) =>
+          product.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          product.sku.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          product.name.toLowerCase().includes(searchQuery.toLowerCase()),
+      ) || []
     );
-  }, [products, searchQuery]);
+  }, [data?.products, searchQuery]);
 
   return {
     searchQuery,
     setSearchQuery,
     currentPage,
     setCurrentPage,
-    actionLoading,
-    setActionLoading,
-    products,
-    loading,
-    totalProducts,
-    totalPages,
+    products: data?.products || [],
+    isLoading,
+    error,
+    totalProducts: data?.total || 0,
+    totalPages: Math.ceil((data?.total || 0) / limit),
     filteredData,
+    toggleProductVisibility: toggleVisibilityMutation.mutate,
+    isToggling: toggleVisibilityMutation.isPending,
+    deleteProduct: deleteMutation.mutate,
+    isDeleting: deleteMutation.isPending,
   };
 }

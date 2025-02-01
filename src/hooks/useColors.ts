@@ -1,21 +1,28 @@
-import { Color } from "@/types/product";
-import { getColors } from "@/utils/product";
-import { useCallback, useEffect, useState } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { getColors, addColor } from "@/utils/product";
 
 export default function useColors() {
-  const [colors, setColors] = useState<Color[]>([]);
-  const [loading, setLoading] = useState(true);
+  const queryClient = useQueryClient();
 
-  const fetchColors = useCallback(async () => {
-    setLoading(true);
-    const result = await getColors();
-    setColors(result);
-    setLoading(false);
-  }, []);
+  const { data: colors = [], isLoading } = useQuery({
+    queryKey: ["colors"],
+    queryFn: getColors,
+  });
 
-  useEffect(() => {
-    fetchColors();
-  }, [fetchColors]);
+  const addColorMutation = useMutation({
+    mutationFn: addColor,
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ["colors"],
+        exact: true,
+      });
+    },
+  });
 
-  return { colors, loading };
+  return {
+    colors,
+    isLoading,
+    addColor: addColorMutation.mutate,
+    isAddingColor: addColorMutation.isPending,
+  };
 }

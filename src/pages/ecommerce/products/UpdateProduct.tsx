@@ -1,6 +1,6 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Pencil, Trash } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 
 import Loader from "@/components/Loader";
@@ -12,15 +12,24 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import useProduct from "@/hooks/useProduct";
 import { Variation } from "@/types/product";
-import { addProductSchema, updateProduct, UpdateProductFormValues } from "@/utils/product";
-import { Link, useParams } from "react-router-dom";
+import { addProductSchema, UpdateProductFormValues } from "@/utils/product";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import { toast } from "sonner";
 
 export default function EditProductPage() {
   const { id: productId } = useParams<{ id: string }>();
+  const navigate = useNavigate();
 
-  const [submitting, setSubmitting] = useState(false);
-  const { colorVariations, loading, product, setColorVariations, variations } = useProduct(productId);
+  const {
+    product,
+    isLoading,
+    colorVariations,
+    setColorVariations,
+    updateProduct,
+    deleteProduct,
+    isUpdating,
+    isDeleting,
+  } = useProduct(productId);
 
   const form = useForm<UpdateProductFormValues>({
     resolver: zodResolver(addProductSchema),
@@ -39,7 +48,7 @@ export default function EditProductPage() {
     }
   }, [product, form]);
 
-  if (loading) {
+  if (isLoading) {
     return <Loader />;
   }
 
@@ -53,15 +62,14 @@ export default function EditProductPage() {
 
   async function onSubmit(data: UpdateProductFormValues) {
     if (!product) return;
-    let variantsSelected: Variation[] = [];
-    // adding id to each variation
+    const variantsSelected: Variation[] = [];
     for (const key in colorVariations) {
       const variant: Variation = {
         size: key,
         colors: colorVariations[key],
         id: "",
       };
-      variations.forEach((variation) => {
+      product.variations.forEach((variation) => {
         if (variation.size === key) {
           variant.id = variation.id;
         }
@@ -69,18 +77,25 @@ export default function EditProductPage() {
       variantsSelected.push(variant);
     }
     try {
-      setSubmitting(true);
-      const result = await updateProduct(product.id, data, variantsSelected);
-      if (!result?.success) {
-        toast.error("Failed to update product!");
-        return;
-      }
-
+      updateProduct({ productData: data, variations: variantsSelected });
       toast.success("Product updated successfully!");
-    } finally {
-      setSubmitting(false);
+    } catch (error) {
+      toast.error("Failed to update product!");
     }
   }
+
+  const handleDelete = async () => {
+    try {
+      deleteProduct(undefined, {
+        onSuccess: () => {
+          toast.success("Product deleted successfully!");
+          navigate("/ecommerce/products");
+        },
+      });
+    } catch (error) {
+      toast.error("Failed to delete product!");
+    }
+  };
 
   const handleImageUpload = async (file: File) => {
     // Add your image upload logic here
@@ -125,7 +140,7 @@ export default function EditProductPage() {
                             Edit Image
                           </Button>
                           <DeleteAlertModal
-                            id={product.id}
+                            onDelete={handleDelete}
                             trigger={
                               <Button type="button" variant="destructive">
                                 <Trash className="h-4 w-4 mr-2" />
@@ -224,7 +239,7 @@ export default function EditProductPage() {
                 <Button variant="outline" type="button" asChild>
                   <Link to="/ecommerce/products">Cancel</Link>
                 </Button>
-                <Button type="submit" disabled={submitting}>
+                <Button type="submit" disabled={isUpdating || isDeleting}>
                   Update Product
                 </Button>
               </div>

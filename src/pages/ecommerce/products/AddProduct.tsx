@@ -4,9 +4,10 @@ import { Button } from "@/components/ui/button";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { AddProductErrorType, Color, Variation } from "@/types/product";
+import { Color, Variation } from "@/types/product";
 import { addProduct, addProductSchema, ProductFormValues, uploadImage } from "@/utils/product";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
@@ -14,11 +15,7 @@ import { toast } from "sonner";
 
 export default function AddProduct() {
   const [colorVariations, setColorVariations] = useState<Record<string, Color[]>>({});
-  const [formErrors, setFormErrors] = useState<AddProductErrorType>({
-    product: null,
-    variations: [],
-  });
-  const [submitting, setSubmitting] = useState(false);
+
   const navigate = useNavigate();
 
   const form = useForm<ProductFormValues>({
@@ -30,6 +27,30 @@ export default function AddProduct() {
       supplier: "",
       description: "",
       visibility: true,
+    },
+  });
+
+  const queryClient = useQueryClient();
+
+  const addProductMutation = useMutation({
+    mutationFn: (data: { productData: ProductFormValues; variations: Omit<Variation, "id">[] }) =>
+      addProduct(data.productData, data.variations),
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ["products", 1, null],
+        exact: true,
+      });
+      toast.success("Product added successfully!");
+      navigate("/ecommerce/products");
+    },
+    onError: (error) => {
+      // if (typeof error === "object" && error !== null) {
+      //   setFormErrors({
+      //     product: (error as any).product,
+      //     variations: (error as any).variations || [],
+      //   });
+      // }
+      toast.error("Failed to add product");
     },
   });
 
@@ -56,24 +77,7 @@ export default function AddProduct() {
       };
       variantsSelected.push(variant);
     }
-    setSubmitting(true);
-    const result = await addProduct(data, variantsSelected);
-    if (!result?.success) {
-      if (typeof result.error === "object") {
-        setFormErrors({
-          product: result.error?.product,
-          variations: result.error?.variations || [],
-        });
-      }
-      toast.error("Failed to add product");
-      setSubmitting(false);
-      return;
-    }
-    toast.success("Product added successfully!");
-
-    setSubmitting(false);
-
-    navigate({ pathname: "/ecommerce/products" });
+    addProductMutation.mutate({ productData: data, variations: variantsSelected });
   }
 
   return (
@@ -160,7 +164,7 @@ export default function AddProduct() {
             />
 
             <div className="flex justify-end gap-4">
-              <Button type="submit" disabled={submitting}>
+              <Button type="submit" disabled={addProductMutation.isPending}>
                 Create Product
               </Button>
             </div>

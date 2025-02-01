@@ -19,7 +19,7 @@ const ProductsSearchModal = () => {
   // Debounce search term with 300ms delay
   const [debouncedSearchTerm] = useDebounce(searchTerm, 300);
 
-  const { loading, totalPages, products } = useProducts(debouncedSearchTerm);
+  const { isLoading: loading, totalPages, products } = useProducts(debouncedSearchTerm);
 
   // Reset page when search term changes
   useEffect(() => {

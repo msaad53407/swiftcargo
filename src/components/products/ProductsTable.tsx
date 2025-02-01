@@ -5,7 +5,6 @@ import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useProducts } from "@/hooks/useProducts";
 import { generatePaginationNUmbers } from "@/lib/utils";
-import { toggleProductVisibility } from "@/utils/product";
 import Papa from "papaparse";
 import { Link } from "react-router-dom";
 import { toast } from "sonner";
@@ -15,18 +14,19 @@ import { TableSkeleton as ProductsTableSkeleton } from "./ProductsTableSkeleton"
 export function ProductsTable() {
   const {
     products,
-    actionLoading,
+    isLoading,
     currentPage,
-    loading,
     filteredData,
     totalPages,
     searchQuery,
     setSearchQuery,
-    setActionLoading,
     setCurrentPage,
+    toggleProductVisibility,
+    isToggling,
+    deleteProduct,
   } = useProducts();
 
-  if (loading) {
+  if (isLoading) {
     return (
       <div className="space-y-4">
         <div className="flex justify-between items-center">
@@ -68,8 +68,42 @@ export function ProductsTable() {
 
   if (products.length === 0)
     return (
-      <div className="container py-10 flex h-screen justify-center items-center">
-        <p>No products found</p>
+      <div className="space-y-4">
+        <div className="flex justify-between items-center">
+          <div>
+            <h1 className="text-2xl font-semibold">Product Management</h1>
+            <p className="text-sm text-muted-foreground">Departmental Member's Information Details</p>
+          </div>
+          <div className="flex gap-2">
+            <Button variant="outline" size="icon" className="flex gap-2 w-fit px-2" disabled>
+              <Upload className="h-6 w-6" />
+              <span>Export</span>
+            </Button>
+            <Button asChild>
+              <Link to="/ecommerce/products/add">
+                <PlusIcon className="h-6 w-6" />
+                <span className="sr-only">Add</span>
+              </Link>
+            </Button>
+          </div>
+        </div>
+
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2 flex-1 max-w-sm">
+            <Input
+              placeholder="Type to Search for orders"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+            <Button variant="outline" size="icon">
+              <Settings2 className="h-4 w-4" />
+            </Button>
+          </div>
+        </div>
+
+        <div className="flex items-center justify-center text-sm text-muted-foreground">
+          <p>No products found.</p>
+        </div>
       </div>
     );
 
@@ -98,17 +132,19 @@ export function ProductsTable() {
     document.body.removeChild(link);
   };
 
-  const toggleVisibility = async (id: string) => {
-    setActionLoading(true);
-    const result = await toggleProductVisibility(id);
-    if (result.success) {
-      setActionLoading(false);
-      toast.success("Product visibility updated successfully!");
-      return;
+  const handleToggleVisibility = (id: string) => {
+    try {
+      toggleProductVisibility(id, {
+        onSuccess: () => {
+          toast.success("Product visibility updated successfully!");
+        },
+        onError: () => {
+          toast.error("Failed to update product visibility!");
+        },
+      });
+    } catch (error) {
+      toast.error("Failed to update product visibility!");
     }
-
-    setActionLoading(false);
-    toast.error("Failed to update product visibility!");
   };
 
   return (
@@ -179,8 +215,8 @@ export function ProductsTable() {
                         variant="ghost"
                         size="icon"
                         className="h-8 w-8"
-                        disabled={actionLoading}
-                        onClick={() => toggleVisibility(product.id)}
+                        disabled={isToggling}
+                        onClick={() => handleToggleVisibility(product.id)}
                       >
                         {product.visibility ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
                       </Button>
@@ -190,7 +226,16 @@ export function ProductsTable() {
                         </Link>
                       </Button>
                       <DeleteAlertModal
-                        id={product.id}
+                        onDelete={async () => {
+                          deleteProduct(product.id, {
+                            onSuccess: () => {
+                              toast.success("Product deleted successfully!");
+                            },
+                            onError: () => {
+                              toast.error("Failed to delete product!");
+                            },
+                          });
+                        }}
                         trigger={
                           <Button variant="ghost" size="icon" className="h-8 w-8 text-red-600">
                             <Trash2 className="h-4 w-4" />

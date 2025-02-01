@@ -4,33 +4,35 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { addColor } from "@/utils/product";
 import { toast } from "sonner";
+import useColors from "@/hooks/useColors";
 
 export default function ColorPickerModal() {
   const [colorName, setColorName] = useState("");
   const [colorCode, setColorCode] = useState("#000000");
   const [open, setOpen] = useState(false);
-  const [loading, setLoading] = useState(false);
 
-  const handleSubmit = async () => {
-    setLoading(true);
-    const isColorAdded = await addColor({
-      hexCode: colorCode,
-      name: colorName,
-    });
+  const { addColor, isAddingColor } = useColors();
 
-    if (isColorAdded) {
-      toast.success("Color added successfully!");
-      setOpen(false);
-      setColorName("");
-      setColorCode("#000000");
-      setLoading(false);
-      return;
+  const handleSubmit = () => {
+    try {
+      addColor(
+        {
+          hexCode: colorCode,
+          name: colorName,
+        },
+        {
+          onSuccess: () => {
+            toast.success("Color added successfully!");
+            setOpen(false);
+            setColorName("");
+            setColorCode("#000000");
+          },
+        },
+      );
+    } catch (error) {
+      toast.error("Something went wrong! Please Try again.");
     }
-
-    toast.error("Something went wrong! Please Try again.");
-    setLoading(false);
   };
 
   return (
@@ -59,11 +61,11 @@ export default function ColorPickerModal() {
           <HexColorPicker color={colorCode} onChange={setColorCode} className="w-full" />
         </div>
         <div className="flex justify-end gap-3">
-          <Button variant="outline" onClick={() => setOpen(false)} disabled={loading}>
+          <Button variant="outline" onClick={() => setOpen(false)} disabled={isAddingColor}>
             Cancel
           </Button>
-          <Button onClick={handleSubmit} disabled={!colorName || !colorCode || loading}>
-            {loading ? "Adding..." : "Add Color"}
+          <Button onClick={handleSubmit} disabled={!colorName || !colorCode || isAddingColor}>
+            {isAddingColor ? "Adding..." : "Add Color"}
           </Button>
         </div>
       </DialogContent>
