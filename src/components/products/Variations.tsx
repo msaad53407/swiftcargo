@@ -2,13 +2,13 @@ import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import useColors from "@/hooks/useColors";
-import { Color, VariationErrorType } from "@/types/product";
+import { Color } from "@/types/product";
 import { Plus } from "lucide-react";
 import { useState } from "react";
-import { Separator } from "../ui/separator";
-import ColorPickerModal from "./ColorPickerModal";
 import Loader from "../Loader";
+import { Separator } from "../ui/separator";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "../ui/tooltip";
+import ColorPickerModal from "./ColorPickerModal";
 
 interface VariationsProps {
   colors: Record<string, Color[]>;
@@ -21,7 +21,7 @@ export const SIZES = ["XS", "S", "M", "L", "XL", "XXL", "3XL"] as const;
 export default function Variations({ colors, onChange }: VariationsProps) {
   const [selectedSize, setSelectedSize] = useState("XS");
 
-  const { colors: predefinedColors, loading } = useColors();
+  const { colors: predefinedColors, isLoading: loading } = useColors();
 
   const addColor = (color: Color) => {
     const existingColor = colors[selectedSize]?.find((c) => c.id === color.id);

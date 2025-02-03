@@ -24,6 +24,7 @@ export function ProductsTable() {
     toggleProductVisibility,
     isToggling,
     deleteProduct,
+    isDeleting,
   } = useProducts();
 
   if (isLoading) {
@@ -226,6 +227,7 @@ export function ProductsTable() {
                         </Link>
                       </Button>
                       <DeleteAlertModal
+                        isDeleting={isDeleting}
                         onDelete={async () => {
                           deleteProduct(product.id, {
                             onSuccess: () => {

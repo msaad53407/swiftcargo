@@ -6,11 +6,12 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Textarea } from "@/components/ui/textarea";
+import { useOrders } from "@/hooks/useOrders";
 import useProduct from "@/hooks/useProduct";
 import { cn } from "@/lib/utils";
 import { OrderStatus, Size } from "@/types/order";
 import { Color } from "@/types/product";
-import { addOrder, addOrderSchema } from "@/utils/order";
+import { addOrderSchema } from "@/utils/order";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { format } from "date-fns";
 import { CalendarIcon, Pencil, Plus, Trash2 } from "lucide-react";
@@ -31,7 +32,8 @@ export default function CreateOrderPage() {
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [selectedQuantity, setSelectedQuantity] = useState("");
 
-  const { loading, colorVariations, product } = useProduct(productId || "");
+  const { isLoading: loading, colorVariations, product } = useProduct(productId || "");
+  const { addOrder, isAdding } = useOrders();
 
   const { control, handleSubmit, setValue, watch } = useForm<z.infer<typeof addOrderSchema>>({
     resolver: zodResolver(addOrderSchema),
@@ -69,14 +71,21 @@ export default function CreateOrderPage() {
   }, [productId, navigate]);
 
   const onSubmit = async (data: z.infer<typeof addOrderSchema>) => {
-    const result = await addOrder(data);
-    if (result.success) {
-      toast.success("Order added successfully");
-      navigate("/ecommerce/orders");
-    } else {
-      toast.error("Failed to add order");
-      console.error(result.errors || result.error);
-    }
+    addOrder(data, {
+      onSuccess(result) {
+        if (result.success) {
+          toast.success("Order added successfully!");
+          navigate("/ecommerce/orders");
+        } else {
+          console.error(result.errors);
+          toast.error("Failed to add order");
+        }
+      },
+      onError(result) {
+        toast.error("Failed to add order");
+        console.error(result);
+      },
+    });
   };
 
   const handleAddVariation = () => {
@@ -251,8 +260,8 @@ export default function CreateOrderPage() {
           </div>
         )}
 
-        <Button type="submit" className="w-fit mx-auto">
-          Create Order
+        <Button type="submit" className="w-fit mx-auto" disabled={isAdding}>
+          {isAdding ? "Creating..." : "Create Order"}
         </Button>
       </form>
 

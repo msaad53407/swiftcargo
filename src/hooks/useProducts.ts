@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { deleteProduct, getProducts, toggleProductVisibility } from "@/utils/product";
+import { deleteProduct, getProducts, getTotalProductsCount, toggleProductVisibility } from "@/utils/product";
 import { useState, useMemo } from "react";
 import type { Product } from "@/types/product";
 
@@ -9,6 +9,15 @@ export function useProducts(searchTerm?: string) {
   const queryClient = useQueryClient();
 
   const limit = 10;
+
+  const {
+    data: productsCount,
+    isLoading: isLoadingProductsCount,
+    error: productsCountError,
+  } = useQuery({
+    queryKey: ["productsCount"],
+    queryFn: getTotalProductsCount,
+  });
 
   const { data, isLoading, error } = useQuery({
     queryKey: ["products", currentPage, searchTerm],
@@ -28,9 +37,12 @@ export function useProducts(searchTerm?: string) {
   const deleteMutation = useMutation({
     mutationFn: (id: string) => deleteProduct(id),
     onSuccess: () => {
-      console.log(currentPage, searchTerm);
       queryClient.invalidateQueries({
         queryKey: ["products", currentPage, searchTerm || null],
+        exact: true,
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["productsCount"],
         exact: true,
       });
     },
@@ -52,6 +64,9 @@ export function useProducts(searchTerm?: string) {
     setSearchQuery,
     currentPage,
     setCurrentPage,
+    productsCount,
+    isLoadingProductsCount,
+    productsCountError,
     products: data?.products || [],
     isLoading,
     error,

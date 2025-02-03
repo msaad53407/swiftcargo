@@ -36,6 +36,10 @@ export default function useProduct(id: string | undefined) {
         queryKey: ["product", id],
         exact: true,
       });
+      queryClient.invalidateQueries({
+        queryKey: ["productsCount"],
+        exact: true,
+      });
     },
   });
 

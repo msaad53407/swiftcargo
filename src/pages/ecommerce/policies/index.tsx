@@ -8,34 +8,37 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { usePolicies } from "@/hooks/usePolicies";
 import { format } from "date-fns";
 import { Loader2, Pencil } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 export default function PoliciesPage() {
   const {
     policies,
-    loading,
+    isLoading: loading,
     error,
     selectedPolicy,
-    fetchPolicies,
-    handleAddPolicy,
-    handleUpdatePolicy,
-    handleDeletePolicy,
-    handleSetActivePolicy,
-    addingPolicy,
-    updatingPolicy,
-    deletingPolicy,
-    settingActivePolicy,
+    addPolicy,
+    updatePolicy,
+    deletePolicy,
+    setActivePolicy,
+    isAddingPolicy,
+    isUpdatingPolicy,
+    isDeletingPolicy,
+    isSettingActivePolicy,
   } = usePolicies();
 
   const [showSuccessDialog, setShowSuccessDialog] = useState(false);
   const [isEditing, setIsEditing] = useState("");
 
-  useEffect(() => {
-    fetchPolicies();
-  }, [fetchPolicies]);
-
-  const deleteHandler = async (id: string) => {
-    await handleDeletePolicy(id);
+  const handleAddPolicy = async (title: string, content: string) => {
+    addPolicy(
+      { title, content },
+      {
+        onSettled(success) {
+          return !!success;
+        },
+      },
+    );
+    return false;
   };
 
   if (error) {
@@ -47,20 +50,25 @@ export default function PoliciesPage() {
   }
 
   return (
-    <div className="container py-10">
+    <div className="container py-10 px-4">
       <div className="flex justify-between items-center mb-4">
         <div>
           <h1 className="text-2xl font-semibold">Employees Policy</h1>
           <p className="text-sm text-muted-foreground">Departmental Member's Information Details</p>
         </div>
-        <AddPolicyDialog onAddPolicy={handleAddPolicy} addingPolicy={addingPolicy} />
+        <AddPolicyDialog onAddPolicy={handleAddPolicy} addingPolicy={isAddingPolicy} />
       </div>
 
       <div className="bg-white rounded-lg border p-6">
         {loading ? (
           <PolicySkeleton />
         ) : (
-          <RadioGroup value={selectedPolicy?.id} onValueChange={handleSetActivePolicy}>
+          <RadioGroup
+            value={selectedPolicy?.id}
+            onValueChange={(id) => {
+              setActivePolicy(id || "");
+            }}
+          >
             {policies.map((policy) => (
               <div
                 key={policy.id}
@@ -71,7 +79,7 @@ export default function PoliciesPage() {
                   <RadioGroupItem
                     value={policy.id}
                     id={policy.id}
-                    disabled={settingActivePolicy}
+                    disabled={isSettingActivePolicy}
                     checked={policy.isActive}
                   />
                   <div className="flex-1">
@@ -97,7 +105,10 @@ export default function PoliciesPage() {
                         >
                           <Pencil className="h-4 w-4" />
                         </Button>
-                        <DeletePolicyDialog onDelete={() => deleteHandler(policy.id)} deleting={deletingPolicy} />
+                        <DeletePolicyDialog
+                          onDelete={async () => deletePolicy(policy.id)}
+                          deleting={isDeletingPolicy}
+                        />
                       </div>
                     </div>
                     <p className="text-sm text-muted-foreground mt-1.5">
@@ -118,17 +129,24 @@ export default function PoliciesPage() {
                       </Button>
                       <Button
                         onClick={async () => {
-                          const success = await handleUpdatePolicy(policy.id, {
-                            content: policy.content,
-                          });
-                          if (success) {
-                            setIsEditing("");
-                            setShowSuccessDialog(true);
-                          }
+                          updatePolicy(
+                            {
+                              id: policy.id,
+                              data: policy,
+                            },
+                            {
+                              onSuccess: (success) => {
+                                if (success) {
+                                  setIsEditing("");
+                                  setShowSuccessDialog(true);
+                                }
+                              },
+                            },
+                          );
                         }}
-                        disabled={updatingPolicy}
+                        disabled={isUpdatingPolicy}
                       >
-                        {updatingPolicy ? (
+                        {isUpdatingPolicy ? (
                           <>
                             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                             Updating...

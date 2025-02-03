@@ -40,6 +40,10 @@ export default function AddProduct() {
         queryKey: ["products", 1, null],
         exact: true,
       });
+      queryClient.invalidateQueries({
+        queryKey: ["productsCount"],
+        exact: true,
+      });
       toast.success("Product added successfully!");
       navigate("/ecommerce/products");
     },

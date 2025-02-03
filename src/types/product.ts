@@ -7,6 +7,7 @@ export type Product = {
   visibility: boolean;
   supplier: string;
   variations: Variation[];
+  searchableFields: string[];
   createdAt: string;
   updatedAt: string;
 };

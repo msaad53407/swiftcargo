@@ -1,3 +1,4 @@
+import { useState } from "react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -10,9 +11,18 @@ import {
   AlertDialogTrigger,
 } from "../ui/alert-dialog";
 
-const DeleteAlertModal = ({ onDelete, trigger }: { onDelete: () => Promise<void>; trigger: React.ReactNode }) => {
+const DeleteAlertModal = ({
+  onDelete,
+  trigger,
+  isDeleting,
+}: {
+  onDelete: () => Promise<void>;
+  trigger: React.ReactNode;
+  isDeleting: boolean;
+}) => {
+  const [open, setOpen] = useState(false);
   return (
-    <AlertDialog>
+    <AlertDialog open={open} onOpenChange={(open) => setOpen(open)}>
       <AlertDialogTrigger asChild>{trigger}</AlertDialogTrigger>
       <AlertDialogContent>
         <AlertDialogHeader>
@@ -23,8 +33,17 @@ const DeleteAlertModal = ({ onDelete, trigger }: { onDelete: () => Promise<void>
         </AlertDialogHeader>
         <AlertDialogFooter>
           <AlertDialogCancel>Cancel</AlertDialogCancel>
-          <AlertDialogAction className="bg-red-600 text-white hover:bg-red-800" onClick={onDelete}>
-            Delete
+          <AlertDialogAction
+            className="bg-red-600 text-white hover:bg-red-800"
+            onClick={async (e) => {
+              e.preventDefault();
+              setOpen(true);
+              onDelete().then(() => {
+                setOpen(false);
+              });
+            }}
+          >
+            {isDeleting ? "Deleting..." : "Delete"}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>

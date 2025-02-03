@@ -10,7 +10,6 @@ import {
   getDoc,
   getDocs,
   limit,
-  or,
   orderBy,
   query,
   serverTimestamp,
@@ -28,6 +27,16 @@ import {
   notifyEcommerceProductVisibilityUpdated,
 } from "../notificaiton";
 
+export const getTotalProductsCount = async () => {
+  try {
+    const totalSnapshot = await getCountFromServer(collection(db, "products"));
+    return totalSnapshot.data().count;
+  } catch (error) {
+    console.error("Error fetching total products count:", error);
+    return -1;
+  }
+};
+
 export const getProduct = async (id: string): Promise<Product | null> => {
   try {
     const docSnap = await getDoc(doc(db, "products", id));
@@ -41,6 +50,7 @@ export const getProduct = async (id: string): Promise<Product | null> => {
         sku: docSnap.data()?.sku,
         visibility: docSnap.data()?.visibility,
         supplier: docSnap.data()?.supplier,
+        searchableFields: docSnap.data()?.searchableFields,
         variations: variations.docs.map((variation) => ({
           id: variation.id,
           size: variation.data()?.size,
@@ -67,13 +77,18 @@ export const getProducts = async (
     const totalSnapshot = await getCountFromServer(collection(db, "products"));
     const total = totalSnapshot.data().count;
 
+    const generateSearchTerms = (term: string): string[] => {
+      const terms = term.toLowerCase().split(" ");
+      return terms.flatMap((t) => t.split("").map((_, index) => t.slice(0, index + 1)));
+    };
+
     // Base query
     let queryConstraints: any[] = [orderBy("createdAt", "desc"), limit(maxLimit)];
 
     if (searchTerm) {
-      queryConstraints.push(
-        or(where("name", ">=", searchTerm), where("sku", ">=", searchTerm), where("supplier", ">=", searchTerm)),
-      );
+      const searchTerms = generateSearchTerms(searchTerm);
+      console.log(searchTerms);
+      queryConstraints.push(where("searchableFields", "array-contains-any", searchTerms));
     }
 
     // If it's not the first page, we need all previous pages' last docs
@@ -81,6 +96,7 @@ export const getProducts = async (
       // Get the last doc of the previous page
       const previousPageQuery = query(
         collection(db, "products"),
+        ...(searchTerm ? [where("searchableFields", "array-contains-any", generateSearchTerms(searchTerm))] : []),
         orderBy("createdAt", "desc"),
         limit(maxLimit * (pageNumber - 1)),
       );
@@ -107,6 +123,7 @@ export const getProducts = async (
           sku: doc.data()?.sku,
           visibility: doc.data()?.visibility,
           supplier: doc.data()?.supplier,
+          searchableFields: doc.data()?.searchableFields,
           variations: variations.docs.map((variation) => ({
             id: variation.id,
             size: variation.data()?.size,
@@ -156,6 +173,20 @@ export const variationsSchema = z.object({
   ),
 });
 
+const generateSearchableFields = (name: string, sku: string, supplier: string) => {
+  const searchableFields = [
+    name.toLowerCase(),
+    sku.toLowerCase(),
+    supplier.toLowerCase(),
+    ...name.toLowerCase().split(" "),
+    ...sku.toLowerCase().split("-"),
+    ...supplier.toLowerCase().split(" "),
+    ...name.toLowerCase().split(""),
+    ...sku.toLowerCase().split(""),
+  ];
+  return [...new Set(searchableFields)];
+};
+
 export const addProduct = async (
   product: Omit<Product, "id" | "createdAt" | "updatedAt" | "variations">,
   variations: Omit<Variation, "id">[],
@@ -188,6 +219,11 @@ export const addProduct = async (
   try {
     const productRef = await addDoc(collection(db, "products"), {
       ...productResult.data,
+      searchableFields: generateSearchableFields(
+        productResult.data?.name || "",
+        productResult.data?.sku || "",
+        productResult.data?.supplier || "",
+      ),
       createdAt: serverTimestamp(),
       updatedAt: serverTimestamp(),
     });
@@ -252,6 +288,7 @@ export const updateProduct = async (
       supplier: product.supplier,
       image: product.image,
       sku: product.sku,
+      searchableFields: generateSearchableFields(product.name || "", product.sku || "", product.supplier || ""),
       updatedAt: serverTimestamp(),
     });
 
@@ -339,7 +376,7 @@ export const deleteProduct = async (id: string) => {
     });
     await variationsBatch.commit();
 
-    const productData = {
+    const productData: Product = {
       id: product.id,
       name: product.data()?.name,
       description: product.data()?.description,
@@ -348,6 +385,7 @@ export const deleteProduct = async (id: string) => {
       visibility: product.data()?.visibility,
       supplier: product.data()?.supplier,
       variations: product.data()?.variations,
+      searchableFields: product.data()?.searchableFields,
       createdAt: product.data()?.createdAt.toDate(),
       updatedAt: product.data()?.updatedAt.toDate(),
     };

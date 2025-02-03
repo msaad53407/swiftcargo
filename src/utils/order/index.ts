@@ -23,8 +23,6 @@ import {
   notifyEcommerceOrderUpdated,
 } from "../notificaiton";
 
-const zodSizesLiterals = SIZES.map((size) => z.literal(size));
-
 export const addOrderSchema = z.object({
   product: z.object({
     id: z.string(),
@@ -36,7 +34,7 @@ export const addOrderSchema = z.object({
   status: z.nativeEnum(OrderStatus),
   orderVariations: z.array(
     z.object({
-      size: zodSizesLiterals[0],
+      size: z.enum([...SIZES]),
       color: z.object({
         id: z.string(),
         name: z.string(),
@@ -80,6 +78,16 @@ export const addOrder = async (order: z.infer<typeof addOrderSchema>) => {
       success: false,
       error: error instanceof Error ? error.message : "Unknown error occurred",
     };
+  }
+};
+
+export const getTotalOrdersCount = async () => {
+  try {
+    const totalSnapshot = await getCountFromServer(collection(db, "orders"));
+    return totalSnapshot.data().count;
+  } catch (error) {
+    console.error("Error fetching total orders count:", error);
+    return -1;
   }
 };
 

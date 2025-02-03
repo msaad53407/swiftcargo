@@ -11,7 +11,7 @@ import useProduct from "@/hooks/useProduct";
 import { cn } from "@/lib/utils";
 import { Size } from "@/types/order";
 import { Color } from "@/types/product";
-import { addOrderSchema, updateOrder } from "@/utils/order";
+import { addOrderSchema } from "@/utils/order";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { format } from "date-fns";
 import { CalendarIcon, Pencil, Plus, Trash2 } from "lucide-react";
@@ -31,8 +31,8 @@ export default function UpdateOrderPage() {
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [selectedQuantity, setSelectedQuantity] = useState("");
 
-  const { loading, order } = useOrder(orderId || "");
-  const { loading: productLoading, colorVariations } = useProduct(order?.product.id);
+  const { order, isLoading: orderLoading, updateOrder, isUpdating } = useOrder(orderId);
+  const { isLoading: productLoading, colorVariations } = useProduct(order?.product.id);
 
   const { control, handleSubmit, setValue, watch } = useForm<z.infer<typeof addOrderSchema>>({
     resolver: zodResolver(addOrderSchema),
@@ -59,29 +59,27 @@ export default function UpdateOrderPage() {
       setValue("orderVariations", order.orderVariations);
       setValue("product.id", order.product.id);
     }
-  }, [order]);
+  }, [order, setValue]);
 
   const { fields, append, remove } = useFieldArray({
     control,
     name: "orderVariations",
   });
 
-  useEffect(() => {
-    if (!orderId) {
-      toast.error("Order not found");
-      setTimeout(() => navigate("/ecommerce/orders"), 1000);
-    }
-  }, [orderId, navigate]);
-
   const onSubmit = async (data: z.infer<typeof addOrderSchema>) => {
-    if (!orderId) return;
-    const result = await updateOrder(orderId, data);
-    if (result.success) {
-      toast.success("Order updated successfully");
-      navigate("/ecommerce/orders");
-    } else {
+    try {
+      updateOrder(data, {
+        onSuccess: () => {
+          toast.success("Order updated successfully");
+          navigate("/ecommerce/orders");
+        },
+        onError: () => {
+          toast.error("Failed to update order");
+        },
+      });
+    } catch (error) {
       toast.error("Failed to update order");
-      console.error(result.errors || result.error);
+      console.error(error);
     }
   };
 
@@ -114,7 +112,7 @@ export default function UpdateOrderPage() {
 
   if (!orderId) return null;
 
-  if (loading) return <Loader />;
+  if (orderLoading) return <Loader />;
 
   return (
     <div className="p-6 container space-y-10 bg-card border shadow-sm rounded-xl">
@@ -257,8 +255,8 @@ export default function UpdateOrderPage() {
           </div>
         )}
 
-        <Button type="submit" className="w-fit mx-auto">
-          Update Order
+        <Button type="submit" className="w-fit mx-auto" disabled={isUpdating}>
+          {isUpdating ? "Updating..." : "Update Order"}
         </Button>
       </form>
 

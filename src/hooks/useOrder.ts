@@ -1,27 +1,38 @@
-import { Order } from "@/types/order";
-import { getOrder } from "@/utils/order";
-import { useEffect, useState } from "react";
+import { addOrderSchema, getOrder, updateOrder } from "@/utils/order";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { z } from "zod";
 
 export default function useOrder(id: string | undefined) {
-  const [loading, setLoading] = useState(true);
-  const [order, setOrder] = useState<Order | null>(null);
+  const queryClient = useQueryClient();
 
-  useEffect(() => {
-    if (!id) return;
-    const fetchOrder = async () => {
-      try {
-        const order = await getOrder(id);
-        setOrder(order);
-        return order;
-      } catch (error) {
-        console.error("Error fetching order:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
+  const {
+    data: order,
+    isLoading,
+    error,
+  } = useQuery({
+    queryKey: ["order", id],
+    queryFn: () => getOrder(id!),
+    enabled: !!id,
+  });
 
-    fetchOrder();
-  }, [id]);
+  const updateOrderMutation = useMutation({
+    mutationFn: (data: z.infer<typeof addOrderSchema>) => updateOrder(id!, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ["order", id],
+        exact: true,
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["orders"],
+      });
+    },
+  });
 
-  return { loading, order };
+  return {
+    order,
+    isLoading,
+    error,
+    updateOrder: updateOrderMutation.mutate,
+    isUpdating: updateOrderMutation.isPending,
+  };
 }
