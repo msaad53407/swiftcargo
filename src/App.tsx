@@ -50,31 +50,31 @@ function App() {
           <Route
             path="/dashboard"
             element={
-              // <ProtectedRoute allowedRoles={["admin", "manager"]}>
-              <DashboardLayout>
-                <Dashboard />
-              </DashboardLayout>
-              // </ProtectedRoute>
+              <ProtectedRoute allowedRoles={["admin", "manager"]}>
+                <DashboardLayout>
+                  <Dashboard />
+                </DashboardLayout>
+              </ProtectedRoute>
             }
           />
           <Route
             path="/employees"
             element={
-              // <ProtectedRoute allowedRoles={["admin", "manager"]}>
-              <DashboardLayout>
-                <EmployeesPage />
-              </DashboardLayout>
-              // </ProtectedRoute>
+              <ProtectedRoute allowedRoles={["admin", "manager"]}>
+                <DashboardLayout>
+                  <EmployeesPage />
+                </DashboardLayout>
+              </ProtectedRoute>
             }
           />
           <Route
             path="/"
             element={
-              // <ProtectedRoute allowedRoles={["admin", "manager"]}>
-              <DashboardLayout>
-                <PackageManagment />
-              </DashboardLayout>
-              // </ProtectedRoute>
+              <ProtectedRoute allowedRoles={["admin", "manager"]}>
+                <DashboardLayout>
+                  <PackageManagment />
+                </DashboardLayout>
+              </ProtectedRoute>
             }
           />
           {/* <Route
@@ -90,57 +90,59 @@ function App() {
           <Route
             path="/notifications"
             element={
-              // <ProtectedRoute allowedRoles={["admin", "manager"]}>
-              <DashboardLayout>
-                <NotificationsPage />
-              </DashboardLayout>
-              // </ProtectedRoute>
+              <ProtectedRoute allowedRoles={["admin", "manager"]}>
+                <DashboardLayout>
+                  <NotificationsPage />
+                </DashboardLayout>
+              </ProtectedRoute>
             }
           />
           <Route
             path="/settings"
             element={
-              // <ProtectedRoute allowedRoles={["admin", "manager"]}>
-              <DashboardLayout>
-                <ProfilePage />
-              </DashboardLayout>
-              // </ProtectedRoute>
+              <ProtectedRoute allowedRoles={["admin", "manager"]}>
+                <DashboardLayout>
+                  <ProfilePage />
+                </DashboardLayout>
+              </ProtectedRoute>
             }
           />
           <Route
             path="/ecommerce/*"
             element={
-              <DashboardLayout type="ecommerce">
-                <Routes>
-                  <Route path="dashboard" element={<EcommerceDashboard />} />
-                  <Route path="products" element={<ProductsPage />} />
-                  <Route path="products/add" element={<AddProduct />} />
-                  <Route path="products/update/:id" element={<EditProductPage />} />
-                  <Route path="orders" element={<OrdersPage />} />
-                  <Route path="orders/add" element={<CreateOrderPage />} />
-                  <Route path="orders/update/:id" element={<UpdateOrderPage />} />
-                  <Route path="notifications" element={<EcommerceNotificationsPage />} />
-                  <Route
-                    path="chat"
-                    element={
-                      <ChatLayout>
-                        <ChatPage />
-                      </ChatLayout>
-                    }
-                  />
-                  <Route
-                    path="chat/:id"
-                    element={
-                      <ChatLayout>
-                        <IndividualChatPage />
-                      </ChatLayout>
-                    }
-                  />
-                  <Route path="settings" element={<SettingsPage />} />
-                  <Route path="policies" element={<PoliciesPage />} />
-                  <Route path="" element={<Navigate to="/ecommerce/dashboard" />} />
-                </Routes>
-              </DashboardLayout>
+              <ProtectedRoute allowedRoles={["admin", "manager"]}>
+                <DashboardLayout type="ecommerce">
+                  <Routes>
+                    <Route path="dashboard" element={<EcommerceDashboard />} />
+                    <Route path="products" element={<ProductsPage />} />
+                    <Route path="products/add" element={<AddProduct />} />
+                    <Route path="products/update/:id" element={<EditProductPage />} />
+                    <Route path="orders" element={<OrdersPage />} />
+                    <Route path="orders/add" element={<CreateOrderPage />} />
+                    <Route path="orders/update/:id" element={<UpdateOrderPage />} />
+                    <Route path="notifications" element={<EcommerceNotificationsPage />} />
+                    <Route
+                      path="chat"
+                      element={
+                        <ChatLayout>
+                          <ChatPage />
+                        </ChatLayout>
+                      }
+                    />
+                    <Route
+                      path="chat/:id"
+                      element={
+                        <ChatLayout>
+                          <IndividualChatPage />
+                        </ChatLayout>
+                      }
+                    />
+                    <Route path="settings" element={<SettingsPage />} />
+                    <Route path="policies" element={<PoliciesPage />} />
+                    <Route path="" element={<Navigate to="/ecommerce/dashboard" />} />
+                  </Routes>
+                </DashboardLayout>
+              </ProtectedRoute>
             }
           />
         </Routes>
