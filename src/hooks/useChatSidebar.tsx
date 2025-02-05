@@ -1,37 +1,33 @@
 import { useAuth } from "@/contexts/AuthContext";
 import { Chat } from "@/types/chat";
 import { getChats } from "@/utils/chat";
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 
-const useChatSidebar = () => {
+const useChats = () => {
   const [allChats, setAllChats] = useState<Chat[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const { currentUser } = useAuth();
 
-  const fetchAllChats = useCallback(async () => {
-    setLoading(true);
-    setError(null);
-    if (!currentUser) return;
-    try {
-      const chats = await getChats(currentUser.uid);
-
-      if (chats.length === 0) {
-        return;
-      }
-
-      setAllChats(chats);
-    } catch (error) {
-      console.error("Error fetching chats:", error);
-      setError("Failed to fetch chats");
-    } finally {
-      setLoading(false);
-    }
-  }, [currentUser]);
-
   useEffect(() => {
-    fetchAllChats();
-  }, [fetchAllChats]);
+    const loadChats = async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        if (currentUser) {
+          const unsubscribe = await getChats(currentUser.uid, setAllChats);
+          return () => unsubscribe();
+        }
+      } catch (err) {
+        setError("An error occurred while loading the chats");
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadChats();
+  }, [currentUser?.uid]);
 
   const findOtherUser = (chat: Chat) => {
     const other = chat?.members?.find((m) => m.userId !== currentUser?.uid);
@@ -41,4 +37,4 @@ const useChatSidebar = () => {
   return { allChats, loading, error, findOtherUser };
 };
 
-export default useChatSidebar;
+export default useChats;

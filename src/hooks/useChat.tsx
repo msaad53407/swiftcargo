@@ -45,7 +45,7 @@ export const useChat = (chatId: string) => {
     };
 
     loadChat();
-  }, [chatId, currentUser]);
+  }, [chatId]);
 
   const handleSendMessage = async (content: string) => {
     if (!currentUser) return;

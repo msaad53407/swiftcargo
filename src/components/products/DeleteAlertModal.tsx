@@ -42,6 +42,7 @@ const DeleteAlertModal = ({
                 setOpen(false);
               });
             }}
+            disabled={isDeleting}
           >
             {isDeleting ? "Deleting..." : "Delete"}
           </AlertDialogAction>
