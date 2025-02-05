@@ -8,7 +8,7 @@ import {
   getTotalOrdersCount,
 } from "@/utils/order";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { z } from "zod";
 
 export function useOrders(limit: number = 10) {
@@ -19,6 +19,7 @@ export function useOrders(limit: number = 10) {
     sku: "",
     supplier: "",
   });
+  const [filteredData, setFilteredData] = useState<Order[] | undefined>(undefined);
 
   const queryClient = useQueryClient();
 
@@ -35,6 +36,23 @@ export function useOrders(limit: number = 10) {
     queryKey: ["orders", currentPage],
     queryFn: () => getOrders(limit, currentPage),
   });
+
+  useEffect(() => {
+    const filteredData = data?.orders.filter((order) => {
+      const matchesSearch =
+        order.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        order.product.supplier.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        order.product.sku.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        order.product.name.toLowerCase().includes(searchQuery.toLowerCase());
+
+      const matchesStatus = filters.status.length === 0 || filters.status.includes(order.status);
+      const matchesSku = !filters.sku || order.product.sku === filters.sku;
+      const matchesSupplier = !filters.supplier || order.product.supplier === filters.supplier;
+      return matchesSearch && matchesStatus && matchesSku && matchesSupplier;
+    });
+    console.log(filteredData)
+    setFilteredData(filteredData);
+  }, [data?.orders, searchQuery, filters]);
 
   const changeStatusMutation = useMutation({
     mutationFn: ({ orderId, status }: { orderId: string; status: OrderStatus }) => changeOrderStatus(orderId, status),
@@ -73,22 +91,6 @@ export function useOrders(limit: number = 10) {
       });
     },
   });
-
-  const filteredData = useMemo(() => {
-    const filteredData = data?.orders.filter((order) => {
-      const matchesSearch =
-        order.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        order.product.supplier.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        order.product.sku.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        order.product.name.toLowerCase().includes(searchQuery.toLowerCase());
-
-      const matchesStatus = filters.status.length === 0 || filters.status.includes(order.status);
-      const matchesSku = !filters.sku || order.product.sku === filters.sku;
-      const matchesSupplier = !filters.supplier || order.product.supplier === filters.supplier;
-      return matchesSearch && matchesStatus && matchesSku && matchesSupplier;
-    });
-    return filteredData;
-  }, [data?.orders, searchQuery, filters]);
 
   const filterMetadata = useMemo(() => {
     if (!data?.orders) return { suppliers: [], skus: [] };

@@ -210,7 +210,7 @@ export function ProductsTable() {
                   </TableCell>
                   <TableCell>#{product.sku}</TableCell>
                   <TableCell>{product.supplier}</TableCell>
-                  <TableCell className="hidden md:table-cell">
+                  <TableCell>
                     <div className="flex justify-end gap-2">
                       <Button
                         variant="ghost"
