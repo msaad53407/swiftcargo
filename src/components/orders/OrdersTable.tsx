@@ -12,7 +12,6 @@ import DeleteAlertModal from "../products/DeleteAlertModal";
 
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
 import { OrdersTableSKeleton } from "./OrdersTableSkeleton";
-import { useEffect } from "react";
 
 type Props = {
   showFooter?: boolean;
@@ -63,10 +62,6 @@ export function OrdersTable({ showFooter = true, limit }: Props) {
       toast.error("Failed to delete order");
     }
   };
-
-  useEffect(() => {
-    console.log(filteredData);
-  }, [filteredData]);
 
   return (
     <div className="space-y-4">

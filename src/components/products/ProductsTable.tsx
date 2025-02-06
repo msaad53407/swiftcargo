@@ -6,10 +6,11 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { useProducts } from "@/hooks/useProducts";
 import { generatePaginationNUmbers } from "@/lib/utils";
 import Papa from "papaparse";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import DeleteAlertModal from "./DeleteAlertModal";
 import { TableSkeleton as ProductsTableSkeleton } from "./ProductsTableSkeleton";
+import { useAuth } from "@/contexts/AuthContext";
 
 export function ProductsTable() {
   const {
@@ -26,6 +27,10 @@ export function ProductsTable() {
     deleteProduct,
     isDeleting,
   } = useProducts();
+
+  const { currentUser } = useAuth();
+
+  const navigate = useNavigate();
 
   if (isLoading) {
     return (
@@ -161,7 +166,17 @@ export function ProductsTable() {
             <span>Export</span>
           </Button>
           <Button asChild>
-            <Link to="/ecommerce/products/add">
+            <Link
+              to="/ecommerce/products/add"
+              onClick={(e) => {
+                e.preventDefault();
+                if (currentUser && currentUser.userType === "manager") {
+                  toast.error("Unauthorized. Only Admins can add products.");
+                  return;
+                }
+                navigate({ pathname: "/ecommerce/products/add" });
+              }}
+            >
               <PlusIcon className="h-6 w-6" />
               <span className="sr-only">Add</span>
             </Link>
@@ -217,12 +232,28 @@ export function ProductsTable() {
                         size="icon"
                         className="h-8 w-8"
                         disabled={isToggling}
-                        onClick={() => handleToggleVisibility(product.id)}
+                        onClick={() => {
+                          if (currentUser && currentUser.userType === "manager") {
+                            toast.error("Unauthorized. Only Admins can toggle product visibility.");
+                            return;
+                          }
+                          handleToggleVisibility(product.id);
+                        }}
                       >
                         {product.visibility ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
                       </Button>
                       <Button variant="ghost" size="icon" className="h-8 w-8 text-green-600" asChild>
-                        <Link to={`/ecommerce/products/update/${product.id}`}>
+                        <Link
+                          to={`/ecommerce/products/update/${product.id}`}
+                          onClick={(e) => {
+                            e.preventDefault();
+                            if (currentUser && currentUser.userType === "manager") {
+                              toast.error("Unauthorized. Only Admins can update products.");
+                              return;
+                            }
+                            navigate({ pathname: `/ecommerce/products/update/${product.id}` });
+                          }}
+                        >
                           <Pencil className="h-4 w-4" />
                         </Link>
                       </Button>

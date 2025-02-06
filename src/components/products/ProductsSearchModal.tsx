@@ -10,11 +10,14 @@ import { Button } from "../ui/button";
 import { Input } from "../ui/input";
 import { Label } from "../ui/label";
 import { ScrollArea } from "../ui/scroll-area";
+import { useAuth } from "@/contexts/AuthContext";
+import { toast } from "sonner";
 
 const ProductsSearchModal = () => {
   const [open, setOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
+  const { currentUser } = useAuth();
 
   // Debounce search term with 300ms delay
   const [debouncedSearchTerm] = useDebounce(searchTerm, 300);
@@ -27,7 +30,16 @@ const ProductsSearchModal = () => {
   }, [debouncedSearchTerm, totalPages]); // Added totalPages to dependencies
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog
+      open={open}
+      onOpenChange={(open) => {
+        if (currentUser && currentUser.userType === "manager") {
+          toast.error("Unauthorized. Only Admins can add orders.");
+          return;
+        }
+        setOpen(open);
+      }}
+    >
       <DialogTrigger asChild>
         <Button className="flex items-center gap-2">
           <PlusIcon className="h-6 w-6" />

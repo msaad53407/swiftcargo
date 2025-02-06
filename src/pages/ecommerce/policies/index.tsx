@@ -5,10 +5,12 @@ import { PolicySkeleton } from "@/components/employees/PolicySkeleton";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { useAuth } from "@/contexts/AuthContext";
 import { usePolicies } from "@/hooks/usePolicies";
 import { format } from "date-fns";
 import { Loader2, Pencil } from "lucide-react";
 import { useState } from "react";
+import { toast } from "sonner";
 
 export default function PoliciesPage() {
   const {
@@ -26,10 +28,16 @@ export default function PoliciesPage() {
     isSettingActivePolicy,
   } = usePolicies();
 
+  const { currentUser } = useAuth();
+
   const [showSuccessDialog, setShowSuccessDialog] = useState(false);
   const [isEditing, setIsEditing] = useState("");
 
   const handleAddPolicy = async (title: string, content: string) => {
+    if (currentUser && currentUser.userType === "manager") {
+      toast.error("Unauthorized. Only Admins can add policies.");
+      return false;
+    }
     addPolicy(
       { title, content },
       {
@@ -96,6 +104,10 @@ export default function PoliciesPage() {
                           size="icon"
                           className="h-8 w-8"
                           onClick={() => {
+                            if (currentUser && currentUser.userType === "manager") {
+                              toast.error("Unauthorized. Only Admins can edit policies.");
+                              return;
+                            }
                             if (isEditing) {
                               setIsEditing("");
                               return;
@@ -106,7 +118,9 @@ export default function PoliciesPage() {
                           <Pencil className="h-4 w-4" />
                         </Button>
                         <DeletePolicyDialog
-                          onDelete={async () => deletePolicy(policy.id)}
+                          onDelete={async () => {
+                            deletePolicy(policy.id);
+                          }}
                           deleting={isDeletingPolicy}
                         />
                       </div>

@@ -10,7 +10,10 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
+import { useAuth } from "@/contexts/AuthContext";
 import { Loader2, Trash2 } from "lucide-react";
+import { useState } from "react";
+import { toast } from "sonner";
 
 interface DeletePolicyDialogProps {
   onDelete: () => Promise<void>;
@@ -18,8 +21,21 @@ interface DeletePolicyDialogProps {
 }
 
 export function DeletePolicyDialog({ onDelete, deleting }: DeletePolicyDialogProps) {
+  const { currentUser } = useAuth();
+  const [open, setOpen] = useState(false);
+
   return (
-    <AlertDialog>
+    <AlertDialog
+      open={open}
+      onOpenChange={(open) => {
+        if (currentUser && currentUser.userType === "manager") {
+          toast.error("Unauthorized. Only Admins can delete policies.");
+          setOpen(false);
+          return;
+        }
+        setOpen(open);
+      }}
+    >
       <AlertDialogTrigger asChild>
         <Button variant="ghost" size="icon" className="h-8 w-8 text-red-600">
           <Trash2 className="h-4 w-4" />

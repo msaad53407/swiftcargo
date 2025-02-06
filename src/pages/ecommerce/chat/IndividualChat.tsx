@@ -88,6 +88,7 @@ const IndividualChatPage = () => {
           </div>
         </div>
         <DeleteAlertModal
+          bypassAuthorization
           trigger={
             <Button variant="ghost" size="icon">
               <MoreVertical className="h-5 w-5" />

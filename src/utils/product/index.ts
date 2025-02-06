@@ -188,7 +188,7 @@ const generateSearchableFields = (name: string, sku: string, supplier: string) =
 };
 
 export const addProduct = async (
-  product: Omit<Product, "id" | "createdAt" | "updatedAt" | "variations">,
+  product: Omit<Product, "id" | "createdAt" | "updatedAt" | "variations" | "searchableFields">,
   variations: Omit<Variation, "id">[],
 ) => {
   const errors: AddProductErrorType = {

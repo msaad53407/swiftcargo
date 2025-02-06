@@ -7,6 +7,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { PolicyEditor } from "./PolicyEditor";
 import { Loader2, Plus } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
+import { toast } from "sonner";
 
 interface AddPolicyDialogProps {
   onAddPolicy: (title: string, content: string) => Promise<boolean>;
@@ -17,6 +19,7 @@ export function AddPolicyDialog({ onAddPolicy, addingPolicy }: AddPolicyDialogPr
   const [open, setOpen] = useState(false);
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
+  const { currentUser } = useAuth();
 
   const handleSubmit = async () => {
     const success = await onAddPolicy(title, content);
@@ -28,7 +31,17 @@ export function AddPolicyDialog({ onAddPolicy, addingPolicy }: AddPolicyDialogPr
   };
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog
+      open={open}
+      onOpenChange={(open) => {
+        if (currentUser && currentUser.userType === "manager") {
+          setOpen(false);
+          toast.error("Unauthorized. Only Admins can add policies.");
+          return;
+        }
+        setOpen(open);
+      }}
+    >
       <DialogTrigger asChild>
         <Button>
           <Plus className="h-4 w-4 mr-2" />

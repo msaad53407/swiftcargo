@@ -15,10 +15,12 @@ import { Variation } from "@/types/product";
 import { addProductSchema, UpdateProductFormValues } from "@/utils/product";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { toast } from "sonner";
+import { useAuth } from "@/contexts/AuthContext";
 
 export default function EditProductPage() {
   const { id: productId } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const { currentUser, loading: authLoading } = useAuth();
 
   const {
     product,
@@ -48,8 +50,17 @@ export default function EditProductPage() {
     }
   }, [product, form]);
 
-  if (isLoading) {
+  if (isLoading || authLoading) {
     return <Loader />;
+  }
+
+  if (currentUser && currentUser.userType === "manager") {
+    toast.error("Unauthorized. Only Admins can update products.");
+    setTimeout(() => {
+      navigate("/ecommerce/products");
+    }, 2000);
+
+    return null;
   }
 
   if (!product) {
@@ -140,6 +151,7 @@ export default function EditProductPage() {
                             Edit Image
                           </Button>
                           <DeleteAlertModal
+                            isDeleting={isDeleting}
                             onDelete={handleDelete}
                             trigger={
                               <Button type="button" variant="destructive">

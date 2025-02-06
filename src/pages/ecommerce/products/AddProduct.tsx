@@ -1,9 +1,11 @@
 import { ImageDropzone } from "@/components/ImageDropzone";
+import Loader from "@/components/Loader";
 import Variations from "@/components/products/Variations";
 import { Button } from "@/components/ui/button";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { useAuth } from "@/contexts/AuthContext";
 import { Color, Variation } from "@/types/product";
 import { addProduct, addProductSchema, ProductFormValues, uploadImage } from "@/utils/product";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -15,6 +17,7 @@ import { toast } from "sonner";
 
 export default function AddProduct() {
   const [colorVariations, setColorVariations] = useState<Record<string, Color[]>>({});
+  const { currentUser, loading: authLoading } = useAuth();
 
   const navigate = useNavigate();
 
@@ -55,6 +58,7 @@ export default function AddProduct() {
       //   });
       // }
       toast.error("Failed to add product");
+      console.error(error);
     },
   });
 
@@ -82,6 +86,16 @@ export default function AddProduct() {
       variantsSelected.push(variant);
     }
     addProductMutation.mutate({ productData: data, variations: variantsSelected });
+  }
+
+  if (authLoading) return <Loader />;
+
+  if (currentUser && currentUser.userType === "manager") {
+    toast.error("Unauthorized. Only Admins can add products.");
+    setTimeout(() => {
+      navigate("/ecommerce/products");
+    }, 2000);
+    return null;
   }
 
   return (

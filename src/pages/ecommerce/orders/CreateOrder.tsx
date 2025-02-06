@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Textarea } from "@/components/ui/textarea";
+import { useAuth } from "@/contexts/AuthContext";
 import { useOrders } from "@/hooks/useOrders";
 import useProduct from "@/hooks/useProduct";
 import { cn } from "@/lib/utils";
@@ -25,6 +26,7 @@ export default function CreateOrderPage() {
   const [searchParams] = useSearchParams();
   const productId = searchParams.get("product");
   const navigate = useNavigate();
+  const { currentUser, loading: authLoading } = useAuth();
 
   const [addModalOpen, setAddModalOpen] = useState(false);
   const [selectedSize, setSelectedSize] = useState<Size | null>(null);
@@ -116,9 +118,15 @@ export default function CreateOrderPage() {
     setSelectedQuantity("");
   };
 
+  if (currentUser && currentUser.userType === "manager") {
+    toast.error("Unauthorized. Only Admins can add orders.");
+    setTimeout(() => navigate("/ecommerce/orders"), 2000);
+    return null;
+  }
+
   if (!productId) return null;
 
-  if (loading) return <Loader />;
+  if (loading || authLoading) return <Loader />;
 
   return (
     <div className="p-6 container space-y-10 bg-card border shadow-sm rounded-xl">

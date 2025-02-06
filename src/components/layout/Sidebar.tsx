@@ -46,7 +46,7 @@ interface SidebarProps {
 }
 
 export function Sidebar({ open, setOpen, type = "default" }: SidebarProps) {
-  const { logout } = useAuth();
+  const { logout, currentUser } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -95,6 +95,9 @@ export function Sidebar({ open, setOpen, type = "default" }: SidebarProps) {
               {itemsToRender.map((item) => {
                 const Icon = item.icon;
                 const isActive = location.pathname === item.path;
+                if (currentUser && currentUser.userType === "manager" && item.path === "/ecommerce/products/add") {
+                  return null;
+                }
                 return (
                   <li key={item.path}>
                     <Link

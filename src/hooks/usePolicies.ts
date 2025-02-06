@@ -1,6 +1,6 @@
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import type { Policy } from "@/types/policy";
-import { getPolicies, addPolicy, updatePolicy, deletePolicy, setActivePolicy } from "@/utils/employeePolicies";
+import { addPolicy, deletePolicy, getPolicies, setActivePolicy, updatePolicy } from "@/utils/employeePolicies";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 
 export function usePolicies() {
