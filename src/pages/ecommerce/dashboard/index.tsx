@@ -1,6 +1,7 @@
 import { OrdersReportChart } from "@/components/charts/OrderReportChart";
 import { TopSellingProductsChart } from "@/components/charts/TopSellingProductsChart";
 import { OrdersTable } from "@/components/orders/OrdersTable";
+import { OrdersTableSKeleton } from "@/components/orders/OrdersTableSkeleton";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useOrders } from "@/hooks/useOrders";
@@ -9,7 +10,7 @@ import { Package, Users } from "lucide-react";
 
 export default function EcommerceDashboard() {
   const { productsCount, isLoadingProductsCount, productsCountError } = useProducts();
-  const { ordersCount, isLoadingOrdersCount, ordersCountError } = useOrders();
+  const { ordersCount, isLoadingOrdersCount, ordersCountError, isLoading, filteredData } = useOrders();
   return (
     <div className="p-4 space-y-6 lg:p-6">
       {/* <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
@@ -177,9 +178,7 @@ export default function EcommerceDashboard() {
         <CardHeader>
           <CardTitle>Recent Orders</CardTitle>
         </CardHeader>
-        <CardContent>
-          <OrdersTable showFooter={false} limit={5} />
-        </CardContent>
+        <CardContent>{isLoading ? <OrdersTableSKeleton /> : <OrdersTable data={filteredData} />}</CardContent>
       </Card>
     </div>
   );

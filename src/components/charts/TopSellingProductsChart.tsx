@@ -1,11 +1,9 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ChartContainer } from "@/components/ui/chart";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { ChartConfig, ChartContainer, ChartLegend, ChartLegendContent } from "@/components/ui/chart";
 import { getTopSellingProducts } from "@/utils/dashboard";
 import { useQuery } from "@tanstack/react-query";
-import { Cell, Legend, Pie, PieChart, ResponsiveContainer } from "recharts";
+import { Pie, PieChart } from "recharts";
 import { Skeleton } from "../ui/skeleton";
-
-const COLORS = ["#4338ca", "#f97316", "#22c55e", "#06b6d4"];
 
 export function TopSellingProductsChart() {
   const { data, isLoading, error } = useQuery({
@@ -15,7 +13,7 @@ export function TopSellingProductsChart() {
 
   if (isLoading) {
     return (
-      <Card className="w-full h-[400px]">
+      <Card className="w-full">
         <CardHeader>
           <CardTitle>Top Selling Products</CardTitle>
           <Skeleton className="h-4 w-1/2 mt-2" />
@@ -44,7 +42,7 @@ export function TopSellingProductsChart() {
 
   if (error) {
     return (
-      <Card className="w-full h-[400px]">
+      <Card className="w-full">
         <CardHeader>
           <CardTitle>Error</CardTitle>
         </CardHeader>
@@ -55,9 +53,9 @@ export function TopSellingProductsChart() {
     );
   }
 
-  if (!data || !data.length) {
+  if (!data?.length || !data) {
     return (
-      <Card className="w-full h-[400px]">
+      <Card className="w-full">
         <CardHeader>
           <CardTitle>No Products</CardTitle>
         </CardHeader>
@@ -68,39 +66,31 @@ export function TopSellingProductsChart() {
     );
   }
 
+  const chartConfig: ChartConfig = data.reduce((acc, { name }, index) => {
+    return {
+      ...acc,
+      [name]: {
+        label: name,
+        color: `var(--chart-${index + 1})`,
+      },
+    };
+  }, {} as ChartConfig);
+
   return (
-    <Card className="w-full h-[400px]">
-      <CardHeader>
+    <Card className="flex flex-col">
+      <CardHeader className="items-center pb-0">
         <CardTitle>Top Selling Products</CardTitle>
-        <p className="text-sm text-muted-foreground">Yearly Report Overview</p>
+        <CardDescription>January - December {new Date().getFullYear()}</CardDescription>
       </CardHeader>
-      <CardContent className="h-[calc(100%-5rem)]">
-        <ChartContainer
-          className="h-full w-full"
-          config={{
-            products: {
-              label: "Products",
-              color: "hsl(var(--success))",
-            },
-          }}
-        >
-          <ResponsiveContainer width="100%" height="100%">
-            <PieChart>
-              <Pie data={data} cx="50%" cy="50%" innerRadius="40%" outerRadius="70%" paddingAngle={2} dataKey="value">
-                {data.map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                ))}
-              </Pie>
-              <Legend
-                layout="vertical"
-                verticalAlign="middle"
-                align="right"
-                wrapperStyle={{
-                  paddingLeft: "20px",
-                }}
-              />
-            </PieChart>
-          </ResponsiveContainer>
+      <CardContent className="flex-1 pb-0 flex items-center justify-center">
+        <ChartContainer config={chartConfig} className="mx-auto aspect-square max-h-[300px] size-full">
+          <PieChart>
+            <Pie data={data} dataKey="value" />
+            <ChartLegend
+              content={<ChartLegendContent nameKey="name" />}
+              className="-translate-y-2 flex-wrap gap-2 [&>*]:basis-1/4 [&>*]:justify-center"
+            />
+          </PieChart>
         </ChartContainer>
       </CardContent>
     </Card>

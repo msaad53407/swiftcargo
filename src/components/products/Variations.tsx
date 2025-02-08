@@ -52,17 +52,19 @@ export default function Variations({ colors, onChange }: VariationsProps) {
       <div className="flex items-center justify-between">
         <h3 className="text-sm font-medium">Variations</h3>
         <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="outline" size="sm">
-              <Plus className="h-4 w-4 mr-2" />
-              Add Variations
-            </Button>
-          </DropdownMenuTrigger>
+          <div className="flex gap-2 items-center">
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" size="sm">
+                <Plus className="h-4 w-4 mr-2" />
+                Add Variations
+              </Button>
+            </DropdownMenuTrigger>
+            <ColorPickerModal />
+          </div>
           <DropdownMenuContent className="w-[400px] p-4" align="end" sideOffset={8}>
             <div className="space-y-4">
               <div className="flex items-center justify-between gap-2">
                 <h4 className="text-sm text-muted-foreground">Select colors for each size</h4>
-                <ColorPickerModal />
               </div>
 
               <Tabs defaultValue="XS" value={selectedSize} onValueChange={setSelectedSize} className="w-full">

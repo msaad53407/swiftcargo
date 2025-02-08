@@ -1,7 +1,7 @@
 import { OrdersTable } from "@/components/orders/OrdersTable";
-import { useOrders } from "@/hooks/useOrders";
-import Papa from "papaparse";
-import { useState } from "react";
+import { OrdersTableSKeleton } from "@/components/orders/OrdersTableSkeleton";
+import ProductsSearchModal from "@/components/products/ProductsSearchModal";
+import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -9,16 +9,27 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import ProductsSearchModal from "@/components/products/ProductsSearchModal";
 import { Label } from "@/components/ui/label";
-import { Button } from "@/components/ui/button";
-import { Settings2, Upload } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useOrders } from "@/hooks/useOrders";
 import { cn } from "@/lib/utils";
 import { OrderStatus } from "@/types/order";
+import { Settings2, Upload } from "lucide-react";
+import Papa from "papaparse";
+import { useState } from "react";
 
 export default function OrdersPage() {
-  const { setFilters, filters, resetFilters, filterMetadata, searchQuery, setSearchQuery, orders } = useOrders();
+  const {
+    setFilters,
+    filters,
+    resetFilters,
+    filterMetadata,
+    filteredData,
+    isLoading,
+    searchQuery,
+    setSearchQuery,
+    orders,
+  } = useOrders();
 
   const [showFilters, setShowFilters] = useState(false);
 
@@ -157,7 +168,7 @@ export default function OrdersPage() {
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
-      <OrdersTable />
+      {isLoading ? <OrdersTableSKeleton /> : <OrdersTable data={filteredData} />}
     </div>
   );
 }

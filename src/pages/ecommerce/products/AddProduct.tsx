@@ -1,5 +1,6 @@
 import { ImageDropzone } from "@/components/ImageDropzone";
 import Loader from "@/components/Loader";
+import ColorPickerModal from "@/components/products/ColorPickerModal";
 import Variations from "@/components/products/Variations";
 import { Button } from "@/components/ui/button";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
@@ -164,6 +165,8 @@ export default function AddProduct() {
                 </FormItem>
               )}
             />
+
+            <ColorPickerModal />
 
             <Variations colors={colorVariations} onChange={setColorVariations} />
 
