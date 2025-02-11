@@ -42,7 +42,7 @@ const DeleteAlertModal = ({
         <AlertDialogHeader>
           <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
           <AlertDialogDescription>
-            This action cannot be undone. This will permanently delete the selected product and all its variations.
+            This action cannot be undone and is <b>permanent</b> and will result in removal of data from our servers.
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>

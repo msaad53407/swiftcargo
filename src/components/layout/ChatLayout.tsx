@@ -2,7 +2,7 @@ import useChats from "@/hooks/useChatSidebar";
 import { ErrorMessage } from "@/pages/profile/Profile";
 import { Member } from "@/types/chat";
 import { createChat } from "@/utils/chat";
-import { fetchManagersBySearch, Manager } from "@/utils/manager";
+import { fetchManagersBySearch, Manager, fetchManagers as fetchManagersServer } from "@/utils/manager";
 import { Search } from "lucide-react";
 import { PropsWithChildren, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -14,6 +14,7 @@ import { Button } from "../ui/button";
 import { Input } from "../ui/input";
 import { ScrollArea } from "../ui/scroll-area";
 import { useAuth } from "@/contexts/AuthContext";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs";
 
 export function ChatSidebar() {
   const navigation = useNavigate();
@@ -41,7 +42,7 @@ export function ChatSidebar() {
     setContactsLoading(true);
     const fetchManagers = async () => {
       try {
-        const managers = await fetchManagersBySearch(debouncedSearch);
+        const managers = debouncedSearch ? await fetchManagersBySearch(debouncedSearch) : await fetchManagersServer();
         const filteredManagers = managers.filter((manager) => manager.uid !== currentUser?.uid);
         setManagers(filteredManagers);
       } catch (error) {
@@ -75,62 +76,75 @@ export function ChatSidebar() {
   }
 
   return (
-    <div className="h-full flex flex-col bg-background border-r">
-      <div className="p-4">
-        <div className="relative flex">
-          <Button type="submit" disabled={contactsLoading} className="inline-flex bg-transparent hover:bg-transparent">
-            <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-          </Button>
-          <Input
-            placeholder="Search over Contacts"
-            className="pl-8"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            disabled={contactsLoading}
-            autoFocus
-          />
-        </div>
-      </div>
+    <div className="h-full flex justify-center bg-background border-r">
       <ScrollArea className="flex-1">
-        {search ? (
-          <SearchContacts managers={managers} loading={contactsLoading} setSearch={setSearch} />
-        ) : allChats.length > 0 && otherUsers?.length ? (
-          allChats.map((conversation) => {
-            const otherUser = otherUsers.find(
-              (user) => user.userId === conversation.members.find((m) => m.userId !== currentUser?.uid)?.userId,
-            );
-            return (
-              <div
-                key={conversation.id}
-                className="flex items-center gap-3 p-4 hover:bg-accent cursor-pointer"
-                onClick={() => navigation({ pathname: `/ecommerce/chat/${conversation.id}` })}
-              >
-                <Avatar>
-                  <AvatarImage src={otherUser?.image} />
-                  <AvatarFallback>
-                    {otherUser?.name
-                      .split(" ")
-                      .map((n) => n[0])
-                      .join("")}
-                  </AvatarFallback>
-                </Avatar>
-                <div className="flex-1 overflow-hidden">
-                  <div className="flex flex-col justify-between">
-                    <h3 className="font-medium">{otherUser?.name}</h3>
-                    <span className="text-xs text-muted-foreground self-end">
-                      {conversation.lastMessage ? new Date(conversation.lastMessage.createdAt).toDateString() : ""}
-                    </span>
+        <Tabs defaultValue="chats">
+          <TabsList className="w-fit ml-4 mt-4">
+            <TabsTrigger value="chats">Chats</TabsTrigger>
+            <TabsTrigger value="contacts">Contacts</TabsTrigger>
+          </TabsList>
+          <TabsContent value="chats">
+            {allChats.length > 0 && otherUsers?.length ? (
+              allChats.map((conversation) => {
+                const otherUser = otherUsers.find(
+                  (user) => user.userId === conversation.members.find((m) => m.userId !== currentUser?.uid)?.userId,
+                );
+                return (
+                  <div
+                    key={conversation.id}
+                    className="flex items-center gap-3 p-4 hover:bg-accent cursor-pointer"
+                    onClick={() => navigation({ pathname: `/ecommerce/chat/${conversation.id}` })}
+                  >
+                    <Avatar>
+                      <AvatarImage src={otherUser?.image} />
+                      <AvatarFallback>
+                        {otherUser?.name
+                          .split(" ")
+                          .map((n) => n[0])
+                          .join("")}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="flex-1 overflow-hidden">
+                      <div className="flex flex-col justify-between">
+                        <h3 className="font-medium">{otherUser?.name}</h3>
+                        <span className="text-xs text-muted-foreground self-end">
+                          {conversation.lastMessage ? new Date(conversation.lastMessage.createdAt).toDateString() : ""}
+                        </span>
+                      </div>
+                      <p className="text-sm text-muted-foreground truncate">{conversation?.lastMessage?.content}</p>
+                    </div>
                   </div>
-                  <p className="text-sm text-muted-foreground truncate">{conversation?.lastMessage?.content}</p>
-                </div>
+                );
+              })
+            ) : (
+              <div className="flex items-center justify-center h-full">
+                <p className="text-sm text-muted-foreground mt-10">No Chats Found</p>
               </div>
-            );
-          })
-        ) : (
-          <div className="flex items-center justify-center h-full">
-            <p className="text-sm text-muted-foreground mt-10">No Chats Found</p>
-          </div>
-        )}
+            )}
+          </TabsContent>
+          <TabsContent value="contacts">
+            <div className="p-4">
+              <div className="relative flex">
+                <Button
+                  type="submit"
+                  disabled={contactsLoading}
+                  className="inline-flex bg-transparent hover:bg-transparent"
+                >
+                  <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+                </Button>
+                <Input
+                  placeholder="Search over Contacts"
+                  className="pl-8"
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  disabled={contactsLoading}
+                  autoFocus
+                />
+              </div>
+            </div>
+            <SearchContacts managers={managers} loading={contactsLoading} setSearch={setSearch} />
+          </TabsContent>
+        </Tabs>
       </ScrollArea>
     </div>
   );
