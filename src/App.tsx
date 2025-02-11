@@ -3,28 +3,32 @@ import { Header } from "@/components/layout/Header";
 import { Sidebar } from "@/components/layout/Sidebar";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { AuthProvider } from "@/contexts/AuthContext";
-import SignIn from "@/pages/auth/SignIn";
-import EmployeesPage from "@/pages/employees/EmployeesPage";
+
 import { useState } from "react";
 import { Navigate, Route, BrowserRouter as Router, Routes } from "react-router-dom";
 import ChatLayout from "./components/layout/ChatLayout";
 import { ToastProvider } from "./components/providers/ToastProvider";
-import Dashboard from "./pages/dashboard/Dashboard";
-import ChatPage from "./pages/ecommerce/chat";
-import IndividualChatPage from "./pages/ecommerce/chat/IndividualChat";
-import EcommerceDashboard from "./pages/ecommerce/dashboard";
-import EcommerceNotificationsPage from "./pages/ecommerce/notifications";
-import NotificationsPage from "./pages/notifcation/Notification";
-import OrdersPage from "./pages/ecommerce/orders";
-import PoliciesPage from "./pages/ecommerce/policies";
-import ProductsPage from "./pages/ecommerce/products";
-import AddProduct from "./pages/ecommerce/products/AddProduct";
-import EditProductPage from "./pages/ecommerce/products/UpdateProduct";
-import SettingsPage from "./pages/ecommerce/settings";
-import PackageManagment from "./pages/package/PackageManagment";
-import ProfilePage from "./pages/profile/Profile";
-import CreateOrderPage from "./pages/ecommerce/orders/CreateOrder";
-import UpdateOrderPage from "./pages/ecommerce/orders/UpdateOrder";
+import {
+  AddColor,
+  AddProduct,
+  Dashboard,
+  EcommerceDashboard,
+  EmployeesPage,
+  NotificationsPage,
+  PackageManagment,
+  ProductsPage,
+  ProfilePage,
+  SignIn,
+  ChatPage,
+  CreateOrderPage,
+  UpdateOrderPage,
+  EcommerceNotificationsPage,
+  EditProductPage,
+  IndividualChatPage,
+  OrdersPage,
+  PoliciesPage,
+  SettingsPage,
+} from "./pages";
 
 function DashboardLayout({ type, children }: { type?: "default" | "ecommerce"; children: React.ReactNode }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -116,6 +120,7 @@ function App() {
                     <Route path="dashboard" element={<EcommerceDashboard />} />
                     <Route path="products" element={<ProductsPage />} />
                     <Route path="products/add" element={<AddProduct />} />
+                    <Route path="colors/add" element={<AddColor />} />
                     <Route path="products/update/:id" element={<EditProductPage />} />
                     <Route path="orders" element={<OrdersPage />} />
                     <Route path="orders/add" element={<CreateOrderPage />} />

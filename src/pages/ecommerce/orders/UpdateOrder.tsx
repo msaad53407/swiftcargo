@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Textarea } from "@/components/ui/textarea";
+import { useAuth } from "@/contexts/AuthContext";
 import useOrder from "@/hooks/useOrder";
 import useProduct from "@/hooks/useProduct";
 import { cn } from "@/lib/utils";
@@ -33,6 +34,8 @@ export default function UpdateOrderPage() {
 
   const { order, isLoading: orderLoading, updateOrder, isUpdating } = useOrder(orderId);
   const { isLoading: productLoading, colorVariations } = useProduct(order?.product.id);
+
+  const { currentUser } = useAuth();
 
   const { control, handleSubmit, setValue, watch } = useForm<z.infer<typeof addOrderSchema>>({
     resolver: zodResolver(addOrderSchema),
@@ -173,21 +176,22 @@ export default function UpdateOrderPage() {
                             />
                             {!orderVariations.some(
                               (variation) => variation.color.id === color.id && variation.size === size,
-                            ) && (
-                              <Button
-                                type="button"
-                                variant="outline"
-                                size="icon"
-                                className="h-4 w-4 absolute -top-2 -right-2 rounded-full hidden group-hover:flex items-center justify-center"
-                                onClick={() => {
-                                  setSelectedSize(size as Size);
-                                  setSelectedColor(color);
-                                  setAddModalOpen(true);
-                                }}
-                              >
-                                <Plus className="h-3 w-3" />
-                              </Button>
-                            )}
+                            ) &&
+                              currentUser?.userType === "admin" && (
+                                <Button
+                                  type="button"
+                                  variant="outline"
+                                  size="icon"
+                                  className="h-4 w-4 absolute -top-2 -right-2 rounded-full hidden group-hover:flex items-center justify-center"
+                                  onClick={() => {
+                                    setSelectedSize(size as Size);
+                                    setSelectedColor(color);
+                                    setAddModalOpen(true);
+                                  }}
+                                >
+                                  <Plus className="h-3 w-3" />
+                                </Button>
+                              )}
                           </div>
                         ))}
                       </div>
@@ -213,9 +217,11 @@ export default function UpdateOrderPage() {
                     <span>{field.date}</span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <Button type="button" variant="ghost" size="icon" onClick={() => remove(index)}>
-                      <Trash2 className="h-4 w-4 text-red-500" />
-                    </Button>
+                    {currentUser?.userType === "admin" && (
+                      <Button type="button" variant="ghost" size="icon" onClick={() => remove(index)}>
+                        <Trash2 className="h-4 w-4 text-red-500" />
+                      </Button>
+                    )}
                     <Button type="button" variant="ghost" size="icon">
                       <Pencil className="h-4 w-4" />
                     </Button>

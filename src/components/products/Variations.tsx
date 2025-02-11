@@ -8,7 +8,6 @@ import { useState } from "react";
 import Loader from "../Loader";
 import { Separator } from "../ui/separator";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "../ui/tooltip";
-import ColorPickerModal from "./ColorPickerModal";
 
 interface VariationsProps {
   colors: Record<string, Color[]>;
@@ -59,7 +58,6 @@ export default function Variations({ colors, onChange }: VariationsProps) {
                 Add Variations
               </Button>
             </DropdownMenuTrigger>
-            <ColorPickerModal />
           </div>
           <DropdownMenuContent className="w-[400px] p-4" align="end" sideOffset={8}>
             <div className="space-y-4">
