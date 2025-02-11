@@ -11,6 +11,7 @@ import { toast } from "sonner";
 import DeleteAlertModal from "../products/DeleteAlertModal";
 
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
+import { useAuth } from "@/contexts/AuthContext";
 
 type Props = {
   data?: Order[];
@@ -21,6 +22,7 @@ type Props = {
 export function OrdersTable({ data: filteredData, showFooter = true, limit }: Props) {
   const { totalPages, currentPage, setCurrentPage, changeOrderStatus, deleteOrder, isChangingStatus, isDeleting } =
     useOrders(limit);
+  const { currentUser } = useAuth();
 
   const handleStatusChange = async (orderId: string, status: OrderStatus) => {
     try {
@@ -141,15 +143,17 @@ export function OrdersTable({ data: filteredData, showFooter = true, limit }: Pr
                         <Pencil className="h-4 w-4" />
                       </Link>
                     </Button>
-                    <DeleteAlertModal
-                      onDelete={() => handleDeleteOrder(order.id)}
-                      isDeleting={isDeleting}
-                      trigger={
-                        <Button variant="ghost" size="icon" className="h-8 w-8 text-red-600">
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      }
-                    />
+                    {currentUser?.userType === "admin" && (
+                      <DeleteAlertModal
+                        onDelete={() => handleDeleteOrder(order.id)}
+                        isDeleting={isDeleting}
+                        trigger={
+                          <Button variant="ghost" size="icon" className="h-8 w-8 text-red-600">
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        }
+                      />
+                    )}
                   </div>
                 </TableCell>
               </TableRow>

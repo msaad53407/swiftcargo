@@ -45,12 +45,14 @@ export function ProductsTable() {
               <Upload className="h-6 w-6" />
               <span>Export</span>
             </Button>
-            <Button asChild>
-              <Link to="/ecommerce/products/add">
-                <PlusIcon className="h-6 w-6" />
-                <span className="sr-only">Add</span>
-              </Link>
-            </Button>
+            {currentUser?.userType === "admin" && (
+              <Button asChild>
+                <Link to="/ecommerce/products/add">
+                  <PlusIcon className="h-6 w-6" />
+                  <span className="sr-only">Add</span>
+                </Link>
+              </Button>
+            )}
           </div>
         </div>
 
@@ -85,12 +87,14 @@ export function ProductsTable() {
               <Upload className="h-6 w-6" />
               <span>Export</span>
             </Button>
-            <Button asChild>
-              <Link to="/ecommerce/products/add">
-                <PlusIcon className="h-6 w-6" />
-                <span className="sr-only">Add</span>
-              </Link>
-            </Button>
+            {currentUser?.userType === "admin" && (
+              <Button asChild>
+                <Link to="/ecommerce/products/add">
+                  <PlusIcon className="h-6 w-6" />
+                  <span className="sr-only">Add</span>
+                </Link>
+              </Button>
+            )}
           </div>
         </div>
 
@@ -165,22 +169,24 @@ export function ProductsTable() {
             <Upload className="h-6 w-6" />
             <span>Export</span>
           </Button>
-          <Button asChild>
-            <Link
-              to="/ecommerce/products/add"
-              onClick={(e) => {
-                e.preventDefault();
-                if (currentUser && currentUser.userType === "manager") {
-                  toast.error("Unauthorized. Only Admins can add products.");
-                  return;
-                }
-                navigate({ pathname: "/ecommerce/products/add" });
-              }}
-            >
-              <PlusIcon className="h-6 w-6" />
-              <span className="sr-only">Add</span>
-            </Link>
-          </Button>
+          {currentUser && currentUser.userType === "admin" && (
+            <Button asChild>
+              <Link
+                to="/ecommerce/products/add"
+                onClick={(e) => {
+                  e.preventDefault();
+                  if (currentUser && currentUser.userType === "manager") {
+                    toast.error("Unauthorized. Only Admins can add products.");
+                    return;
+                  }
+                  navigate({ pathname: "/ecommerce/products/add" });
+                }}
+              >
+                <PlusIcon className="h-6 w-6" />
+                <span className="sr-only">Add</span>
+              </Link>
+            </Button>
+          )}
         </div>
       </div>
 
@@ -206,7 +212,7 @@ export function ProductsTable() {
               <TableHead>Product</TableHead>
               <TableHead>SKU</TableHead>
               <TableHead>Supplier</TableHead>
-              <TableHead className="text-right">Action</TableHead>
+              {currentUser && currentUser.userType === "admin" && <TableHead className="text-right">Action</TableHead>}
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -225,58 +231,60 @@ export function ProductsTable() {
                   </TableCell>
                   <TableCell>#{product.sku}</TableCell>
                   <TableCell>{product.supplier}</TableCell>
-                  <TableCell>
-                    <div className="flex justify-end gap-2">
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-8 w-8"
-                        disabled={isToggling}
-                        onClick={() => {
-                          if (currentUser && currentUser.userType === "manager") {
-                            toast.error("Unauthorized. Only Admins can toggle product visibility.");
-                            return;
-                          }
-                          handleToggleVisibility(product.id);
-                        }}
-                      >
-                        {product.visibility ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
-                      </Button>
-                      <Button variant="ghost" size="icon" className="h-8 w-8 text-green-600" asChild>
-                        <Link
-                          to={`/ecommerce/products/update/${product.id}`}
-                          onClick={(e) => {
-                            e.preventDefault();
+                  {currentUser && currentUser.userType === "admin" && (
+                    <TableCell>
+                      <div className="flex justify-end gap-2">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8"
+                          disabled={isToggling}
+                          onClick={() => {
                             if (currentUser && currentUser.userType === "manager") {
-                              toast.error("Unauthorized. Only Admins can update products.");
+                              toast.error("Unauthorized. Only Admins can toggle product visibility.");
                               return;
                             }
-                            navigate({ pathname: `/ecommerce/products/update/${product.id}` });
+                            handleToggleVisibility(product.id);
                           }}
                         >
-                          <Pencil className="h-4 w-4" />
-                        </Link>
-                      </Button>
-                      <DeleteAlertModal
-                        isDeleting={isDeleting}
-                        onDelete={async () => {
-                          deleteProduct(product.id, {
-                            onSuccess: () => {
-                              toast.success("Product deleted successfully!");
-                            },
-                            onError: () => {
-                              toast.error("Failed to delete product!");
-                            },
-                          });
-                        }}
-                        trigger={
-                          <Button variant="ghost" size="icon" className="h-8 w-8 text-red-600">
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        }
-                      />
-                    </div>
-                  </TableCell>
+                          {product.visibility ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
+                        </Button>
+                        <Button variant="ghost" size="icon" className="h-8 w-8 text-green-600" asChild>
+                          <Link
+                            to={`/ecommerce/products/update/${product.id}`}
+                            onClick={(e) => {
+                              e.preventDefault();
+                              if (currentUser && currentUser.userType === "manager") {
+                                toast.error("Unauthorized. Only Admins can update products.");
+                                return;
+                              }
+                              navigate({ pathname: `/ecommerce/products/update/${product.id}` });
+                            }}
+                          >
+                            <Pencil className="h-4 w-4" />
+                          </Link>
+                        </Button>
+                        <DeleteAlertModal
+                          isDeleting={isDeleting}
+                          onDelete={async () => {
+                            deleteProduct(product.id, {
+                              onSuccess: () => {
+                                toast.success("Product deleted successfully!");
+                              },
+                              onError: () => {
+                                toast.error("Failed to delete product!");
+                              },
+                            });
+                          }}
+                          trigger={
+                            <Button variant="ghost" size="icon" className="h-8 w-8 text-red-600">
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          }
+                        />
+                      </div>
+                    </TableCell>
+                  )}
                 </TableRow>
               ))
             ) : (

@@ -11,6 +11,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useAuth } from "@/contexts/AuthContext";
 import { useOrders } from "@/hooks/useOrders";
 import { cn } from "@/lib/utils";
 import { OrderStatus } from "@/types/order";
@@ -32,6 +33,8 @@ export default function OrdersPage() {
   } = useOrders();
 
   const [showFilters, setShowFilters] = useState(false);
+
+  const { currentUser } = useAuth();
 
   const exportToCSV = () => {
     const csvData = orders.map((order) => ({
@@ -68,7 +71,7 @@ export default function OrdersPage() {
             <Upload className="h-6 w-6" />
             <span>Export</span>
           </Button>
-          <ProductsSearchModal />
+          {currentUser?.userType === "admin" && <ProductsSearchModal />}
         </div>
       </div>
 
