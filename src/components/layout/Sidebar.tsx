@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
+import { Button } from "../ui/button";
 
 const menuItems = [
   { icon: LayoutDashboard, label: "Dashboard", path: "/dashboard" },
@@ -61,6 +62,14 @@ export function Sidebar({ open, setOpen, type = "default" }: SidebarProps) {
     }
   };
 
+  const handleViewToggle = () => {
+    if (location.pathname.includes("ecommerce")) {
+      navigate("/dashboard");
+      return;
+    }
+    navigate("/ecommerce/dashboard");
+  };
+
   const itemsToRender = type === "default" ? menuItems : ECommerceMenuItems;
 
   return (
@@ -91,7 +100,10 @@ export function Sidebar({ open, setOpen, type = "default" }: SidebarProps) {
           </div>
 
           {/* Menu Items */}
-          <nav className="flex-1 px-4 overflow-y-auto">
+          <nav className="flex-1 px-4 overflow-y-auto w-full">
+            <Button onClick={handleViewToggle} className="my-4 w-fit mx-auto">
+              {location.pathname.includes("ecommerce") ? "Switch to Management" : "Switch to E-Commerce"}
+            </Button>
             <ul className="space-y-1">
               {itemsToRender.map((item) => {
                 const Icon = item.icon;
