@@ -49,8 +49,6 @@ export default function UpdateOrderPage() {
     },
   });
 
-  const orderVariations = watch("orderVariations");
-
   useEffect(() => {
     if (order) {
       setValue("product.name", order.product.name);
@@ -152,31 +150,23 @@ export default function UpdateOrderPage() {
                   sizeColors.length > 0 && (
                     <div key={size + index.toString()} className="flex flex-col gap-4 border rounded-lg p-4">
                       <div className="w-12 border p-2 rounded-lg text-center font-medium bg-gray-200">{size}</div>
-                      <div className="flex gap-2 flex-wrap">
-                        {sizeColors.map((color) => (
-                          <div key={color.id} className="relative group">
-                            <div
-                              className="w-6 h-6 rounded-full border cursor-pointer"
-                              style={{ backgroundColor: color.hexCode }}
-                            />
-                            {!orderVariations.some(
-                              (variation) => variation.color.id === color.id && variation.size === size,
-                            ) &&
-                              currentUser?.userType === "admin" && (
-                                <Button
-                                  type="button"
-                                  variant="outline"
-                                  size="icon"
-                                  className="h-4 w-4 absolute -top-2 -right-2 rounded-full hidden group-hover:flex items-center justify-center"
-                                  onClick={() => {
-                                    setSelectedSize(size as Size);
-                                    setSelectedColor(color);
-                                    setAddModalOpen(true);
-                                  }}
-                                >
-                                  <Plus className="h-3 w-3" />
-                                </Button>
-                              )}
+                      <div className="flex gap-4 flex-wrap">
+                        {sizeColors.map((color, index) => (
+                          <div key={index} className="relative group">
+                            <p className="px-2 py-1 border rounded-lg">{color.name}</p>
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="icon"
+                              className="h-4 w-4 absolute -top-2 -right-2 rounded-full flex items-center justify-center"
+                              onClick={() => {
+                                setSelectedSize(size as Size);
+                                setSelectedColor(color);
+                                setAddModalOpen(true);
+                              }}
+                            >
+                              <Plus className="h-3 w-3" />
+                            </Button>
                           </div>
                         ))}
                       </div>
@@ -194,10 +184,6 @@ export default function UpdateOrderPage() {
                 <div className="flex items-center justify-between flex-wrap">
                   <div className="flex items-center gap-4 flex-wrap">
                     <span className="text-sm">Size: {field.size}</span>
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <span>color:</span>
-                      <div className="w-6 h-6 rounded-full border" style={{ backgroundColor: field.color.hexCode }} />
-                    </div>
                     <span>Quantity: {field.quantity}</span>
                     <span>{field.date}</span>
                   </div>
@@ -264,9 +250,6 @@ export default function UpdateOrderPage() {
             <div className="space-y-2">
               <Label className="text-sm font-medium">Color</Label>
               <div className="flex items-center gap-2">
-                {selectedColor && (
-                  <div className="w-6 h-6 rounded-full border" style={{ backgroundColor: selectedColor.hexCode }} />
-                )}
                 <Input value={selectedColor?.name || ""} disabled />
               </div>
             </div>

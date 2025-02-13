@@ -163,9 +163,7 @@ export const variationsSchema = z.object({
   size: z.string(),
   colors: z.array(
     z.object({
-      id: z.string(),
       name: z.string(),
-      hexCode: z.string(),
     }),
   ),
 });
@@ -214,10 +212,7 @@ export const addProduct = async (
   try {
     const productRef = await addDoc(collection(db, "products"), {
       ...productResult.data,
-      searchableFields: generateSearchableFields(
-        productResult.data?.name || "",
-        productResult.data?.sku || "",
-      ),
+      searchableFields: generateSearchableFields(productResult.data?.name || "", productResult.data?.sku || ""),
       createdAt: serverTimestamp(),
       updatedAt: serverTimestamp(),
     });
@@ -255,6 +250,7 @@ export const updateProduct = async (
       product: null,
       variations: [],
     };
+    console.log(updatedVariations)
 
     const productResult = addProductSchema.safeParse(product);
     if (!productResult.success) {
@@ -275,7 +271,6 @@ export const updateProduct = async (
         error: errors,
       };
     }
-
     await updateDoc(doc(db, "products", id), {
       name: product.name,
       description: product.description,
@@ -301,7 +296,7 @@ export const updateProduct = async (
     }
 
     const newVariations = updatedVariations.filter((v) => !v.id);
-
+    console.log(newVariations);
     // add new variations
     for (const variation of newVariations) {
       // TODO fix ids not appearing in new variations added from update page

@@ -87,8 +87,21 @@ export default function EditProductPage() {
       variantsSelected.push(variant);
     }
     try {
-      updateProduct({ productData: data, variations: variantsSelected });
-      toast.success("Product updated successfully!");
+      updateProduct(
+        { productData: data, variations: variantsSelected },
+        {
+          onSettled(data) {
+            if (data?.success) {
+              toast.success("Product updated successfully!");
+              navigate("/ecommerce/products");
+              return;
+            }
+
+            console.error(data?.error);
+            toast.error("Failed to update product!");
+          },
+        },
+      );
     } catch (error) {
       toast.error("Failed to update product!");
     }

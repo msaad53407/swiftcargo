@@ -35,9 +35,7 @@ export const addOrderSchema = z.object({
     z.object({
       size: z.enum([...SIZES]),
       color: z.object({
-        id: z.string(),
         name: z.string(),
-        hexCode: z.string(),
       }),
       quantity: z.number(),
       date: z.string(),

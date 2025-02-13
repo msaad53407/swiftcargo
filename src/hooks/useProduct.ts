@@ -2,7 +2,6 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { getProduct, updateProduct, deleteProduct } from "@/utils/product";
 import { useState, useEffect } from "react";
 import type { Color, Variation } from "@/types/product";
-import { SIZES } from "@/components/products/Variations";
 
 export default function useProduct(id: string | undefined) {
   const [colorVariations, setColorVariations] = useState<Record<string, Color[]>>({});
@@ -56,7 +55,7 @@ export default function useProduct(id: string | undefined) {
           (acc, variation) => ({ ...acc, [variation.size]: variation.colors }),
           {},
         ),
-      ).sort(([a], [b]) => SIZES.indexOf(a as (typeof SIZES)[number]) - SIZES.indexOf(b as (typeof SIZES)[number])),
+      ).sort((a, b) => b[0].localeCompare(a[0])),
     );
   };
 

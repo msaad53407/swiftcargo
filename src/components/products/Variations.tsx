@@ -1,13 +1,10 @@
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import useColors from "@/hooks/useColors";
 import { Color } from "@/types/product";
-import { Plus } from "lucide-react";
+import { Check, Edit, Plus, Trash2 } from "lucide-react";
 import { useState } from "react";
-import Loader from "../Loader";
-import { Separator } from "../ui/separator";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "../ui/tooltip";
+import { Input } from "../ui/input";
+import { Label } from "../ui/label";
 
 interface VariationsProps {
   colors: Record<string, Color[]>;
@@ -15,36 +12,21 @@ interface VariationsProps {
   // fieldErrors: VariationErrorType[];
 }
 
-export const SIZES = ["XS", "S", "M", "L", "XL", "XXL", "3XL"] as const;
-
 export default function Variations({ colors, onChange }: VariationsProps) {
-  const [selectedSize, setSelectedSize] = useState("XS");
+  const [selectedSize, setSelectedSize] = useState("");
+  const [newVariantColors, setNewVariantColors] = useState<Color[]>([]);
+  const [newColorsCount, setNewColorsCount] = useState(1);
 
-  const { colors: predefinedColors, isLoading: loading } = useColors();
-
-  const addColor = (color: Color) => {
-    const existingColor = colors[selectedSize]?.find((c) => c.id === color.id);
-    if (existingColor) {
-      return;
-    }
+  const addColor = () => {
     const newColors = {
       ...colors,
-      [selectedSize]: [...(colors[selectedSize] || []), color],
+      [selectedSize]: [...(colors[selectedSize] || []), ...newVariantColors],
     };
     onChange(newColors);
+    setNewVariantColors([{ name: "" }]);
+    setNewColorsCount(1);
+    setSelectedSize("");
   };
-
-  const removeColor = (size: string, colorToRemove: Color) => {
-    const newColors = {
-      ...colors,
-      [size]: colors[size].filter((color) => color.id !== colorToRemove.id),
-    };
-    onChange(newColors);
-  };
-
-  if (loading) {
-    return <Loader />;
-  }
 
   return (
     <div className="space-y-4">
@@ -59,67 +41,53 @@ export default function Variations({ colors, onChange }: VariationsProps) {
               </Button>
             </DropdownMenuTrigger>
           </div>
-          <DropdownMenuContent className="w-[400px] p-4" align="end" sideOffset={8}>
+          <DropdownMenuContent className="w-[400px] p-4 max-h-[400px] overflow-y-auto" align="end" sideOffset={8}>
             <div className="space-y-4">
               <div className="flex items-center justify-between gap-2">
-                <h4 className="text-sm text-muted-foreground">Select colors for each size</h4>
+                <h4 className="text-sm text-muted-foreground">Add a New Variation</h4>
               </div>
 
-              <Tabs defaultValue="XS" value={selectedSize} onValueChange={setSelectedSize} className="w-full">
-                <TabsList className="w-full justify-start">
-                  {SIZES.map((size) => (
-                    <TabsTrigger key={size} value={size} className="relative">
-                      {size}
-                      {colors[size]?.length > 0 && (
-                        <span className="absolute -top-1 -right-1 h-2 w-2 bg-primary rounded-full" />
-                      )}
-                    </TabsTrigger>
-                  ))}
-                </TabsList>
-
-                {SIZES.map((size) => (
-                  <TabsContent key={size} value={size} className="mt-4">
-                    {colors[size]?.length > 0 && (
-                      <div className="flex flex-wrap gap-2 mb-4">
-                        {colors[size].map((color, index) => (
-                          <div key={`${color}-${index}`} className="relative group">
-                            <div
-                              className="w-6 h-6 rounded-full border cursor-pointer group-hover:ring-2 ring-offset-2"
-                              style={{ backgroundColor: color.hexCode }}
-                              onClick={() => removeColor(size, color)}
-                            />
-                          </div>
-                        ))}
-                        <Separator className="bg-primary my-1" />
-                      </div>
+              <div className="space-y-2">
+                <Label htmlFor="newVariant">Enter Size</Label>
+                <Input id="newVariant" value={selectedSize} onChange={(e) => setSelectedSize(e.target.value)} />
+              </div>
+              <div className="space-y-2">
+                <div className="flex justify-between items-center">
+                  <Label>Enter Color(s)</Label>
+                  <div className="flex gap-2 items-center">
+                    <Button
+                      className="bg-transparent hover:bg-transparent p-2"
+                      onClick={() => setNewColorsCount(newColorsCount + 1)}
+                    >
+                      <Plus className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+                {new Array(newColorsCount).fill(0).map((_, index) => (
+                  <div key={index} className="relative">
+                    <Input
+                      value={newVariantColors[index]?.name}
+                      onChange={(e) => {
+                        const newColors = [...newVariantColors];
+                        newColors[index] = { ...newColors[index], name: e.target.value };
+                        setNewVariantColors(newColors);
+                      }}
+                    />
+                    {newColorsCount > 1 && (
+                      <Button
+                        className="absolute right-2 top-0 bg-transparent hover:bg-transparent p-2"
+                        onClick={() => {
+                          setNewVariantColors(newVariantColors.filter((_, i) => i !== index));
+                          setNewColorsCount(newColorsCount - 1);
+                        }}
+                      >
+                        <Trash2 className="text-red-500" />
+                      </Button>
                     )}
-                  </TabsContent>
+                  </div>
                 ))}
-              </Tabs>
-
-              <div className="grid grid-cols-7 gap-2">
-                {predefinedColors.length > 0 ? (
-                  predefinedColors.map((color, index) => (
-                    <TooltipProvider disableHoverableContent>
-                      <Tooltip delayDuration={100}>
-                        <TooltipTrigger>
-                          <button
-                            key={`${color.hexCode}-${index}`}
-                            className="w-8 h-8 rounded-full border hover:ring-2 ring-offset-2 transition-all"
-                            style={{ backgroundColor: color.hexCode }}
-                            onClick={() => addColor(color)}
-                          />
-                        </TooltipTrigger>
-                        <TooltipContent>
-                          <p>{color.name}</p>
-                        </TooltipContent>
-                      </Tooltip>
-                    </TooltipProvider>
-                  ))
-                ) : (
-                  <h4 className="text-sm text-muted-foreground">No Colors found. Start by adding a new Color</h4>
-                )}
               </div>
+              <Button onClick={addColor}>Add</Button>
             </div>
           </DropdownMenuContent>
         </DropdownMenu>
@@ -130,35 +98,7 @@ export default function Variations({ colors, onChange }: VariationsProps) {
           {Object.entries(colors).map(
             ([size, sizeColors]) =>
               sizeColors.length > 0 && (
-                <div key={size} className="flex flex-col gap-4 border rounded-lg p-4">
-                  <div className="w-12 border p-2 rounded-lg text-center font-medium bg-gray-200">{size}</div>
-                  <div className="flex gap-2 flex-wrap">
-                    {sizeColors.map((color, index) => (
-                      <TooltipProvider>
-                        {/* {fieldErrors[].} */}
-                        <Tooltip delayDuration={100}>
-                          <TooltipTrigger onClick={(e) => e.preventDefault()} className="cursor-default">
-                            <div
-                              key={`${color}-${index}`}
-                              className="w-8 h-8 rounded-lg border relative"
-                              style={{ backgroundColor: color.hexCode }}
-                            >
-                              <span
-                                className="absolute -top-1 -right-1 h-4 w-4 text-xs flex justify-center items-center bg-red-500 text-white p-1 rounded-full cursor-pointer"
-                                onClick={() => removeColor(size, color)}
-                              >
-                                X
-                              </span>
-                            </div>
-                          </TooltipTrigger>
-                          <TooltipContent>
-                            <p>{color.name}</p>
-                          </TooltipContent>
-                        </Tooltip>
-                      </TooltipProvider>
-                    ))}
-                  </div>
-                </div>
+                <VariationDisplay key={size} colors={sizeColors} variants={colors} size={size} onChange={onChange} />
               ),
           )}
         </div>
@@ -166,3 +106,113 @@ export default function Variations({ colors, onChange }: VariationsProps) {
     </div>
   );
 }
+
+const VariationDisplay = ({
+  colors,
+  size,
+  variants,
+  onChange,
+}: {
+  colors: Color[];
+  size: string;
+  variants: Record<string, Color[]>;
+  onChange: (colors: Record<string, Color[]>) => void;
+}) => {
+  const [isEditMode, setIsEditMode] = useState(false);
+  const [newVariantColors, setNewVariantColors] = useState(colors);
+  const [newColorsCount, setNewColorsCount] = useState(colors.length);
+  const [selectedSize, setSelectedSize] = useState(size);
+  const removeVariation = (size: string) => {
+    const newVariants = { ...variants, [size]: [] };
+
+    onChange(newVariants);
+  };
+
+  const updateVariation = () => {
+    const newVariants = { ...variants, [selectedSize]: newVariantColors };
+    onChange(newVariants);
+    setIsEditMode(false);
+  };
+
+  return (
+    <div key={size} className="flex flex-col gap-4 border rounded-lg p-4">
+      <div className="flex justify-between">
+        {!isEditMode ? (
+          <div className="w-12 border p-2 rounded-lg text-center font-medium bg-gray-200">{size}</div>
+        ) : (
+          <p>Update Variation</p>
+        )}
+        <div className="flex gap-2 items-center">
+          {!isEditMode && (
+            <Button
+              className="p-2 bg-transparent hover:bg-transparent"
+              type="button"
+              onClick={() => setIsEditMode(true)}
+            >
+              <Edit className="text-green-500" />
+            </Button>
+          )}
+          <Button
+            type="button"
+            className="p-2 bg-transparent hover:bg-transparent"
+            onClick={() => (!isEditMode ? removeVariation(size) : updateVariation())}
+          >
+            {!isEditMode ? <Trash2 className="text-red-500" /> : <Check className="text-green-500" />}
+          </Button>
+        </div>
+      </div>
+      {!isEditMode ? (
+        <div className="flex gap-2 flex-wrap">
+          {colors.map((color) => (
+            <p className="px-2 py-1 border rounded-lg">{color.name}</p>
+          ))}
+        </div>
+      ) : (
+        <div className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="newVariant">Enter Size</Label>
+            <Input id="newVariant" value={selectedSize} onChange={(e) => setSelectedSize(e.target.value)} />
+          </div>
+          <div className="space-y-2">
+            <div className="flex justify-between items-center">
+              <Label>Enter Color(s)</Label>
+              <div className="flex gap-2 items-center">
+                <Button
+                  type="button"
+                  className="bg-transparent hover:bg-transparent p-2"
+                  onClick={() => setNewColorsCount(newColorsCount + 1)}
+                >
+                  <Plus className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+            {new Array(newColorsCount).fill(0).map((_, index) => (
+              <div key={index} className="relative">
+                <Input
+                  value={newVariantColors[index]?.name}
+                  onChange={(e) => {
+                    const newColors = [...newVariantColors];
+                    newColors[index] = { ...newColors[index], name: e.target.value };
+                    setNewVariantColors(newColors);
+                  }}
+                />
+                {newColorsCount > 1 && (
+                  <Button
+                    type="button"
+                    className="absolute right-2 top-0 bg-transparent hover:bg-transparent p-0 shadow-none"
+                    onClick={() => {
+                      setNewVariantColors(newVariantColors.filter((_, i) => i !== index));
+                      setNewColorsCount(newColorsCount - 1);
+                    }}
+                  >
+                    <Trash2 className="text-red-500" />
+                  </Button>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
