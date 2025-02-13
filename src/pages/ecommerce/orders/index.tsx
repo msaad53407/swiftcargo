@@ -41,7 +41,6 @@ export default function OrdersPage() {
       OrderID: order.id,
       Product: order.product.name,
       SKU: order.product.sku,
-      Supplier: order.product.supplier,
       Quantity: order.orderVariations.reduce((total, variation) => total + variation.quantity, 0),
       Status: order.status,
     }));
@@ -143,24 +142,6 @@ export default function OrdersPage() {
                       {filterMetadata.skus.map((sku) => (
                         <SelectItem key={sku} value={sku}>
                           {sku}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="space-y-2">
-                  <Label className="text-sm font-medium">Supplier</Label>
-                  <Select
-                    value={filters.supplier}
-                    onValueChange={(value) => setFilters((f) => ({ ...f, supplier: value }))}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select Supplier" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {filterMetadata.suppliers.map((supplier) => (
-                        <SelectItem key={supplier} value={supplier}>
-                          {supplier}
                         </SelectItem>
                       ))}
                     </SelectContent>

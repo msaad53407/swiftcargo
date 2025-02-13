@@ -29,7 +29,6 @@ const ECommerceMenuItems = [
   { icon: LayoutDashboard, label: "Dashboard", path: "/ecommerce/dashboard" },
   { icon: Package, label: "Product Management", path: "/ecommerce/products" },
   { icon: Plus, label: "Add Product", path: "/ecommerce/products/add" },
-  { icon: Plus, label: "Add Color", path: "/ecommerce/colors/add" },
   { icon: CreditCard, label: "Order Management", path: "/ecommerce/orders" },
   { icon: Bell, label: "Notification", path: "/ecommerce/notifications" },
   {

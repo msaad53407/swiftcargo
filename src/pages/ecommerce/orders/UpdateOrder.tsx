@@ -43,7 +43,6 @@ export default function UpdateOrderPage() {
       product: {
         name: order?.product?.name,
         sku: order?.product?.sku,
-        supplier: order?.product?.supplier,
       },
       status: order?.status,
       orderVariations: order?.orderVariations || [],
@@ -56,7 +55,6 @@ export default function UpdateOrderPage() {
     if (order) {
       setValue("product.name", order.product.name);
       setValue("product.sku", order.product.sku);
-      setValue("product.supplier", order.product.supplier);
       setValue("product.image", order.product.image);
       setValue("status", order.status);
       setValue("orderVariations", order.orderVariations);
@@ -128,19 +126,6 @@ export default function UpdateOrderPage() {
 
       <form onSubmit={handleSubmit(onSubmit, (errors) => console.log(errors))} className="space-y-6">
         <div className="grid grid-cols-2 gap-4">
-          <div className="space-y-2">
-            <Label className="text-sm font-medium">Supplier Name</Label>
-            <Controller
-              name="product.supplier"
-              control={control}
-              render={({ field, fieldState: { error } }) => (
-                <div>
-                  {error && <p className="text-sm text-red-500">{error.message}</p>}
-                  <Input {...field} disabled placeholder="Enter Supplier Name" />
-                </div>
-              )}
-            />
-          </div>
           <div className="space-y-2">
             <Label className="text-sm font-medium">SKU</Label>
             <Controller

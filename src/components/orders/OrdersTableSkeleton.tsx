@@ -10,7 +10,6 @@ export function OrdersTableSKeleton() {
             <TableHead>Order Id.</TableHead>
             <TableHead>Product</TableHead>
             <TableHead>SKU</TableHead>
-            <TableHead>Supplier</TableHead>
             <TableHead>Quantity</TableHead>
             <TableHead>Status</TableHead>
             <TableHead className="text-right">Action</TableHead>

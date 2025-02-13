@@ -5,7 +5,6 @@ export type Product = {
   image?: string;
   sku: string;
   visibility: boolean;
-  supplier: string;
   variations: Variation[];
   searchableFields: string[];
   createdAt: string;

@@ -29,7 +29,6 @@ export const addOrderSchema = z.object({
     name: z.string(),
     sku: z.string(),
     image: z.string().optional(),
-    supplier: z.string(),
   }),
   status: z.nativeEnum(OrderStatus),
   orderVariations: z.array(

@@ -43,7 +43,6 @@ export default function EditProductPage() {
         id: `#${product.id}`,
         name: product.name,
         sku: product.sku,
-        supplier: product.supplier,
         description: product.description,
         image: product.image,
       });
@@ -216,20 +215,6 @@ export default function EditProductPage() {
                   />
                 </div>
               </div>
-
-              <FormField
-                control={form.control}
-                name="supplier"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-primary-text">Supplier</FormLabel>
-                    <FormControl>
-                      <Input {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
 
               <Variations colors={colorVariations} onChange={setColorVariations} />
 

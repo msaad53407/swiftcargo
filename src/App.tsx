@@ -9,25 +9,24 @@ import { Navigate, Route, BrowserRouter as Router, Routes } from "react-router-d
 import ChatLayout from "./components/layout/ChatLayout";
 import { ToastProvider } from "./components/providers/ToastProvider";
 import {
-  AddColor,
   AddProduct,
-  Dashboard,
-  EcommerceDashboard,
-  EmployeesPage,
-  NotificationsPage,
-  PackageManagment,
-  ProductsPage,
-  ProfilePage,
-  SignIn,
   ChatPage,
   CreateOrderPage,
-  UpdateOrderPage,
+  Dashboard,
+  EcommerceDashboard,
   EcommerceNotificationsPage,
   EditProductPage,
+  EmployeesPage,
   IndividualChatPage,
+  NotificationsPage,
   OrdersPage,
+  PackageManagment,
   PoliciesPage,
+  ProductsPage,
+  ProfilePage,
   SettingsPage,
+  SignIn,
+  UpdateOrderPage,
 } from "./pages";
 
 function DashboardLayout({ type, children }: { type?: "default" | "ecommerce"; children: React.ReactNode }) {
@@ -120,7 +119,6 @@ function App() {
                     <Route path="dashboard" element={<EcommerceDashboard />} />
                     <Route path="products" element={<ProductsPage />} />
                     <Route path="products/add" element={<AddProduct />} />
-                    <Route path="colors/add" element={<AddColor />} />
                     <Route path="products/update/:id" element={<EditProductPage />} />
                     <Route path="orders" element={<OrdersPage />} />
                     <Route path="orders/add" element={<CreateOrderPage />} />

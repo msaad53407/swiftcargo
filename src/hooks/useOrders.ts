@@ -17,7 +17,6 @@ export function useOrders(limit: number = 10) {
   const [filters, setFilters] = useState<OrderFilters>({
     status: [],
     sku: "",
-    supplier: "",
   });
 
   const queryClient = useQueryClient();
@@ -41,14 +40,12 @@ export function useOrders(limit: number = 10) {
       data?.orders.filter((order) => {
         const matchesSearch =
           order.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          order.product.supplier.toLowerCase().includes(searchQuery.toLowerCase()) ||
           order.product.sku.toLowerCase().includes(searchQuery.toLowerCase()) ||
           order.product.name.toLowerCase().includes(searchQuery.toLowerCase());
 
         const matchesStatus = filters.status.length === 0 || filters.status.includes(order.status);
         const matchesSku = !filters.sku || order.product.sku === filters.sku;
-        const matchesSupplier = !filters.supplier || order.product.supplier === filters.supplier;
-        return matchesSearch && matchesStatus && matchesSku && matchesSupplier;
+        return matchesSearch && matchesStatus && matchesSku;
       }),
     [data?.orders, searchQuery, filters],
   );
@@ -92,17 +89,15 @@ export function useOrders(limit: number = 10) {
   });
 
   const filterMetadata = useMemo(() => {
-    if (!data?.orders) return { suppliers: [], skus: [] };
-    const suppliers = [...new Set(data.orders.map((order: Order) => order.product.supplier))];
+    if (!data?.orders) return { skus: [] };
     const skus = [...new Set(data.orders.map((order: Order) => order.product.sku))];
-    return { suppliers, skus };
+    return { skus };
   }, [data?.orders]);
 
   const resetFilters = () => {
     setFilters({
       status: [],
       sku: "",
-      supplier: "",
     });
   };
 

@@ -49,7 +49,6 @@ export const getProduct = async (id: string): Promise<Product | null> => {
         image: docSnap.data()?.image,
         sku: docSnap.data()?.sku,
         visibility: docSnap.data()?.visibility,
-        supplier: docSnap.data()?.supplier,
         searchableFields: docSnap.data()?.searchableFields,
         variations: variations.docs.map((variation) => ({
           id: variation.id,
@@ -122,7 +121,6 @@ export const getProducts = async (
           image: doc.data()?.image,
           sku: doc.data()?.sku,
           visibility: doc.data()?.visibility,
-          supplier: doc.data()?.supplier,
           searchableFields: doc.data()?.searchableFields,
           variations: variations.docs.map((variation) => ({
             id: variation.id,
@@ -150,7 +148,6 @@ export const addProductSchema = z.object({
     // .min(3, { message: "Image URL must be at least 3 characters" }),
     .optional(),
   sku: z.string().min(3, { message: "SKU must be at least 3 characters" }),
-  supplier: z.string().min(3, { message: "Supplier must be at least 3 characters" }),
   visibility: z.boolean().default(true),
 });
 
@@ -173,14 +170,12 @@ export const variationsSchema = z.object({
   ),
 });
 
-const generateSearchableFields = (name: string, sku: string, supplier: string) => {
+const generateSearchableFields = (name: string, sku: string) => {
   const searchableFields = [
     name.toLowerCase(),
     sku.toLowerCase(),
-    supplier.toLowerCase(),
     ...name.toLowerCase().split(" "),
     ...sku.toLowerCase().split("-"),
-    ...supplier.toLowerCase().split(" "),
     ...name.toLowerCase().split(""),
     ...sku.toLowerCase().split(""),
   ];
@@ -222,7 +217,6 @@ export const addProduct = async (
       searchableFields: generateSearchableFields(
         productResult.data?.name || "",
         productResult.data?.sku || "",
-        productResult.data?.supplier || "",
       ),
       createdAt: serverTimestamp(),
       updatedAt: serverTimestamp(),
@@ -285,10 +279,9 @@ export const updateProduct = async (
     await updateDoc(doc(db, "products", id), {
       name: product.name,
       description: product.description,
-      supplier: product.supplier,
       image: product.image,
       sku: product.sku,
-      searchableFields: generateSearchableFields(product.name || "", product.sku || "", product.supplier || ""),
+      searchableFields: generateSearchableFields(product.name || "", product.sku || ""),
       updatedAt: serverTimestamp(),
     });
 
@@ -383,7 +376,6 @@ export const deleteProduct = async (id: string) => {
       image: product.data()?.image,
       sku: product.data()?.sku,
       visibility: product.data()?.visibility,
-      supplier: product.data()?.supplier,
       variations: product.data()?.variations,
       searchableFields: product.data()?.searchableFields,
       createdAt: product.data()?.createdAt.toDate(),

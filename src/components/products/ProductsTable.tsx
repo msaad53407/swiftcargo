@@ -211,7 +211,6 @@ export function ProductsTable() {
               <TableHead>Date</TableHead>
               <TableHead>Product</TableHead>
               <TableHead>SKU</TableHead>
-              <TableHead>Supplier</TableHead>
               {currentUser && currentUser.userType === "admin" && <TableHead className="text-right">Action</TableHead>}
             </TableRow>
           </TableHeader>
@@ -230,7 +229,6 @@ export function ProductsTable() {
                     </div>
                   </TableCell>
                   <TableCell>#{product.sku}</TableCell>
-                  <TableCell>{product.supplier}</TableCell>
                   {currentUser && currentUser.userType === "admin" && (
                     <TableCell>
                       <div className="flex justify-end gap-2">

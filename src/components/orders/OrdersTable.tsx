@@ -65,7 +65,6 @@ export function OrdersTable({ data: filteredData, showFooter = true, limit }: Pr
               <TableHead>Order Id.</TableHead>
               <TableHead>Product</TableHead>
               <TableHead>SKU</TableHead>
-              <TableHead>Supplier</TableHead>
               <TableHead>Quantity</TableHead>
               <TableHead>Status</TableHead>
               <TableHead className="text-right">Action</TableHead>
@@ -84,7 +83,6 @@ export function OrdersTable({ data: filteredData, showFooter = true, limit }: Pr
                   </div>
                 </TableCell>
                 <TableCell>{order.product.sku}</TableCell>
-                <TableCell>{order.product.supplier}</TableCell>
                 <TableCell>
                   {order.orderVariations.reduce((total, variation) => total + variation.quantity, 0)} in stock
                 </TableCell>

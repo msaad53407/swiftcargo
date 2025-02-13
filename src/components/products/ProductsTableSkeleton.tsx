@@ -11,7 +11,6 @@ export function TableSkeleton() {
             <TableHead>Date</TableHead>
             <TableHead>Product</TableHead>
             <TableHead>SKU</TableHead>
-            <TableHead>Supplier</TableHead>
             <TableHead className="text-right">Action</TableHead>
           </TableRow>
         </TableHeader>

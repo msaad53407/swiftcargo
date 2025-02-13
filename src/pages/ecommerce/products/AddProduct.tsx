@@ -27,7 +27,6 @@ export default function AddProduct() {
       name: "",
       sku: "",
       image: "",
-      supplier: "",
       description: "",
       visibility: true,
     },
@@ -150,20 +149,6 @@ export default function AddProduct() {
                 )}
               />
             </div>
-
-            <FormField
-              control={form.control}
-              name="supplier"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="text-primary-text">Supplier</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Enter supplier name" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
 
             <Variations colors={colorVariations} onChange={setColorVariations} />
 

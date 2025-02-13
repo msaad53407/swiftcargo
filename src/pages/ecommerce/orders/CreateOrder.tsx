@@ -44,7 +44,6 @@ export default function CreateOrderPage() {
         id: productId || "",
         name: product?.name,
         sku: product?.sku,
-        supplier: product?.supplier,
       },
       status: OrderStatus.PENDING,
       orderVariations: [],
@@ -55,7 +54,6 @@ export default function CreateOrderPage() {
     if (product) {
       setValue("product.name", product.name);
       setValue("product.sku", product.sku);
-      setValue("product.supplier", product.supplier);
       setValue("product.image", product.image);
     }
   }, [product]);
@@ -146,19 +144,6 @@ export default function CreateOrderPage() {
         className="space-y-6"
       >
         <div className="grid grid-cols-2 gap-4">
-          <div className="space-y-2">
-            <Label className="text-sm font-medium">Supplier Name</Label>
-            <Controller
-              name="product.supplier"
-              control={control}
-              render={({ field, fieldState: { error } }) => (
-                <div>
-                  {error && <p className="text-xs text-red-500">{error.message}</p>}
-                  <Input {...field} disabled placeholder="Enter supplier name" />
-                </div>
-              )}
-            />
-          </div>
           <div className="space-y-2">
             <Label className="text-sm font-medium">SKU</Label>
             <Controller

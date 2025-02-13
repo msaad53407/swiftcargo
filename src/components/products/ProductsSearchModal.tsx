@@ -56,7 +56,7 @@ const ProductsSearchModal = () => {
             <Input
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              placeholder="Search by name, SKU, or supplier..."
+              placeholder="Search by name, or SKU..."
             />
           </div>
 

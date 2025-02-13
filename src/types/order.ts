@@ -18,7 +18,6 @@ export enum OrderStatus {
 export type OrderFilters = {
   status: string[];
   sku: string;
-  supplier: string;
 };
 
 export const SIZES = ["XS", "S", "M", "L", "XL", "XXL", "3XL"] as const;
@@ -34,7 +33,6 @@ export type OrderVariation = {
 };
 
 export type OrderFormData = {
-  supplierName: string;
   sku: string;
   variations: OrderVariation[];
 };
