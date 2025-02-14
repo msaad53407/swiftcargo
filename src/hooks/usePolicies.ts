@@ -17,7 +17,8 @@ export function usePolicies() {
   });
 
   const addPolicyMutation = useMutation({
-    mutationFn: ({ title, content }: { title: string; content: string }) => addPolicy(title, content),
+    mutationFn: ({ title, content, policyType }: { title: string; content: string; policyType: string }) =>
+      addPolicy(title, content, policyType),
     onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: ["policies"],

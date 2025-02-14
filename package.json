@@ -63,6 +63,7 @@
   },
   "devDependencies": {
     "@tanstack/eslint-plugin-query": "^5.66.0",
+    "@types/js-cookie": "^3.0.6",
     "@types/node": "^20.11.19",
     "@types/papaparse": "^5.3.15",
     "@types/react": "^18.2.55",

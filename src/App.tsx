@@ -28,6 +28,7 @@ import {
   SignIn,
   UpdateOrderPage,
 } from "./pages";
+import ManagePoliciesPage from "./pages/ecommerce/policies/ManagePolicies";
 
 function DashboardLayout({ type, children }: { type?: "default" | "ecommerce"; children: React.ReactNode }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -142,6 +143,7 @@ function App() {
                     />
                     <Route path="settings" element={<SettingsPage />} />
                     <Route path="policies" element={<PoliciesPage />} />
+                    <Route path="policies/manage" element={<ManagePoliciesPage />} />
                     <Route path="" element={<Navigate to="/ecommerce/dashboard" />} />
                   </Routes>
                 </DashboardLayout>

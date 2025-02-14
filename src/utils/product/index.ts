@@ -48,6 +48,7 @@ export const getProduct = async (id: string): Promise<Product | null> => {
         description: docSnap.data()?.description,
         image: docSnap.data()?.image,
         sku: docSnap.data()?.sku,
+        weight: docSnap.data()?.weight,
         visibility: docSnap.data()?.visibility,
         searchableFields: docSnap.data()?.searchableFields,
         variations: variations.docs.map((variation) => ({
@@ -120,6 +121,7 @@ export const getProducts = async (
           description: doc.data()?.description,
           image: doc.data()?.image,
           sku: doc.data()?.sku,
+          weight: doc.data()?.weight,
           visibility: doc.data()?.visibility,
           searchableFields: doc.data()?.searchableFields,
           variations: variations.docs.map((variation) => ({
@@ -148,6 +150,10 @@ export const addProductSchema = z.object({
     // .min(3, { message: "Image URL must be at least 3 characters" }),
     .optional(),
   sku: z.string().min(3, { message: "SKU must be at least 3 characters" }),
+  weight: z.object({
+    unit: z.enum(["kg", "g"]).default("g"),
+    value: z.string().min(1, { message: "Weight must be at least 1 character" }),
+  }),
   visibility: z.boolean().default(true),
 });
 
@@ -250,7 +256,7 @@ export const updateProduct = async (
       product: null,
       variations: [],
     };
-    console.log(updatedVariations)
+    console.log(updatedVariations);
 
     const productResult = addProductSchema.safeParse(product);
     if (!productResult.success) {
@@ -275,6 +281,7 @@ export const updateProduct = async (
       name: product.name,
       description: product.description,
       image: product.image,
+      weight: product.weight,
       sku: product.sku,
       searchableFields: generateSearchableFields(product.name || "", product.sku || ""),
       updatedAt: serverTimestamp(),
@@ -370,6 +377,7 @@ export const deleteProduct = async (id: string) => {
       description: product.data()?.description,
       image: product.data()?.image,
       sku: product.data()?.sku,
+      weight: product.data()?.weight,
       visibility: product.data()?.visibility,
       variations: product.data()?.variations,
       searchableFields: product.data()?.searchableFields,

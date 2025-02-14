@@ -13,11 +13,12 @@ import { db } from "@/firebase/config";
 import { toast } from "sonner";
 import { Policy } from "@/types/policy";
 
-export const addPolicy = async (title: string, content: string): Promise<boolean> => {
+export const addPolicy = async (title: string, content: string, type = "employee"): Promise<boolean> => {
   try {
     await addDoc(collection(db, "policies"), {
       title,
       content,
+      type,
       lastUpdated: serverTimestamp(),
       isActive: false,
     });
@@ -75,15 +76,24 @@ export const setActivePolicy = async (id: string): Promise<boolean> => {
   try {
     // First, deactivate all policies
     const policies = await getPolicies();
-    await Promise.all(policies.map((policy) => updateDoc(doc(db, "policies", policy.id), { isActive: false })));
+    const policyToBeUpdated = policies.find((policy) => policy.id === id);
+    if (!policyToBeUpdated) {
+      toast.error("Policy not found");
+      return false;
+    }
+    await Promise.all(
+      policies
+        .filter((p) => p.type === policyToBeUpdated.type)
+        .map((policy) => updateDoc(doc(db, "policies", policy.id), { isActive: false })),
+    );
 
     // Then activate the selected policy
     const policyRef = doc(db, "policies", id);
     await updateDoc(policyRef, { isActive: true });
-    toast.success("Active policy updated");
+    toast.success(`Active ${policyToBeUpdated.type} policy updated`);
     return true;
   } catch (error) {
-    toast.error("Failed to update active policy");
+    toast.error(`Failed to update active policy`);
     return false;
   }
 };

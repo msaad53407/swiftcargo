@@ -9,23 +9,27 @@ import { PolicyEditor } from "./PolicyEditor";
 import { Loader2, Plus } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
 
 interface AddPolicyDialogProps {
-  onAddPolicy: (title: string, content: string) => Promise<boolean>;
+  onAddPolicy: (title: string, content: string, policyType: string) => Promise<boolean>;
   addingPolicy: boolean;
 }
 
 export function AddPolicyDialog({ onAddPolicy, addingPolicy }: AddPolicyDialogProps) {
   const [open, setOpen] = useState(false);
   const [title, setTitle] = useState("");
+  const [policyType, setPolicyType] = useState("employee");
   const [content, setContent] = useState("");
   const { currentUser } = useAuth();
 
   const handleSubmit = async () => {
-    const success = await onAddPolicy(title, content);
+    const success = await onAddPolicy(title, content, policyType);
+    console.log(success);
     if (success) {
       setTitle("");
       setContent("");
+      setPolicyType("employee");
       setOpen(false);
     }
   };
@@ -61,6 +65,18 @@ export function AddPolicyDialog({ onAddPolicy, addingPolicy }: AddPolicyDialogPr
               onChange={(e) => setTitle(e.target.value)}
               placeholder="Enter policy title"
             />
+          </div>
+          <div className="grid gap-2">
+            <Label htmlFor="title">Policy Type</Label>
+            <Select value={policyType} onValueChange={(policy) => setPolicyType(policy)}>
+              <SelectTrigger className="w-[180px]">
+                <SelectValue placeholder="Policy Type" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="employee">Employee</SelectItem>
+                <SelectItem value="customer">Customer</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
           <div className="grid gap-2">
             <Label>Policy Content</Label>

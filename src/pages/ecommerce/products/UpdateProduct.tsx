@@ -16,6 +16,7 @@ import { addProductSchema, UpdateProductFormValues } from "@/utils/product";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 export default function EditProductPage() {
   const { id: productId } = useParams<{ id: string }>();
@@ -44,6 +45,7 @@ export default function EditProductPage() {
         name: product.name,
         sku: product.sku,
         description: product.description,
+        weight: product.weight,
         image: product.image,
       });
     }
@@ -227,6 +229,43 @@ export default function EditProductPage() {
                     )}
                   />
                 </div>
+              </div>
+
+              <div className="flex gap-2 items-end">
+                <FormField
+                  control={form.control}
+                  name="weight.value"
+                  rules={{ min: 0 }}
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-primary-text">Product Weight</FormLabel>
+                      <FormControl>
+                        <Input type="number" min={0} placeholder="Enter product weight" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="weight.unit"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormControl>
+                        <Select value={field.value} onValueChange={field.onChange} defaultValue="g">
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select weight unit" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="g">g</SelectItem>
+                            <SelectItem value="kg">Kg</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
               </div>
 
               <Variations colors={colorVariations} onChange={setColorVariations} />

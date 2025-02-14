@@ -4,6 +4,10 @@ export type Product = {
   description?: string;
   image?: string;
   sku: string;
+  weight: {
+    unit: "kg" | "g";
+    value: string;
+  };
   visibility: boolean;
   variations: Variation[];
   searchableFields: string[];

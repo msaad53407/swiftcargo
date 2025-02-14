@@ -4,6 +4,7 @@ import Variations from "@/components/products/Variations";
 import { Button } from "@/components/ui/button";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { useAuth } from "@/contexts/AuthContext";
 import { Color, Variation } from "@/types/product";
@@ -28,6 +29,10 @@ export default function AddProduct() {
       sku: "",
       image: "",
       description: "",
+      weight: {
+        unit: "g",
+        value: "0.0",
+      },
       visibility: true,
     },
   });
@@ -37,17 +42,20 @@ export default function AddProduct() {
   const addProductMutation = useMutation({
     mutationFn: (data: { productData: ProductFormValues; variations: Omit<Variation, "id">[] }) =>
       addProduct(data.productData, data.variations),
-    onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: ["products", 1, null],
-        exact: true,
-      });
-      queryClient.invalidateQueries({
-        queryKey: ["productsCount"],
-        exact: true,
-      });
-      toast.success("Product added successfully!");
-      navigate("/ecommerce/products");
+    onSuccess: (result) => {
+      console.log(result);
+      if (result?.success) {
+        queryClient.invalidateQueries({
+          queryKey: ["products", 1, null],
+          exact: true,
+        });
+        queryClient.invalidateQueries({
+          queryKey: ["productsCount"],
+          exact: true,
+        });
+        toast.success("Product added successfully!");
+        navigate("/ecommerce/products");
+      }
     },
     onError: (error) => {
       // if (typeof error === "object" && error !== null) {
@@ -106,7 +114,7 @@ export default function AddProduct() {
         </div>
 
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+          <form onSubmit={form.handleSubmit(onSubmit, (e) => console.log(e))} className="space-y-8">
             <FormField
               control={form.control}
               name="image"
@@ -150,8 +158,43 @@ export default function AddProduct() {
               />
             </div>
 
+            <div className="flex gap-2 items-end">
+              <FormField
+                control={form.control}
+                name="weight.value"
+                rules={{ min: 0 }}
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-primary-text">Product Weight</FormLabel>
+                    <FormControl>
+                      <Input type="number" min={0} placeholder="Enter product weight" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="weight.unit"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormControl>
+                      <Select value={field.value} onValueChange={field.onChange} defaultValue="g">
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select weight unit" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="g">g</SelectItem>
+                          <SelectItem value="kg">Kg</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
             <Variations colors={colorVariations} onChange={setColorVariations} />
-
             <FormField
               control={form.control}
               name="description"
