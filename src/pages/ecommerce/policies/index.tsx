@@ -1,11 +1,12 @@
 import { PolicySkeleton } from "@/components/employees/PolicySkeleton";
+import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useAuth } from "@/contexts/AuthContext";
 import { usePolicies } from "@/hooks/usePolicies";
 import { Policy } from "@/types/policy";
-import { ErrorMessage } from "../settings";
-import { useAuth } from "@/contexts/AuthContext";
+import { Pencil } from "lucide-react";
 import { Link } from "react-router-dom";
-import { Settings } from "lucide-react";
+import { ErrorMessage } from "../settings";
 
 export default function PoliciesPage() {
   const { policies, isLoading: loading, error } = usePolicies();
@@ -18,7 +19,14 @@ export default function PoliciesPage() {
           policies.map((p) => (
             <div className="space-y-4">
               <h2 className="text-4xl my-4">{p.title}</h2>
-              <p dangerouslySetInnerHTML={{ __html: p.content }}></p>
+              <div
+                style={{
+                  whiteSpace: "pre-wrap",
+                  textWrap: "balance",
+                  overflowWrap: "break-word",
+                }}
+                dangerouslySetInnerHTML={{ __html: p.content }}
+              ></div>
             </div>
           ))
         ) : (
@@ -41,9 +49,12 @@ export default function PoliciesPage() {
       <div className="flex justify-between items-center mb-4">
         <h1 className="text-2xl font-semibold">Active Policies</h1>
         {currentUser && currentUser.userType === "admin" && (
-          <Link to="/ecommerce/policies/manage">
-            <Settings />
-          </Link>
+          <Button asChild>
+            <Link to="/ecommerce/policies/manage">
+              <Pencil className="mr-2" />
+              Edit Policies
+            </Link>
+          </Button>
         )}
       </div>
       <div className="bg-white rounded-lg p-6 border">

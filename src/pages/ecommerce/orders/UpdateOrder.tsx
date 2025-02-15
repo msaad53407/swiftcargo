@@ -14,8 +14,8 @@ import { Size } from "@/types/order";
 import { Color } from "@/types/product";
 import { addOrderSchema } from "@/utils/order";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { format } from "date-fns";
-import { CalendarIcon, Pencil, Plus, Trash2 } from "lucide-react";
+import { format, parse } from "date-fns";
+import { CalendarIcon, Plus, Trash2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Controller, useFieldArray, useForm } from "react-hook-form";
 import { useNavigate, useParams } from "react-router-dom";
@@ -97,7 +97,7 @@ export default function UpdateOrderPage() {
     append({
       size: selectedSize,
       color: selectedColor,
-      date: format(new Date(), "dd-MM-yyyy"),
+      date: format(selectedDate, "dd-MM-yyyy"),
       shippedQuantity: "0",
       comments: "",
       quantity: parseInt(selectedQuantity),
@@ -179,56 +179,69 @@ export default function UpdateOrderPage() {
 
         {fields.length > 0 && (
           <div className="space-y-4">
-            {fields.map((field, index) => (
-              <div key={field.id} className="border rounded-lg p-4 space-y-4">
-                <div className="flex items-center justify-between flex-wrap">
-                  <div className="flex items-center gap-4 flex-wrap">
-                    <span className="text-sm">Size: {field.size}</span>
-                    <span>Quantity: {field.quantity}</span>
-                    <span>{field.date}</span>
+            {fields.map((field, index) => {
+              const parsedDate = parse(field.date, "dd-MM-yyyy", new Date());
+              return (
+                <div key={field.id} className="border rounded-lg p-4 space-y-4">
+                  <div className="flex items-center justify-between flex-wrap">
+                    <div className="flex items-center gap-4 flex-wrap">
+                      <span className="text-sm">Size: {field.size}</span>
+                      <span className="text-sm">Color: {field.color.name}</span>
+                      <span>Quantity: {field.quantity}</span>
+                      <div className="flex gap-1 items-center">
+                        <p>Dispatch Date: </p>
+                        <span
+                          className={cn(
+                            `px-2 py-1 border rounded-lg`,
+                            parsedDate <= new Date() || parsedDate <= new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
+                              ? "bg-red-500 text-white"
+                              : "bg-green-500 text-white",
+                          )}
+                        >
+                          {field.date}
+                        </span>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      {currentUser?.userType === "admin" && (
+                        <Button type="button" variant="ghost" size="icon" onClick={() => remove(index)}>
+                          <Trash2 className="h-4 w-4 text-red-500" />
+                        </Button>
+                      )}
+                    </div>
                   </div>
-                  <div className="flex items-center gap-2">
-                    {currentUser?.userType === "admin" && (
-                      <Button type="button" variant="ghost" size="icon" onClick={() => remove(index)}>
-                        <Trash2 className="h-4 w-4 text-red-500" />
-                      </Button>
-                    )}
-                    <Button type="button" variant="ghost" size="icon">
-                      <Pencil className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label className="text-sm font-medium">Shipped Quantity</Label>
-                    <Controller
-                      name={`orderVariations.${index}.shippedQuantity`}
-                      control={control}
-                      render={({ field, fieldState: { error } }) => (
-                        <div>
-                          {error && <p className="text-sm text-red-500">{error.message}</p>}
-                          <Input {...field} type="number" placeholder="Enter Shipped Quantity" />
-                        </div>
-                      )}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label className="text-sm font-medium">Comments</Label>
-                    <Controller
-                      name={`orderVariations.${index}.comments`}
-                      control={control}
-                      render={({ field, fieldState: { error } }) => (
-                        <div>
-                          {error && <p className="text-sm text-red-500">{error.message}</p>}
-                          <Textarea {...field} placeholder="Enter Comments" />
-                        </div>
-                      )}
-                    />
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label className="text-sm font-medium">Shipped Quantity</Label>
+                      <Controller
+                        name={`orderVariations.${index}.shippedQuantity`}
+                        control={control}
+                        render={({ field, fieldState: { error } }) => (
+                          <div>
+                            {error && <p className="text-sm text-red-500">{error.message}</p>}
+                            <Input {...field} type="number" placeholder="Enter Shipped Quantity" />
+                          </div>
+                        )}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label className="text-sm font-medium">Comments</Label>
+                      <Controller
+                        name={`orderVariations.${index}.comments`}
+                        control={control}
+                        render={({ field, fieldState: { error } }) => (
+                          <div>
+                            {error && <p className="text-sm text-red-500">{error.message}</p>}
+                            <Textarea {...field} placeholder="Enter Comments" />
+                          </div>
+                        )}
+                      />
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
 

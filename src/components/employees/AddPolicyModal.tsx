@@ -25,7 +25,6 @@ export function AddPolicyDialog({ onAddPolicy, addingPolicy }: AddPolicyDialogPr
 
   const handleSubmit = async () => {
     const success = await onAddPolicy(title, content, policyType);
-    console.log(success);
     if (success) {
       setTitle("");
       setContent("");

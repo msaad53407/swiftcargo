@@ -10,9 +10,9 @@ import { useAuth } from "@/contexts/AuthContext";
 import { usePolicies } from "@/hooks/usePolicies";
 import { Policy } from "@/types/policy";
 import { format } from "date-fns";
-import { Loader2, Pencil } from "lucide-react";
+import { ArrowLeft, Loader2, Pencil } from "lucide-react";
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 
 export default function ManagePoliciesPage() {
@@ -59,12 +59,13 @@ export default function ManagePoliciesPage() {
         onValueChange={(id) => {
           setActivePolicy(id || "");
         }}
+        className="max-w-full overflow-x-auto"
       >
         {policies.map((policy) => (
           <div
             key={policy.id}
-            className="flex flex-col 
-                  space-y-4 py-4"
+            className="flex flex-col space-y-4 py-4"
+            // style={{ width: screenWidth < 650 ? "calc(100% - 11rem)" : "100%" }}
           >
             <div className="flex items-start gap-2">
               <RadioGroupItem
@@ -113,6 +114,11 @@ export default function ManagePoliciesPage() {
                 </p>
                 <div
                   className="mt-2 text-sm prose max-w-none line-clamp-4"
+                  style={{
+                    whiteSpace: "pre-wrap",
+                    textWrap: "balance",
+                    overflowWrap: "break-word",
+                  }}
                   dangerouslySetInnerHTML={{ __html: policy.content }}
                 />
               </div>
@@ -180,7 +186,10 @@ export default function ManagePoliciesPage() {
   return (
     <div className="container py-10 px-4">
       <div className="flex justify-between items-center mb-4">
-        <div>
+        <div className="flex gap-4 items-center">
+          <Link to="/ecommerce/policies">
+            <ArrowLeft className="h-6 w-6" />
+          </Link>
           <h1 className="text-2xl font-semibold">Manage Policies</h1>
         </div>
         <AddPolicyDialog onAddPolicy={handleAddPolicy} addingPolicy={isAddingPolicy} />
