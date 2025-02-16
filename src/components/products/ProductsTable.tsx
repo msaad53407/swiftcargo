@@ -119,7 +119,7 @@ export function ProductsTable() {
 
   const exportToCSV = () => {
     const csvData = products.map((product) => ({
-      ID: product.id,
+      ID: product.numericalId,
       Name: product.name,
       SKU: product.sku,
       Description: product.description,
@@ -218,7 +218,7 @@ export function ProductsTable() {
             {filteredData.length > 0 ? (
               filteredData.map((product) => (
                 <TableRow key={product.id}>
-                  <TableCell className="font-medium text-blue-600">#{product.id}</TableCell>
+                  <TableCell className="font-medium text-blue-600">#{product.numericalId}</TableCell>
                   <TableCell>{new Date(product.createdAt).toDateString()}</TableCell>
                   <TableCell>
                     <div className="flex items-center gap-2">

@@ -38,7 +38,7 @@ export default function OrdersPage() {
 
   const exportToCSV = () => {
     const csvData = orders.map((order) => ({
-      OrderID: order.id,
+      OrderID: order.numericalId,
       Product: order.product.name,
       SKU: order.product.sku,
       Quantity: order.orderVariations.reduce((total, variation) => total + variation.quantity, 0),

@@ -1,19 +1,22 @@
 import { db } from "@/firebase/config";
 import { Order, OrderStatus, SIZES } from "@/types/order";
 import {
-  addDoc,
   collection,
   deleteDoc,
   doc,
+  DocumentData,
+  DocumentReference,
   getCountFromServer,
   getDoc,
   getDocs,
+  increment,
   limit,
   orderBy,
   query,
+  runTransaction,
   serverTimestamp,
   startAfter,
-  updateDoc,
+  updateDoc
 } from "firebase/firestore";
 import { z } from "zod";
 import {
@@ -57,17 +60,29 @@ export const addOrder = async (order: z.infer<typeof addOrderSchema>) => {
   }
 
   try {
-    const docRef = await addDoc(collection(db, "orders"), {
-      ...result.data,
-      createdAt: serverTimestamp(),
-      updatedAt: serverTimestamp(),
+    let docRef: DocumentReference<DocumentData, DocumentData> | null = null;
+    await runTransaction(db, async (transaction) => {
+      const ordersColRef = collection(db, "orders");
+      docRef = doc(ordersColRef);
+      const metadataRef = doc(db, "metadata", "metadata");
+
+      const metadataResult = await transaction.get(metadataRef);
+
+      transaction.set(docRef, {
+        ...result.data,
+        numericalId: metadataResult.data()?.ordersCount + 1,
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp(),
+      });
+
+      transaction.update(metadataRef, { ordersCount: increment(1) });
     });
 
     await notifyEcommerceOrderAdded(result.data);
 
     return {
       success: true,
-      id: docRef.id,
+      id: docRef ? (docRef as DocumentReference<DocumentData, DocumentData>).id : "",
     };
   } catch (error) {
     console.error("Error adding order:", error);
@@ -125,6 +140,7 @@ export const getOrder = async (id: string): Promise<Order | null> => {
         id: docSnap.id,
         product: docSnap.data()?.product,
         status: docSnap.data()?.status,
+        numericalId: docSnap.data()?.numericalId,
         orderVariations: docSnap.data()?.orderVariations,
         createdAt: docSnap.data()?.createdAt.toDate().toISOString(),
         updatedAt: docSnap.data()?.updatedAt.toDate().toISOString(),

@@ -73,7 +73,7 @@ export function OrdersTable({ data: filteredData, showFooter = true, limit }: Pr
           <TableBody>
             {filteredData?.map((order) => (
               <TableRow key={order.id}>
-                <TableCell className="font-medium text-blue-600">{order.id}</TableCell>
+                <TableCell className="font-medium text-blue-600">#{order.numericalId}</TableCell>
                 <TableCell>
                   <div className="flex items-center gap-2">
                     {order.product.image && (
@@ -82,7 +82,7 @@ export function OrdersTable({ data: filteredData, showFooter = true, limit }: Pr
                     {order.product.name}
                   </div>
                 </TableCell>
-                <TableCell>{order.product.sku}</TableCell>
+                <TableCell>#{order.product.sku}</TableCell>
                 <TableCell>
                   {order.orderVariations.reduce((total, variation) => total + variation.quantity, 0)} in stock
                 </TableCell>

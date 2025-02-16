@@ -54,7 +54,8 @@ export function useProducts(searchTerm?: string) {
         (product: Product) =>
           product.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
           product.sku.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          product.name.toLowerCase().includes(searchQuery.toLowerCase()),
+          product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          product.numericalId.toLowerCase().includes(searchQuery.toLowerCase()),
       ) || []
     );
   }, [data?.products, searchQuery]);

@@ -6,12 +6,16 @@ import {
   collection,
   deleteDoc,
   doc,
+  DocumentData,
+  DocumentReference,
   getCountFromServer,
   getDoc,
   getDocs,
+  increment,
   limit,
   orderBy,
   query,
+  runTransaction,
   serverTimestamp,
   startAfter,
   updateDoc,
@@ -49,6 +53,7 @@ export const getProduct = async (id: string): Promise<Product | null> => {
         image: docSnap.data()?.image,
         sku: docSnap.data()?.sku,
         weight: docSnap.data()?.weight,
+        numericalId: docSnap.data()?.numericalId,
         visibility: docSnap.data()?.visibility,
         searchableFields: docSnap.data()?.searchableFields,
         variations: variations.docs.map((variation) => ({
@@ -122,6 +127,7 @@ export const getProducts = async (
           image: doc.data()?.image,
           sku: doc.data()?.sku,
           weight: doc.data()?.weight,
+          numericalId: doc.data()?.numericalId,
           visibility: doc.data()?.visibility,
           searchableFields: doc.data()?.searchableFields,
           variations: variations.docs.map((variation) => ({
@@ -216,27 +222,42 @@ export const addProduct = async (
   }
 
   try {
-    const productRef = await addDoc(collection(db, "products"), {
-      ...productResult.data,
-      searchableFields: generateSearchableFields(productResult.data?.name || "", productResult.data?.sku || ""),
-      createdAt: serverTimestamp(),
-      updatedAt: serverTimestamp(),
+    let productRef: DocumentReference<DocumentData, DocumentData> | null = null;
+    await runTransaction(db, async (transaction) => {
+      // Create a new product document reference with an auto-generated ID
+      const productsColRef = collection(db, "products");
+      productRef = doc(productsColRef); // auto-generated ID
+      const metadataRef = doc(db, "metadata", "metadata");
+
+      const metadataResult = await transaction.get(metadataRef);
+
+      // Set the product document with its data and timestamps
+      transaction.set(productRef, {
+        ...productResult.data,
+        searchableFields: generateSearchableFields(productResult.data?.name || "", productResult.data?.sku || ""),
+        numericalId: metadataResult.data()?.productsCount + 1,
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp(),
+      });
+
+      // Add each variation as a document in the "variations" subcollection
+      for (const variation of variations) {
+        const variationRef = doc(collection(db, "products", productRef.id, "variations"));
+        transaction.set(variationRef, variation);
+      }
+
+      // Update the metadata document to increment productsCount by 1
+      // Assuming the metadata document's ID is "metadata" in the "metadata" collection
+      
+      transaction.update(metadataRef, { productsCount: increment(1) });
     });
 
-    for (const variation of variations) {
-      await addDoc(collection(db, "products", productRef.id, "variations"), variation);
-    }
-
-    const newProduct = await getProduct(productRef.id);
-
+    const newProduct = productRef ? await getProduct((productRef as DocumentReference).id) : null;
     if (newProduct) {
       await notifyEcommerceProductAdded(newProduct);
     }
 
-    return {
-      success: true,
-      error: null,
-    };
+    return { success: true, error: null };
   } catch (error) {
     console.error("Error adding product:", error);
     return {
@@ -378,6 +399,7 @@ export const deleteProduct = async (id: string) => {
       image: product.data()?.image,
       sku: product.data()?.sku,
       weight: product.data()?.weight,
+      numericalId: product.data()?.numericalId,
       visibility: product.data()?.visibility,
       variations: product.data()?.variations,
       searchableFields: product.data()?.searchableFields,

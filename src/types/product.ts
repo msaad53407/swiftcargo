@@ -8,6 +8,7 @@ export type Product = {
     unit: "kg" | "g";
     value: string;
   };
+  numericalId: string;
   visibility: boolean;
   variations: Variation[];
   searchableFields: string[];

@@ -40,6 +40,7 @@ export function useOrders(limit: number = 10) {
       data?.orders.filter((order) => {
         const matchesSearch =
           order.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          order.numericalId.toLowerCase().includes(searchQuery.toLowerCase()) ||
           order.product.sku.toLowerCase().includes(searchQuery.toLowerCase()) ||
           order.product.name.toLowerCase().includes(searchQuery.toLowerCase());
 

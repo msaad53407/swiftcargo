@@ -41,7 +41,7 @@ export default function EditProductPage() {
   useEffect(() => {
     if (product) {
       form.reset({
-        id: `#${product.id}`,
+        id: `#${product.numericalId}`,
         name: product.name,
         sku: product.sku,
         description: product.description,

@@ -4,6 +4,7 @@ export type Order = {
   id: string;
   product: Omit<Product, "description" | "createdAt" | "updatedAt" | "visibility">;
   status: OrderStatus;
+  numericalId: string;
   orderVariations: OrderVariation[];
   createdAt: string;
   updatedAt: string;
