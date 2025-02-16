@@ -37,10 +37,10 @@ export function useOrders(limit: number = 10) {
 
   const filteredData = useMemo(
     () =>
-      data?.orders.filter((order) => {
+      data?.orders.filter((order: Order) => {
         const matchesSearch =
           order.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          order.numericalId.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          order.numericalId.toString().includes(searchQuery.toLowerCase()) ||
           order.product.sku.toLowerCase().includes(searchQuery.toLowerCase()) ||
           order.product.name.toLowerCase().includes(searchQuery.toLowerCase());
 
