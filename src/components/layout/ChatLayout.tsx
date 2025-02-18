@@ -78,7 +78,7 @@ export function ChatSidebar() {
   return (
     <div className="h-full flex justify-center bg-background border-r">
       <ScrollArea className="flex-1">
-        <Tabs defaultValue="chats">
+        <Tabs defaultValue="chats" className="md:max-w-80 overflow-x-auto">
           <TabsList className="w-fit ml-4 mt-4">
             <TabsTrigger value="chats">Chats</TabsTrigger>
             <TabsTrigger value="contacts">Contacts</TabsTrigger>
