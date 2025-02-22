@@ -3,7 +3,7 @@ import { useProducts } from "@/hooks/useProducts";
 import { generatePaginationNUmbers } from "@/lib/utils";
 import type { Product } from "@/types/product";
 import { Loader2, PlusIcon } from "lucide-react";
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { useDebounce } from "use-debounce";
 import { Button } from "../ui/button";
@@ -13,7 +13,11 @@ import { ScrollArea } from "../ui/scroll-area";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 
-const ProductsSearchModal = () => {
+type Props = {
+  trigger?: React.ReactNode;
+};
+
+const ProductsSearchModal = ({ trigger }: Props) => {
   const [open, setOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
@@ -41,10 +45,12 @@ const ProductsSearchModal = () => {
       }}
     >
       <DialogTrigger asChild>
-        <Button className="flex items-center gap-2">
-          <PlusIcon className="h-6 w-6" />
-          <span className="sr-only">Add</span>
-        </Button>
+        {trigger ?? (
+          <Button className="flex items-center gap-2">
+            <PlusIcon className="h-6 w-6" />
+            <span className="sr-only">Add</span>
+          </Button>
+        )}
       </DialogTrigger>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
@@ -73,6 +79,7 @@ const ProductsSearchModal = () => {
                       key={product.id}
                       product={product}
                       link={`/ecommerce/orders/add?product=${product.id}`}
+                      setOpen={setOpen}
                     />
                   ))}
                 </div>
@@ -141,11 +148,16 @@ export default ProductsSearchModal;
 interface ProductListItemProps {
   product: Product;
   link: string;
+  setOpen: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
-function ProductListItem({ product, link }: ProductListItemProps) {
+function ProductListItem({ product, link, setOpen }: ProductListItemProps) {
   return (
-    <Link to={link} className={"flex items-center gap-3 p-2 cursor-pointer rounded-lg hover:bg-accent"}>
+    <Link
+      to={link}
+      className={"flex items-center gap-3 p-2 cursor-pointer rounded-lg hover:bg-accent"}
+      onClick={() => setOpen(false)}
+    >
       {product.image && (
         <img
           src={product.image || "/placeholder.svg"}

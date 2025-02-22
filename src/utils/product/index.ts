@@ -193,7 +193,7 @@ const generateSearchableFields = (name: string, sku: string) => {
 };
 
 export const addProduct = async (
-  product: Omit<Product, "id" | "createdAt" | "updatedAt" | "variations" | "searchableFields">,
+  product: Omit<Product, "id" | "createdAt" | "updatedAt" | "variations" | "searchableFields" | "numericalId">,
   variations: Omit<Variation, "id">[],
 ) => {
   const errors: AddProductErrorType = {
@@ -248,7 +248,7 @@ export const addProduct = async (
 
       // Update the metadata document to increment productsCount by 1
       // Assuming the metadata document's ID is "metadata" in the "metadata" collection
-      
+
       transaction.update(metadataRef, { productsCount: increment(1) });
     });
 

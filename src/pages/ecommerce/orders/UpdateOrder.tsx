@@ -1,4 +1,5 @@
 import Loader from "@/components/Loader";
+import PrintOrder from "@/components/orders/PrintOrder";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -43,6 +44,10 @@ export default function UpdateOrderPage() {
       product: {
         name: order?.product?.name,
         sku: order?.product?.sku,
+        weight: {
+          unit: order?.product?.weight.unit,
+          value: order?.product?.weight.value,
+        },
       },
       status: order?.status,
       orderVariations: order?.orderVariations || [],
@@ -57,10 +62,12 @@ export default function UpdateOrderPage() {
       setValue("status", order.status);
       setValue("orderVariations", order.orderVariations);
       setValue("product.id", order.product.id);
+      setValue("product.weight.unit", order.product.weight.unit);
+      setValue("product.weight.value", order.product.weight.value);
     }
   }, [order, setValue]);
 
-  const { fields, append, remove } = useFieldArray({
+  const { fields, append, remove, update } = useFieldArray({
     control,
     name: "orderVariations",
   });
@@ -109,17 +116,33 @@ export default function UpdateOrderPage() {
     setSelectedQuantity("");
   };
 
+  const handleDateUpdate = (day: Date | undefined, index: number, field: any) => {
+    if (!day || day.setHours(0, 0, 0, 0) < new Date().setHours(0, 0, 0, 0)) {
+      toast.error("Date must be today or in the future");
+      return;
+    }
+    update(index, {
+      ...field,
+      date: format(day, "dd-MM-yyyy"),
+    });
+  };
+
   if (!orderId) return null;
 
   if (orderLoading) return <Loader />;
 
+  console.log(order);
+
   return (
     <div className="p-6 container space-y-10 bg-card border shadow-sm rounded-xl">
-      <div>
-        <h1 className="text-2xl font-semibold">Update Order</h1>
-        <p className="text-muted-foreground">
-          Update order for <b>{order?.product.name}</b>
-        </p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-semibold">Update Order</h1>
+          <p className="text-muted-foreground">
+            Update order for <b>{order?.product.name}</b>
+          </p>
+        </div>
+        {order && <PrintOrder order={order} />}
       </div>
 
       <form onSubmit={handleSubmit(onSubmit, (errors) => console.log(errors))} className="space-y-6">
@@ -188,7 +211,7 @@ export default function UpdateOrderPage() {
                       <span className="text-sm">Size: {field.size}</span>
                       <span className="text-sm">Color: {field.color.name}</span>
                       <span>Quantity: {field.quantity}</span>
-                      <div className="flex gap-1 items-center">
+                      <div className="flex gap-2 items-center">
                         <p>Dispatch Date: </p>
                         <span
                           className={cn(
@@ -200,6 +223,24 @@ export default function UpdateOrderPage() {
                         >
                           {field.date}
                         </span>
+                        <Popover>
+                          <PopoverTrigger asChild>
+                            <Button
+                              variant="outline"
+                              className={cn("w-fit text-left font-normal", !selectedDate && "text-muted-foreground")}
+                            >
+                              <CalendarIcon className="h-4 w-4" />
+                            </Button>
+                          </PopoverTrigger>
+                          <PopoverContent className="w-auto p-0">
+                            <Calendar
+                              mode="single"
+                              today={parsedDate}
+                              onSelect={(day) => handleDateUpdate(day, index, field)}
+                              initialFocus
+                            />
+                          </PopoverContent>
+                        </Popover>
                       </div>
                     </div>
                     <div className="flex items-center gap-2">

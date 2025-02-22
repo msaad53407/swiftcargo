@@ -207,7 +207,6 @@ export function ProductsTable() {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Product Id.</TableHead>
               <TableHead>Date</TableHead>
               <TableHead>Product</TableHead>
               <TableHead>SKU</TableHead>
@@ -218,7 +217,6 @@ export function ProductsTable() {
             {filteredData.length > 0 ? (
               filteredData.map((product) => (
                 <TableRow key={product.id}>
-                  <TableCell className="font-medium text-blue-600">#{product.numericalId}</TableCell>
                   <TableCell>{new Date(product.createdAt).toDateString()}</TableCell>
                   <TableCell>
                     <div className="flex items-center gap-2">

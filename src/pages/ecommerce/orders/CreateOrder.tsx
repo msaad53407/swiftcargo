@@ -5,7 +5,6 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Textarea } from "@/components/ui/textarea";
 import { useAuth } from "@/contexts/AuthContext";
 import { useOrders } from "@/hooks/useOrders";
 import useProduct from "@/hooks/useProduct";
@@ -14,7 +13,7 @@ import { OrderStatus, Size } from "@/types/order";
 import { Color } from "@/types/product";
 import { addOrderSchema } from "@/utils/order";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { format, parse } from "date-fns";
+import { format } from "date-fns";
 import { CalendarIcon, Plus, Trash2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Controller, useFieldArray, useForm } from "react-hook-form";
@@ -43,6 +42,10 @@ export default function CreateOrderPage() {
       product: {
         id: productId || "",
         name: product?.name,
+        weight: {
+          unit: "g",
+          value: "0.0",
+        },
         sku: product?.sku,
       },
       status: OrderStatus.PENDING,
@@ -55,6 +58,8 @@ export default function CreateOrderPage() {
       setValue("product.name", product.name);
       setValue("product.sku", product.sku);
       setValue("product.image", product.image);
+      setValue("product.weight.value", product.weight.value);
+      setValue("product.weight.unit", product.weight.unit);
     }
   }, [product]);
 
@@ -194,9 +199,9 @@ export default function CreateOrderPage() {
         </div>
 
         {fields.length > 0 && (
-          <div className="space-y-4">
+          <div className="w-fit grid gap-4 md:grid-cols-2 lg:grid-cols-3">
             {fields.map((field, index) => {
-              const parsedDate = parse(field.date, "dd-MM-yyyy", new Date());
+              // const parsedDate = parse(field.date, "dd-MM-yyyy", new Date());
               return (
                 <div key={field.id} className="border rounded-lg p-4 space-y-4">
                   <div className="flex items-center justify-between flex-wrap">
@@ -204,7 +209,7 @@ export default function CreateOrderPage() {
                       <span className="text-sm">Size: {field.size}</span>
                       <span className="text-sm">Color: {field.color.name}</span>
                       <span>Quantity: {field.quantity}</span>
-                      <div className="flex gap-1 items-center">
+                      {/* <div className="flex gap-1 items-center">
                         <p>Dispatch Date: </p>
                         <span
                           className={cn(
@@ -216,7 +221,7 @@ export default function CreateOrderPage() {
                         >
                           {field.date}
                         </span>
-                      </div>
+                      </div> */}
                     </div>
                     <div className="flex items-center gap-2">
                       {currentUser?.userType === "admin" && (
@@ -227,7 +232,7 @@ export default function CreateOrderPage() {
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {/* <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <Label className="text-sm font-medium">Shipped Quantity</Label>
                       <Controller
@@ -254,7 +259,7 @@ export default function CreateOrderPage() {
                         )}
                       />
                     </div>
-                  </div>
+                  </div> */}
                 </div>
               );
             })}

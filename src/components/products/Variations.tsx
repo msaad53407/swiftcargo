@@ -16,6 +16,7 @@ export default function Variations({ colors, onChange }: VariationsProps) {
   const [selectedSize, setSelectedSize] = useState("");
   const [newVariantColors, setNewVariantColors] = useState<Color[]>([]);
   const [newColorsCount, setNewColorsCount] = useState(1);
+  const [open, setOpen] = useState(false);
 
   const addColor = () => {
     const newColors = {
@@ -26,13 +27,14 @@ export default function Variations({ colors, onChange }: VariationsProps) {
     setNewVariantColors([{ name: "" }]);
     setNewColorsCount(1);
     setSelectedSize("");
+    setOpen(false);
   };
 
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <h3 className="text-sm font-medium">Variations</h3>
-        <DropdownMenu>
+        <DropdownMenu open={open} onOpenChange={(isOpen) => setOpen(isOpen)}>
           <div className="flex gap-2 items-center">
             <DropdownMenuTrigger asChild>
               <Button variant="outline" size="sm">

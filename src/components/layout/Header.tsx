@@ -1,7 +1,7 @@
-import React from "react";
-import { Bell, MessageSquare, Menu } from "lucide-react";
 import { Avatar } from "@/components/ui/avatar";
 import { useAuth } from "@/contexts/AuthContext";
+import { Menu } from "lucide-react";
+import { useLocation } from "react-router-dom";
 
 interface HeaderProps {
   toggleSidebar: () => void;
@@ -9,13 +9,22 @@ interface HeaderProps {
 
 export function Header({ toggleSidebar }: HeaderProps) {
   const { currentUser } = useAuth();
+  const location = useLocation();
 
   return (
     <header className="h-16 border-b border-gray-200 bg-white px-4 lg:px-6 flex items-center justify-between">
       {/* Mobile: Toggle and Logo */}
       <div className="flex items-center lg:hidden">
-        <h1 className="ml-3 text-2xl font-bold">
-          Ummah<span className="text-[#40B093]"> Cargo</span>
+        <h1 className="ml-3 text-xl font-bold">
+          {!location.pathname.includes("ecommerce") ? (
+            <p>
+              Ummah <span className="text-[#40B093]"> Cargo</span>
+            </p>
+          ) : (
+            <p>
+              Bazar Al Haya <span className="text-[#40B093]"> Management</span>
+            </p>
+          )}
         </h1>
       </div>
 

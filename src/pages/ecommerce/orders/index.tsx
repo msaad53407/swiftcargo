@@ -1,5 +1,6 @@
 import { OrdersTable } from "@/components/orders/OrdersTable";
 import { OrdersTableSKeleton } from "@/components/orders/OrdersTableSkeleton";
+import PrintOrders from "@/components/orders/PrintOrders";
 import ProductsSearchModal from "@/components/products/ProductsSearchModal";
 import { Button } from "@/components/ui/button";
 import {
@@ -82,75 +83,78 @@ export default function OrdersPage() {
             onChange={(e) => setSearchQuery(e.target.value)}
           />
         </div>
-        <DropdownMenu open={showFilters} onOpenChange={setShowFilters}>
-          <DropdownMenuTrigger asChild>
-            <Button
-              variant="outline"
-              size="icon"
-              className={cn(Object.values(filters).some((v) => v.length) && "bg-primary text-primary-foreground")}
-            >
-              <Settings2 className="h-4 w-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent className="w-[280px]" align="end">
-            <div className="flex items-center justify-between p-2">
-              <p className="text-sm font-medium">Filter Orders</p>
-              <Button variant="ghost" size="sm" className="h-8 px-2 text-xs" onClick={resetFilters}>
-                Reset Filter
+        <div className="flex gap-2">
+          <DropdownMenu open={showFilters} onOpenChange={setShowFilters}>
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant="outline"
+                size="icon"
+                className={cn(Object.values(filters).some((v) => v.length) && "bg-primary text-primary-foreground")}
+              >
+                <Settings2 className="h-4 w-4" />
               </Button>
-            </div>
-            <DropdownMenuSeparator />
-            <div className="p-2">
-              <div className="space-y-4">
-                <div>
-                  <Label className="text-sm font-medium mb-1 block">Status</Label>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent className="w-[280px]" align="end">
+              <div className="flex items-center justify-between p-2">
+                <p className="text-sm font-medium">Filter Orders</p>
+                <Button variant="ghost" size="sm" className="h-8 px-2 text-xs" onClick={resetFilters}>
+                  Reset Filter
+                </Button>
+              </div>
+              <DropdownMenuSeparator />
+              <div className="p-2">
+                <div className="space-y-4">
+                  <div>
+                    <Label className="text-sm font-medium mb-1 block">Status</Label>
+                    <div className="space-y-2">
+                      {Object.values(OrderStatus).map((status) => (
+                        <div key={status} className="flex items-center">
+                          <Label className="flex items-center gap-2 text-sm capitalize">
+                            <Input
+                              type="checkbox"
+                              checked={filters.status.includes(status)}
+                              onChange={(e) => {
+                                if (e.target.checked) {
+                                  setFilters((f) => ({
+                                    ...f,
+                                    status: [...f.status, status],
+                                  }));
+                                } else {
+                                  setFilters((f) => ({
+                                    ...f,
+                                    status: f.status.filter((s) => s !== status),
+                                  }));
+                                }
+                              }}
+                              className="form-checkbox h-4 w-4 rounded border-gray-300"
+                            />
+                            {status}
+                          </Label>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
                   <div className="space-y-2">
-                    {Object.values(OrderStatus).map((status) => (
-                      <div key={status} className="flex items-center">
-                        <Label className="flex items-center gap-2 text-sm capitalize">
-                          <Input
-                            type="checkbox"
-                            checked={filters.status.includes(status)}
-                            onChange={(e) => {
-                              if (e.target.checked) {
-                                setFilters((f) => ({
-                                  ...f,
-                                  status: [...f.status, status],
-                                }));
-                              } else {
-                                setFilters((f) => ({
-                                  ...f,
-                                  status: f.status.filter((s) => s !== status),
-                                }));
-                              }
-                            }}
-                            className="form-checkbox h-4 w-4 rounded border-gray-300"
-                          />
-                          {status}
-                        </Label>
-                      </div>
-                    ))}
+                    <Label className="text-sm font-medium">SKU</Label>
+                    <Select value={filters.sku} onValueChange={(value) => setFilters((f) => ({ ...f, sku: value }))}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select SKU" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {filterMetadata.skus.map((sku) => (
+                          <SelectItem key={sku} value={sku}>
+                            {sku}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </div>
                 </div>
-                <div className="space-y-2">
-                  <Label className="text-sm font-medium">SKU</Label>
-                  <Select value={filters.sku} onValueChange={(value) => setFilters((f) => ({ ...f, sku: value }))}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select SKU" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {filterMetadata.skus.map((sku) => (
-                        <SelectItem key={sku} value={sku}>
-                          {sku}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
               </div>
-            </div>
-          </DropdownMenuContent>
-        </DropdownMenu>
+            </DropdownMenuContent>
+          </DropdownMenu>
+          {filteredData && <PrintOrders orders={filteredData} />}
+        </div>
       </div>
       {isLoading ? <OrdersTableSKeleton /> : <OrdersTable data={filteredData} />}
     </div>

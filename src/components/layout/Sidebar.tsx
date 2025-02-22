@@ -15,6 +15,7 @@ import {
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { Button } from "../ui/button";
+import ProductsSearchModal from "../products/ProductsSearchModal";
 
 const menuItems = [
   { icon: LayoutDashboard, label: "Dashboard", path: "/dashboard" },
@@ -30,6 +31,7 @@ const ECommerceMenuItems = [
   { icon: Package, label: "Product Management", path: "/ecommerce/products" },
   { icon: Plus, label: "Add Product", path: "/ecommerce/products/add" },
   { icon: CreditCard, label: "Order Management", path: "/ecommerce/orders" },
+  { icon: Plus, label: "Add Order", path: "/ecommerce/orders/add" },
   { icon: Bell, label: "Notification", path: "/ecommerce/notifications" },
   {
     icon: MessageSquareTextIcon,
@@ -90,8 +92,16 @@ export function Sidebar({ open, setOpen, type = "default" }: SidebarProps) {
         <div className="h-full flex flex-col gap-y-4">
           {/* Header */}
           <div className="flex items-center justify-between p-4 sticky top-0 bg-white z-10 border-b">
-            <h1 className="text-2xl font-bold">
-              Ummah<span className="text-[#40B093]"> Cargo</span>
+            <h1 className="text-xl font-bold">
+              {!location.pathname.includes("ecommerce") ? (
+                <p>
+                  Ummah <span className="text-[#40B093]"> Cargo</span>
+                </p>
+              ) : (
+                <p>
+                  Bazar Al Haya <span className="text-[#40B093]"> Management</span>
+                </p>
+              )}
             </h1>
             <button onClick={() => setOpen(false)} className="lg:hidden">
               <X size={24} />
@@ -101,7 +111,7 @@ export function Sidebar({ open, setOpen, type = "default" }: SidebarProps) {
           {/* Menu Items */}
           <nav className="flex-1 px-4 overflow-y-auto w-full">
             <Button onClick={handleViewToggle} className="my-4 w-fit mx-auto">
-              {location.pathname.includes("ecommerce") ? "Switch to Management" : "Switch to E-Commerce"}
+              {location.pathname.includes("ecommerce") ? "Switch to Ummah Cargo" : "Switch to Bazar Al Haya"}
             </Button>
             <ul className="space-y-1">
               {itemsToRender.map((item) => {
@@ -109,6 +119,22 @@ export function Sidebar({ open, setOpen, type = "default" }: SidebarProps) {
                 const isActive = location.pathname === item.path;
                 if (currentUser && currentUser.userType === "manager" && item.path === "/ecommerce/products/add") {
                   return null;
+                }
+                if (currentUser && currentUser.userType === "admin" && item.path === "/ecommerce/orders/add") {
+                  return (
+                    <ProductsSearchModal
+                      key={item.path}
+                      trigger={
+                        <li
+                          key={item.path}
+                          className="flex cursor-pointer items-center gap-3 px-4 py-3 rounded-lg text-sm text-gray-700 hover:bg-gray-100"
+                        >
+                          <Icon size={20} />
+                          {item.label}
+                        </li>
+                      }
+                    />
+                  );
                 }
                 return (
                   <li key={item.path}>

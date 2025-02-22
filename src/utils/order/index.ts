@@ -16,7 +16,7 @@ import {
   runTransaction,
   serverTimestamp,
   startAfter,
-  updateDoc
+  updateDoc,
 } from "firebase/firestore";
 import { z } from "zod";
 import {
@@ -31,6 +31,10 @@ export const addOrderSchema = z.object({
     id: z.string(),
     name: z.string(),
     sku: z.string(),
+    weight: z.object({
+      unit: z.enum(["kg", "g"]).default("g"),
+      value: z.string().min(1, { message: "Weight must be at least 1 character" }),
+    }),
     image: z.string().optional(),
   }),
   status: z.nativeEnum(OrderStatus),
