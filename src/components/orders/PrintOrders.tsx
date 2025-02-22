@@ -17,12 +17,19 @@ const PrintOrders = ({ orders }: Props) => {
         <head>
           <title>Bazar Al Haya Management - Orders List</title>
           <style>
-            @page { margin: 20px; }
+            @page { margin: 0; }
             body { 
               font-family: Arial, sans-serif;
               margin: 0;
               padding: 20px;
               color: #333;
+              -webkit-print-color-adjust: exact !important;
+              print-color-adjust: exact !important;
+            }
+            .page-container {
+              padding: 40px;
+              max-width: 800px;
+              margin: 0 auto;
             }
             .header {
               text-align: center;
@@ -96,7 +103,7 @@ const PrintOrders = ({ orders }: Props) => {
             }
           </style>
         </head>
-        <body>
+        <body class="page-container">
           <div class="header">
             <div class="logo">BAZAR AL HAYA MANAGEMENT</div>
             <div class="date">Orders List - Generated on ${currentDate}</div>

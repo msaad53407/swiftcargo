@@ -140,7 +140,7 @@ const VariationDisplay = ({
     <div key={size} className="flex flex-col gap-4 border rounded-lg p-4">
       <div className="flex justify-between">
         {!isEditMode ? (
-          <div className="w-12 border p-2 rounded-lg text-center font-medium bg-gray-200">{size}</div>
+          <div className="w-fit min-w-12 border p-2 rounded-lg text-center font-medium bg-gray-200">{size}</div>
         ) : (
           <p>Update Variation</p>
         )}
