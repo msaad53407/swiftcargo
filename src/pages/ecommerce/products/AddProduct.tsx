@@ -1,5 +1,6 @@
 import { ImageDropzone } from "@/components/ImageDropzone";
 import Loader from "@/components/Loader";
+import DeleteAlertModal from "@/components/products/DeleteAlertModal";
 import Variations from "@/components/products/Variations";
 import { Button } from "@/components/ui/button";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
@@ -11,6 +12,7 @@ import { Color, Variation } from "@/types/product";
 import { addProduct, addProductSchema, ProductFormValues, uploadImage } from "@/utils/product";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { Pencil, Trash } from "lucide-react";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
@@ -83,6 +85,15 @@ export default function AddProduct() {
     });
   }
 
+  const handleImageDelete = async () => {
+    try {
+      form.setValue("image", "");
+      toast.success("Image deleted successfully!");
+    } catch (error) {
+      toast.error("Failed to delete image!");
+    }
+  };
+
   async function onSubmit(data: ProductFormValues) {
     let variantsSelected: Omit<Variation, "id">[] = [];
     for (const key in colorVariations) {
@@ -121,7 +132,49 @@ export default function AddProduct() {
               render={({ field }) => (
                 <FormItem>
                   <FormControl>
-                    <ImageDropzone value={field.value} onChange={uploadImageToStorage} />
+                    {!form.getValues("image") ? (
+                      <ImageDropzone value={field.value} onChange={uploadImageToStorage} />
+                    ) : (
+                      <div className="space-y-4">
+                        <img
+                          src={field.value || "/placeholder.svg"}
+                          alt="Product"
+                          width={200}
+                          height={300}
+                          className="rounded-lg border"
+                        />
+                        <div className="flex gap-2">
+                          <Button
+                            type="button"
+                            variant="outline"
+                            onClick={() => document.getElementById("image-upload")?.click()}
+                          >
+                            <Pencil className="h-4 w-4 mr-2" />
+                            Edit Image
+                          </Button>
+                          <DeleteAlertModal
+                            isDeleting={false}
+                            onDelete={handleImageDelete}
+                            trigger={
+                              <Button type="button" variant="destructive">
+                                <Trash className="h-4 w-4 mr-2" />
+                                Delete
+                              </Button>
+                            }
+                          />
+                          <input
+                            id="image-upload"
+                            type="file"
+                            className="hidden"
+                            accept="image/*"
+                            onChange={(e) => {
+                              const file = e.target.files?.[0];
+                              if (file) uploadImageToStorage(file);
+                            }}
+                          />
+                        </div>
+                      </div>
+                    )}
                   </FormControl>
                   <FormMessage />
                 </FormItem>

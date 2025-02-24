@@ -2,52 +2,33 @@ import Loader from "@/components/Loader";
 import PrintOrder from "@/components/orders/PrintOrder";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Textarea } from "@/components/ui/textarea";
-import { useAuth } from "@/contexts/AuthContext";
 import useOrder from "@/hooks/useOrder";
-import useProduct from "@/hooks/useProduct";
 import { cn } from "@/lib/utils";
-import { Size } from "@/types/order";
-import { Color } from "@/types/product";
-import { addOrderSchema } from "@/utils/order";
+import { updateOrderSchema, UpdateOrderType } from "@/utils/order";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { format, parse } from "date-fns";
-import { CalendarIcon, Plus, Trash2 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { CalendarIcon } from "lucide-react";
+import { useEffect } from "react";
 import { Controller, useFieldArray, useForm } from "react-hook-form";
-import { useNavigate, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import { toast } from "sonner";
-import { z } from "zod";
 
 export default function UpdateOrderPage() {
   const { id: orderId } = useParams<{ id: string }>();
   const navigate = useNavigate();
 
-  const [addModalOpen, setAddModalOpen] = useState(false);
-  const [selectedSize, setSelectedSize] = useState<Size | null>(null);
-  const [selectedColor, setSelectedColor] = useState<Color | null>(null);
-  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
-  const [selectedQuantity, setSelectedQuantity] = useState("");
-
   const { order, isLoading: orderLoading, updateOrder, isUpdating } = useOrder(orderId);
-  const { isLoading: productLoading, colorVariations } = useProduct(order?.product.id);
 
-  const { currentUser } = useAuth();
-
-  const { control, handleSubmit, setValue, watch } = useForm<z.infer<typeof addOrderSchema>>({
-    resolver: zodResolver(addOrderSchema),
+  const { control, handleSubmit, setValue } = useForm<UpdateOrderType>({
+    resolver: zodResolver(updateOrderSchema),
     defaultValues: {
       product: {
         name: order?.product?.name,
         sku: order?.product?.sku,
-        weight: {
-          unit: order?.product?.weight.unit,
-          value: order?.product?.weight.value,
-        },
       },
       status: order?.status,
       orderVariations: order?.orderVariations || [],
@@ -62,17 +43,15 @@ export default function UpdateOrderPage() {
       setValue("status", order.status);
       setValue("orderVariations", order.orderVariations);
       setValue("product.id", order.product.id);
-      setValue("product.weight.unit", order.product.weight.unit);
-      setValue("product.weight.value", order.product.weight.value);
     }
   }, [order, setValue]);
 
-  const { fields, append, remove, update } = useFieldArray({
+  const { fields, update } = useFieldArray({
     control,
     name: "orderVariations",
   });
 
-  const onSubmit = async (data: z.infer<typeof addOrderSchema>) => {
+  const onSubmit = async (data: UpdateOrderType) => {
     try {
       updateOrder(data, {
         onSuccess: () => {
@@ -87,33 +66,6 @@ export default function UpdateOrderPage() {
       toast.error("Failed to update order");
       console.error(error);
     }
-  };
-
-  const handleAddVariation = () => {
-    if (!selectedSize || !selectedColor || !watch("product.sku")) return;
-    if (!selectedQuantity || parseInt(selectedQuantity) <= 0 || isNaN(parseInt(selectedQuantity))) {
-      toast.error("Invalid Quantity value");
-      return;
-    }
-
-    if (!selectedDate) {
-      toast.error("Please select a date");
-      return;
-    }
-
-    append({
-      size: selectedSize,
-      color: selectedColor,
-      date: format(selectedDate, "dd-MM-yyyy"),
-      shippedQuantity: "0",
-      comments: "",
-      quantity: parseInt(selectedQuantity),
-    });
-
-    setAddModalOpen(false);
-    setSelectedSize(null);
-    setSelectedColor(null);
-    setSelectedQuantity("");
   };
 
   const handleDateUpdate = (day: Date | undefined, index: number, field: any) => {
@@ -131,8 +83,6 @@ export default function UpdateOrderPage() {
 
   if (orderLoading) return <Loader />;
 
-  console.log(order);
-
   return (
     <div className="p-6 container space-y-10 bg-card border shadow-sm rounded-xl">
       <div className="flex items-center justify-between">
@@ -142,7 +92,7 @@ export default function UpdateOrderPage() {
             Update order for <b>{order?.product.name}</b>
           </p>
         </div>
-        {order && <PrintOrder order={order} />}
+        {/* {order && <PrintOrder order={order} />} */}
       </div>
 
       <form onSubmit={handleSubmit(onSubmit, (errors) => console.log(errors))} className="space-y-6">
@@ -162,44 +112,6 @@ export default function UpdateOrderPage() {
           </div>
         </div>
 
-        <div className="space-y-4">
-          <h2 className="text-sm font-medium">Colors in Available Sizes:</h2>
-          {productLoading ? (
-            <Loader />
-          ) : (
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-              {Object.entries(colorVariations).map(
-                ([size, sizeColors], index) =>
-                  sizeColors.length > 0 && (
-                    <div key={size + index.toString()} className="flex flex-col gap-4 border rounded-lg p-4">
-                      <div className="w-12 border p-2 rounded-lg text-center font-medium bg-gray-200">{size}</div>
-                      <div className="flex gap-4 flex-wrap">
-                        {sizeColors.map((color, index) => (
-                          <div key={index} className="relative group">
-                            <p className="px-2 py-1 border rounded-lg">{color.name}</p>
-                            <Button
-                              type="button"
-                              variant="outline"
-                              size="icon"
-                              className="h-4 w-4 absolute -top-2 -right-2 rounded-full flex items-center justify-center"
-                              onClick={() => {
-                                setSelectedSize(size as Size);
-                                setSelectedColor(color);
-                                setAddModalOpen(true);
-                              }}
-                            >
-                              <Plus className="h-3 w-3" />
-                            </Button>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  ),
-              )}
-            </div>
-          )}
-        </div>
-
         {fields.length > 0 && (
           <div className="space-y-4">
             {fields.map((field, index) => {
@@ -208,14 +120,20 @@ export default function UpdateOrderPage() {
                 <div key={field.id} className="border rounded-lg p-4 space-y-4">
                   <div className="flex items-center justify-between flex-wrap">
                     <div className="flex items-center gap-4 flex-wrap">
-                      <span className="text-sm">Size: {field.size}</span>
-                      <span className="text-sm">Color: {field.color.name}</span>
-                      <span>Quantity: {field.quantity}</span>
+                      <p>
+                        Size: <span className="font-extrabold">{field.size}</span>
+                      </p>
+                      <p>
+                        Color: <span className="font-extrabold">{field.color.name}</span>
+                      </p>
+                      <p>
+                        Quantity: <span className="font-extrabold">{field.quantity}</span>
+                      </p>
                       <div className="flex gap-2 items-center">
                         <p>Dispatch Date: </p>
                         <span
                           className={cn(
-                            `px-2 py-1 border rounded-lg`,
+                            `p-2 border rounded-lg text-sm`,
                             parsedDate <= new Date() || parsedDate <= new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
                               ? "bg-red-500 text-white"
                               : "bg-green-500 text-white",
@@ -225,10 +143,7 @@ export default function UpdateOrderPage() {
                         </span>
                         <Popover>
                           <PopoverTrigger asChild>
-                            <Button
-                              variant="outline"
-                              className={cn("w-fit text-left font-normal", !selectedDate && "text-muted-foreground")}
-                            >
+                            <Button variant="outline" className={cn("w-fit text-left font-normal")}>
                               <CalendarIcon className="h-4 w-4" />
                             </Button>
                           </PopoverTrigger>
@@ -243,13 +158,13 @@ export default function UpdateOrderPage() {
                         </Popover>
                       </div>
                     </div>
-                    <div className="flex items-center gap-2">
+                    {/* <div className="flex items-center gap-2">
                       {currentUser?.userType === "admin" && (
                         <Button type="button" variant="ghost" size="icon" onClick={() => remove(index)}>
                           <Trash2 className="h-4 w-4 text-red-500" />
                         </Button>
                       )}
-                    </div>
+                    </div> */}
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -258,6 +173,14 @@ export default function UpdateOrderPage() {
                       <Controller
                         name={`orderVariations.${index}.shippedQuantity`}
                         control={control}
+                        rules={{
+                          validate: (value) => {
+                            if (Number(value) > field.quantity) {
+                              return "Shipped quantity cannot be greater than order quantity";
+                            }
+                            return true;
+                          },
+                        }}
                         render={({ field, fieldState: { error } }) => (
                           <div>
                             {error && <p className="text-sm text-red-500">{error.message}</p>}
@@ -286,77 +209,15 @@ export default function UpdateOrderPage() {
           </div>
         )}
 
-        <Button type="submit" className="w-fit mx-auto" disabled={isUpdating}>
-          {isUpdating ? "Updating..." : "Update Order"}
-        </Button>
+        <div className="flex justify-end gap-4">
+          <Button variant="outline" type="button" asChild>
+            <Link to="/ecommerce/products">Cancel</Link>
+          </Button>
+          <Button type="submit" className="w-fit " disabled={isUpdating}>
+            {isUpdating ? "Updating..." : "Update Order"}
+          </Button>
+        </div>
       </form>
-
-      <Dialog open={addModalOpen} onOpenChange={setAddModalOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Add to List</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4 pt-4">
-            <div className="space-y-2">
-              <Label className="text-sm font-medium">Size</Label>
-              <Input value={selectedSize ?? ""} disabled />
-            </div>
-            <div className="space-y-2">
-              <Label className="text-sm font-medium">Color</Label>
-              <div className="flex items-center gap-2">
-                <Input value={selectedColor?.name || ""} disabled />
-              </div>
-            </div>
-            <div className="space-y-2">
-              <Label className="text-sm font-medium">Quantity</Label>
-              <Input
-                type="number"
-                placeholder="Ex.100pc"
-                value={selectedQuantity}
-                onChange={(e) => setSelectedQuantity(e.target.value)}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label className="text-sm font-medium">Select Date</Label>
-              <Popover>
-                <PopoverTrigger asChild>
-                  <Button
-                    variant="outline"
-                    className={cn(
-                      "w-full justify-start text-left font-normal",
-                      !selectedDate && "text-muted-foreground",
-                    )}
-                  >
-                    <CalendarIcon className="mr-2 h-4 w-4" />
-                    {selectedDate ? format(selectedDate, "PPP") : <span>Pick a date</span>}
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0">
-                  <Calendar
-                    mode="single"
-                    onSelect={(day) => {
-                      if (!day || day.setHours(0, 0, 0, 0) < new Date().setHours(0, 0, 0, 0)) {
-                        toast.error("Date must be today or in the future");
-                        return;
-                      }
-                      setSelectedDate(day);
-                    }}
-                    initialFocus
-                  />
-                </PopoverContent>
-              </Popover>
-            </div>
-            <Button
-              type="button"
-              className="w-full"
-              onClick={handleAddVariation}
-              disabled={!selectedSize || !selectedColor || !selectedQuantity || !watch("product.sku")}
-            >
-              Add to list
-            </Button>
-          </div>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 }

@@ -92,7 +92,6 @@ export const getProducts = async (
 
     if (searchTerm) {
       const searchTerms = generateSearchTerms(searchTerm);
-      console.log(searchTerms);
       queryConstraints.push(where("searchableFields", "array-contains-any", searchTerms));
     }
 
@@ -277,7 +276,6 @@ export const updateProduct = async (
       product: null,
       variations: [],
     };
-    console.log(updatedVariations);
 
     const productResult = addProductSchema.safeParse(product);
     if (!productResult.success) {
@@ -298,14 +296,45 @@ export const updateProduct = async (
         error: errors,
       };
     }
-    await updateDoc(doc(db, "products", id), {
-      name: product.name,
-      description: product.description,
-      image: product.image,
-      weight: product.weight,
-      sku: product.sku,
-      searchableFields: generateSearchableFields(product.name || "", product.sku || ""),
-      updatedAt: serverTimestamp(),
+    // First, get the order documents using a query outside the transaction.
+    const ordersQuery = query(collection(db, "orders"), where("product.id", "==", id));
+    const ordersSnapshot = await getDocs(ordersQuery);
+
+    await runTransaction(db, async (transaction) => {
+      const productRef = doc(db, "products", id);
+      const productDoc = await transaction.get(productRef);
+      if (!productDoc.exists()) {
+        throw new Error("Product not found");
+      }
+
+      // Bring each order document into the transaction’s read set.
+      const orderDocs = [];
+      for (const orderSnap of ordersSnapshot.docs) {
+        const orderDoc = await transaction.get(orderSnap.ref);
+        orderDocs.push(orderDoc);
+      }
+
+      // Update the product document.
+      transaction.update(productRef, {
+        name: product.name,
+        sku: product.sku,
+        image: product.image,
+        searchableFields: generateSearchableFields(product.name || "", product.sku || ""),
+        updatedAt: serverTimestamp(),
+      });
+
+      // Update each related order document.
+      orderDocs.forEach((orderDoc) => {
+        transaction.update(orderDoc.ref, {
+          product: {
+            id: orderDoc.data()?.product.id,
+            name: product.name,
+            sku: product.sku,
+            image: product.image,
+          },
+        });
+      });
+
     });
 
     const existingVariations: Variation[] = updatedVariations.filter((v): v is Variation => v.id !== "");
@@ -324,7 +353,6 @@ export const updateProduct = async (
     }
 
     const newVariations = updatedVariations.filter((v) => !v.id);
-    console.log(newVariations);
     // add new variations
     for (const variation of newVariations) {
       // TODO fix ids not appearing in new variations added from update page
@@ -381,33 +409,49 @@ export const toggleProductVisibility = async (id: string) => {
 
 export const deleteProduct = async (id: string) => {
   try {
-    const product = await getDoc(doc(db, "products", id));
-    await deleteDoc(product.ref);
+    await runTransaction(db, async (transaction) => {
+      const productRef = doc(db, "products", id);
+      const productDoc = await transaction.get(productRef);
+      if (!productDoc.exists()) {
+        throw new Error("Product not found");
+      }
 
-    const variationsRef = collection(product.ref, "variations");
-    const variationsQuery = await getDocs(variationsRef);
-    const variationsBatch = writeBatch(db);
-    variationsQuery.docs.forEach((variationDoc) => {
-      variationsBatch.delete(variationDoc.ref);
+      const variationsRef = collection(productRef, "variations");
+      const variationsQuery = await getDocs(variationsRef);
+      const variationsBatch = writeBatch(db);
+      variationsQuery.docs.forEach((variationDoc) => {
+        variationsBatch.delete(variationDoc.ref);
+      });
+      await variationsBatch.commit();
+
+      const ordersRef = collection(db, "orders");
+      const ordersQuery = query(ordersRef, where("product.id", "==", id));
+      const ordersQuerySnapshot = await getDocs(ordersQuery);
+      const ordersBatch = writeBatch(db);
+      ordersQuerySnapshot.docs.forEach((orderDoc) => {
+        ordersBatch.delete(orderDoc.ref);
+      });
+      await ordersBatch.commit();
+
+      transaction.delete(productRef);
+
+      const productData: Product = {
+        id: productDoc.id,
+        name: productDoc.data()?.name,
+        description: productDoc.data()?.description,
+        image: productDoc.data()?.image,
+        sku: productDoc.data()?.sku,
+        weight: productDoc.data()?.weight,
+        numericalId: productDoc.data()?.numericalId,
+        visibility: productDoc.data()?.visibility,
+        variations: productDoc.data()?.variations,
+        searchableFields: productDoc.data()?.searchableFields,
+        createdAt: productDoc.data()?.createdAt.toDate(),
+        updatedAt: productDoc.data()?.updatedAt.toDate(),
+      };
+
+      await notifyEcommerceProductDeleted(productData);
     });
-    await variationsBatch.commit();
-
-    const productData: Product = {
-      id: product.id,
-      name: product.data()?.name,
-      description: product.data()?.description,
-      image: product.data()?.image,
-      sku: product.data()?.sku,
-      weight: product.data()?.weight,
-      numericalId: product.data()?.numericalId,
-      visibility: product.data()?.visibility,
-      variations: product.data()?.variations,
-      searchableFields: product.data()?.searchableFields,
-      createdAt: product.data()?.createdAt.toDate(),
-      updatedAt: product.data()?.updatedAt.toDate(),
-    };
-
-    await notifyEcommerceProductDeleted(productData);
 
     return true;
   } catch (error) {

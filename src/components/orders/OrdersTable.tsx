@@ -1,17 +1,18 @@
 import { Button } from "@/components/ui/button";
 
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { cn, generatePaginationNUmbers } from "@/lib/utils";
-import { Check, Eye, Pencil, Trash2 } from "lucide-react";
+import { generatePaginationNUmbers } from "@/lib/utils";
+import { ChevronDown, Pencil, Trash2 } from "lucide-react";
 
 import { useOrders } from "@/hooks/useOrders";
-import { Order, OrderStatus } from "@/types/order";
+import { Order } from "@/types/order";
 import { Link } from "react-router-dom";
 import { toast } from "sonner";
 import DeleteAlertModal from "../products/DeleteAlertModal";
 
-import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
 import { useAuth } from "@/contexts/AuthContext";
+import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
+import { Separator } from "../ui/separator";
 
 type Props = {
   data?: Order[];
@@ -20,25 +21,24 @@ type Props = {
 };
 
 export function OrdersTable({ data: filteredData, showFooter = true, limit }: Props) {
-  const { totalPages, currentPage, setCurrentPage, changeOrderStatus, deleteOrder, isChangingStatus, isDeleting } =
-    useOrders(limit);
+  const { totalPages, currentPage, setCurrentPage, deleteOrder, isDeleting } = useOrders(limit);
   const { currentUser } = useAuth();
 
-  const handleStatusChange = async (orderId: string, status: OrderStatus) => {
-    try {
-      changeOrderStatus(
-        { orderId, status },
-        {
-          onSuccess: (success) => {
-            if (success) toast.success("Order status updated successfully!");
-            else toast.error("Failed to update order status");
-          },
-        },
-      );
-    } catch (error) {
-      toast.error("Failed to update order status");
-    }
-  };
+  // const handleStatusChange = async (orderId: string, status: OrderStatus) => {
+  //   try {
+  //     changeOrderStatus(
+  //       { orderId, status },
+  //       {
+  //         onSuccess: (success) => {
+  //           if (success) toast.success("Order status updated successfully!");
+  //           else toast.error("Failed to update order status");
+  //         },
+  //       },
+  //     );
+  //   } catch (error) {
+  //     toast.error("Failed to update order status");
+  //   }
+  // };
 
   const handleDeleteOrder = async (id: string) => {
     try {
@@ -65,7 +65,7 @@ export function OrdersTable({ data: filteredData, showFooter = true, limit }: Pr
               <TableHead>Order Id.</TableHead>
               <TableHead>Product</TableHead>
               <TableHead>SKU</TableHead>
-              <TableHead>Quantity</TableHead>
+              <TableHead>Order at Quantity</TableHead>
               <TableHead>Status</TableHead>
               <TableHead className="text-right">Action</TableHead>
             </TableRow>
@@ -75,31 +75,55 @@ export function OrdersTable({ data: filteredData, showFooter = true, limit }: Pr
               <TableRow key={order.id}>
                 <TableCell className="font-medium text-blue-600">#{order.numericalId}</TableCell>
                 <TableCell>
-                  <div className="flex items-center gap-2">
-                    {order.product.image && (
-                      <img src={order.product.image} alt={order.product.name} className="w-8 h-8 rounded-full" />
-                    )}
-                    {order.product.name}
-                  </div>
+                  <Popover>
+                    <PopoverTrigger className="flex gap-8 items-center">
+                      <div className="flex items-center gap-2">
+                        {order.product.image && (
+                          <img src={order.product.image} alt={order.product.name} className="w-8 h-8 rounded-full" />
+                        )}
+                        {order.product.name}
+                      </div>
+                      <ChevronDown className="min-w-4 min-h-4 max-h-4 max-w-4" />
+                    </PopoverTrigger>
+                    <PopoverContent className="w-80 max-h-80 overflow-y-auto">
+                      <div className="p-2">
+                        <h4 className="font-semibold mb-4">Order Variations</h4>
+                        <div className="space-y-4">
+                          {order.orderVariations.map((variation, index) => (
+                            <>
+                              <div key={index} className="grid grid-cols-4 gap-4 text-sm">
+                                <div>
+                                  Size:<span className="font-bold"> {variation.size} </span>
+                                </div>
+                                <div>
+                                  Color:<span className="font-bold"> {variation.color.name} </span>
+                                </div>
+                                <div>
+                                  Order: <span className="font-bold"> {variation.quantity} </span>
+                                </div>
+                                <div>
+                                  Shipped: <span className="font-bold"> {variation.shippedQuantity || "0"} </span>
+                                </div>
+                              </div>
+                              <Separator />
+                            </>
+                          ))}
+                        </div>
+                      </div>
+                    </PopoverContent>
+                  </Popover>
                 </TableCell>
                 <TableCell>#{order.product.sku}</TableCell>
                 <TableCell>
-                  {order.orderVariations.reduce((total, variation) => total + variation.quantity, 0)} in stock
+                  {order.orderVariations.reduce((total, variation) => total + variation.quantity, 0)}
                 </TableCell>
                 <TableCell>
-                  <span
-                    className={cn("inline-flex items-center rounded-full px-2 py-1 text-xs font-medium capitalize", {
-                      "bg-green-50 text-green-700": order.status === OrderStatus.COMPLETED,
-                      "bg-red-50 text-red-700": order.status === OrderStatus.CANCELLED,
-                      "bg-yellow-50 text-yellow-700": order.status === OrderStatus.PENDING,
-                    })}
-                  >
-                    {order.status}
-                  </span>
+                  {order.orderVariations.reduce((total, { shippedQuantity }) => total + Number(shippedQuantity), 0)}{" "}
+                  pieces shipped
                 </TableCell>
                 <TableCell>
                   <div className="flex justify-end gap-2">
-                    <Popover>
+                    {/* <Popover>
                       <PopoverTrigger className="h-8 w-8">
                         <Eye className="h-4 w-4" />
                         <span className="sr-only">Change status</span>
@@ -135,7 +159,7 @@ export function OrdersTable({ data: filteredData, showFooter = true, limit }: Pr
                           </div>
                         ))}
                       </PopoverContent>
-                    </Popover>
+                    </Popover> */}
                     <Button variant="ghost" size="icon" className="h-8 w-8 text-green-600" asChild>
                       <Link to={`/ecommerce/orders/update/${order.id}`}>
                         <Pencil className="h-4 w-4" />

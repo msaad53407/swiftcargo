@@ -7,6 +7,13 @@ export function useProducts(searchTerm?: string) {
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const queryClient = useQueryClient();
+  const [filters, setFilters] = useState<{
+    status: string[];
+    sku: string;
+  }>({
+    status: [],
+    sku: "",
+  });
 
   const limit = 10;
 
@@ -45,20 +52,40 @@ export function useProducts(searchTerm?: string) {
         queryKey: ["productsCount"],
         exact: true,
       });
+      queryClient.invalidateQueries({
+        queryKey: ["orders", 1],
+        exact: true,
+      });
     },
   });
 
-  const filteredData = useMemo(() => {
-    return (
-      data?.products.filter(
-        (product: Product) =>
+  const filteredData = useMemo(
+    () =>
+      data?.products.filter((product: Product) => {
+        const matchesSearch =
           product.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          product.numericalId.toString().includes(searchQuery.toLowerCase()) ||
           product.sku.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          product.numericalId.toString().includes(searchQuery.toLowerCase()),
-      ) || []
-    );
-  }, [data?.products, searchQuery]);
+          product.name.toLowerCase().includes(searchQuery.toLowerCase());
+
+        const matchesSku = !filters.sku || product.sku === filters.sku;
+        return matchesSearch && matchesSku;
+      }) || [],
+    [data?.products, searchQuery, filters],
+  );
+
+  const filterMetadata = useMemo(() => {
+    if (!data?.products) return { skus: [] };
+    const skus = [...new Set(data.products.map((product: Product) => product.sku))];
+    return { skus };
+  }, [data?.products]);
+
+  const resetFilters = () => {
+    setFilters({
+      status: [],
+      sku: "",
+    });
+  };
 
   return {
     searchQuery,
@@ -69,6 +96,10 @@ export function useProducts(searchTerm?: string) {
     isLoadingProductsCount,
     productsCountError,
     products: data?.products || [],
+    filters,
+    setFilters,
+    resetFilters,
+    filterMetadata,
     isLoading,
     error,
     totalProducts: data?.total || 0,

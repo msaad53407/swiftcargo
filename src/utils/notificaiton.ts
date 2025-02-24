@@ -11,7 +11,7 @@ import {
 import { db } from "../firebase/config"; // Adjust this import based on your Firebase config
 import { Product } from "@/types/product";
 import { Order } from "@/types/order";
-import { AddOrderType } from "./order";
+import { AddOrderType, UpdateOrderType } from "./order";
 
 export enum Notifications {
   EMPLOYEE_ADDED = "EMPLOYEE_ADDED",
@@ -181,7 +181,7 @@ export const notifyEcommerceOrderStatusUpdated = (order: Order) => {
   });
 };
 
-export const notifyEcommerceOrderUpdated = (order: AddOrderType) => {
+export const notifyEcommerceOrderUpdated = (order: AddOrderType | UpdateOrderType) => {
   return createNotification({
     type: Notifications.ECOMMERCE_ORDER_UPDATED,
     title: "Order Updated",

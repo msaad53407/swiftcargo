@@ -15,7 +15,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useAuth } from "@/contexts/AuthContext";
 import { useOrders } from "@/hooks/useOrders";
 import { cn } from "@/lib/utils";
-import { OrderStatus } from "@/types/order";
 import { Settings2, Upload } from "lucide-react";
 import Papa from "papaparse";
 import { useState } from "react";
@@ -104,7 +103,7 @@ export default function OrdersPage() {
               <DropdownMenuSeparator />
               <div className="p-2">
                 <div className="space-y-4">
-                  <div>
+                  {/* <div>
                     <Label className="text-sm font-medium mb-1 block">Status</Label>
                     <div className="space-y-2">
                       {Object.values(OrderStatus).map((status) => (
@@ -133,7 +132,7 @@ export default function OrdersPage() {
                         </div>
                       ))}
                     </div>
-                  </div>
+                  </div> */}
                   <div className="space-y-2">
                     <Label className="text-sm font-medium">SKU</Label>
                     <Select value={filters.sku} onValueChange={(value) => setFilters((f) => ({ ...f, sku: value }))}>

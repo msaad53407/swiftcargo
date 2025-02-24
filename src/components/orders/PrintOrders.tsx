@@ -115,7 +115,7 @@ const PrintOrders = ({ orders }: Props) => {
                 <th>Order ID</th>
                 <th>Product Details</th>
                 <th>SKU</th>
-                <th>Quantity</th>
+                <th>Order at Quantity</th>
                 <th>Status</th>
                 <th>Order Date</th>
               </tr>
@@ -145,11 +145,9 @@ const PrintOrders = ({ orders }: Props) => {
                     </div>
                   </td>
                   <td>#${order.product.sku}</td>
-                  <td>${order.orderVariations.reduce((total, variation) => total + variation.quantity, 0)} in stock</td>
+                  <td>${order.orderVariations.reduce((total, variation) => total + variation.quantity, 0)}</td>
                   <td>
-                    <span class="status status-${order.status.toLowerCase()}">
-                      ${order.status}
-                    </span>
+                    ${order.orderVariations.reduce((total, variation) => total + Number(variation.shippedQuantity), 0)} pieces shipped
                   </td>
                   <td>${new Date(order.createdAt).toLocaleDateString()}</td>
                 </tr>

@@ -71,7 +71,7 @@ export function TopSellingProductsChart() {
       ...acc,
       [name]: {
         label: name,
-        color: `var(--chart-${index + 1})`,
+        color: `hsl(var(--chart-${index + 1}))`,
       },
     };
   }, {} as ChartConfig);

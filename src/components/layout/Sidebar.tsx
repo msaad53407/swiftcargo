@@ -128,6 +128,7 @@ export function Sidebar({ open, setOpen, type = "default" }: SidebarProps) {
                         <li
                           key={item.path}
                           className="flex cursor-pointer items-center gap-3 px-4 py-3 rounded-lg text-sm text-gray-700 hover:bg-gray-100"
+                          onClick={() => setOpen(false)}
                         >
                           <Icon size={20} />
                           {item.label}

@@ -4,13 +4,17 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useProducts } from "@/hooks/useProducts";
-import { generatePaginationNUmbers } from "@/lib/utils";
+import { cn, generatePaginationNUmbers } from "@/lib/utils";
 import Papa from "papaparse";
 import { Link, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import DeleteAlertModal from "./DeleteAlertModal";
 import { TableSkeleton as ProductsTableSkeleton } from "./ProductsTableSkeleton";
 import { useAuth } from "@/contexts/AuthContext";
+import { Label } from "../ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuSeparator, DropdownMenuTrigger } from "../ui/dropdown-menu";
+import { useState } from "react";
 
 export function ProductsTable() {
   const {
@@ -26,9 +30,15 @@ export function ProductsTable() {
     isToggling,
     deleteProduct,
     isDeleting,
+    filterMetadata,
+    filters,
+    setFilters,
+    resetFilters,
   } = useProducts();
 
   const { currentUser } = useAuth();
+
+  const [showFilters, setShowFilters] = useState(false);
 
   const navigate = useNavigate();
 
@@ -41,10 +51,6 @@ export function ProductsTable() {
             <p className="text-sm text-muted-foreground">Departmental Member's Information Details</p>
           </div>
           <div className="flex gap-2">
-            <Button variant="outline" size="icon" className="flex gap-2 w-fit px-2" disabled>
-              <Upload className="h-6 w-6" />
-              <span>Export</span>
-            </Button>
             {currentUser?.userType === "admin" && (
               <Button asChild>
                 <Link to="/ecommerce/products/add">
@@ -63,9 +69,6 @@ export function ProductsTable() {
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
-            <Button variant="outline" size="icon">
-              <Settings2 className="h-4 w-4" />
-            </Button>
           </div>
         </div>
 
@@ -83,10 +86,6 @@ export function ProductsTable() {
             <p className="text-sm text-muted-foreground">Departmental Member's Information Details</p>
           </div>
           <div className="flex gap-2">
-            <Button variant="outline" size="icon" className="flex gap-2 w-fit px-2" disabled>
-              <Upload className="h-6 w-6" />
-              <span>Export</span>
-            </Button>
             {currentUser?.userType === "admin" && (
               <Button asChild>
                 <Link to="/ecommerce/products/add">
@@ -105,9 +104,6 @@ export function ProductsTable() {
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
-            <Button variant="outline" size="icon">
-              <Settings2 className="h-4 w-4" />
-            </Button>
           </div>
         </div>
 
@@ -198,9 +194,75 @@ export function ProductsTable() {
             onChange={(e) => setSearchQuery(e.target.value)}
           />
         </div>
-        <Button variant="outline" size="icon">
-          <Settings2 className="h-4 w-4" />
-        </Button>
+        <DropdownMenu open={showFilters} onOpenChange={setShowFilters}>
+          <DropdownMenuTrigger asChild>
+            <Button
+              variant="outline"
+              size="icon"
+              className={cn(Object.values(filters).some((v) => v.length) && "bg-primary text-primary-foreground")}
+            >
+              <Settings2 className="h-4 w-4" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent className="w-[280px]" align="end">
+            <div className="flex items-center justify-between p-2">
+              <p className="text-sm font-medium">Filter Orders</p>
+              <Button variant="ghost" size="sm" className="h-8 px-2 text-xs" onClick={resetFilters}>
+                Reset Filter
+              </Button>
+            </div>
+            <DropdownMenuSeparator />
+            <div className="p-2">
+              <div className="space-y-4">
+                {/* <div>
+                    <Label className="text-sm font-medium mb-1 block">Status</Label>
+                    <div className="space-y-2">
+                      {Object.values(OrderStatus).map((status) => (
+                        <div key={status} className="flex items-center">
+                          <Label className="flex items-center gap-2 text-sm capitalize">
+                            <Input
+                              type="checkbox"
+                              checked={filters.status.includes(status)}
+                              onChange={(e) => {
+                                if (e.target.checked) {
+                                  setFilters((f) => ({
+                                    ...f,
+                                    status: [...f.status, status],
+                                  }));
+                                } else {
+                                  setFilters((f) => ({
+                                    ...f,
+                                    status: f.status.filter((s) => s !== status),
+                                  }));
+                                }
+                              }}
+                              className="form-checkbox h-4 w-4 rounded border-gray-300"
+                            />
+                            {status}
+                          </Label>
+                        </div>
+                      ))}
+                    </div>
+                  </div> */}
+                <div className="space-y-2">
+                  <Label className="text-sm font-medium">SKU</Label>
+                  <Select value={filters.sku} onValueChange={(value) => setFilters((f) => ({ ...f, sku: value }))}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select SKU" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {filterMetadata.skus.map((sku) => (
+                        <SelectItem key={sku} value={sku}>
+                          {sku}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+            </div>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
 
       <div className="border rounded-lg">

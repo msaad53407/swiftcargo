@@ -25,6 +25,14 @@ export default function useProduct(id: string | undefined) {
         queryKey: ["product", id],
         exact: true,
       });
+      queryClient.invalidateQueries({
+        queryKey: ["products", 1, null],
+        exact: true,
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["orders", 1],
+        exact: true,
+      });
     },
   });
 

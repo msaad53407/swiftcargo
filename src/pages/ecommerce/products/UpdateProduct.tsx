@@ -3,36 +3,29 @@ import { Pencil, Trash } from "lucide-react";
 import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 
+import { ImageDropzone } from "@/components/ImageDropzone";
 import Loader from "@/components/Loader";
 import DeleteAlertModal from "@/components/products/DeleteAlertModal";
 import Variations from "@/components/products/Variations";
 import { Button } from "@/components/ui/button";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import { useAuth } from "@/contexts/AuthContext";
 import useProduct from "@/hooks/useProduct";
 import { Variation } from "@/types/product";
-import { addProductSchema, UpdateProductFormValues } from "@/utils/product";
+import { addProductSchema, UpdateProductFormValues, uploadImage } from "@/utils/product";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { toast } from "sonner";
-import { useAuth } from "@/contexts/AuthContext";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 export default function EditProductPage() {
   const { id: productId } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { currentUser, loading: authLoading } = useAuth();
 
-  const {
-    product,
-    isLoading,
-    colorVariations,
-    setColorVariations,
-    updateProduct,
-    deleteProduct,
-    isUpdating,
-    isDeleting,
-  } = useProduct(productId);
+  const { product, isLoading, colorVariations, setColorVariations, updateProduct, isUpdating, isDeleting } =
+    useProduct(productId);
 
   const form = useForm<UpdateProductFormValues>({
     resolver: zodResolver(addProductSchema),
@@ -109,23 +102,28 @@ export default function EditProductPage() {
     }
   }
 
-  const handleDelete = async () => {
+  const handleImageDelete = async () => {
     try {
-      deleteProduct(undefined, {
-        onSuccess: () => {
-          toast.success("Product deleted successfully!");
-          navigate("/ecommerce/products");
-        },
-      });
+      form.setValue("image", "");
+      toast.success("Image deleted successfully!");
     } catch (error) {
-      toast.error("Failed to delete product!");
+      toast.error("Failed to delete image!");
     }
   };
 
-  const handleImageUpload = async (file: File) => {
-    // Add your image upload logic here
-    console.log(file);
-  };
+  async function uploadImageToStorage(file: File) {
+    toast.promise(uploadImage(file), {
+      loading: "Uploading image...",
+      success(data) {
+        if (!data) {
+          throw new Error("Image upload failed");
+        }
+        form.setValue("image", data);
+        return "Image uploaded successfully!";
+      },
+      error: "Failed to upload image",
+    });
+  }
 
   return (
     <div className="container py-10 px-4">
@@ -147,45 +145,49 @@ export default function EditProductPage() {
                 render={({ field }) => (
                   <FormItem>
                     <FormControl>
-                      <div className="space-y-4">
-                        <img
-                          src={field.value || "/placeholder.svg"}
-                          alt="Product"
-                          width={200}
-                          height={300}
-                          className="rounded-lg border"
-                        />
-                        <div className="flex gap-2">
-                          <Button
-                            type="button"
-                            variant="outline"
-                            onClick={() => document.getElementById("image-upload")?.click()}
-                          >
-                            <Pencil className="h-4 w-4 mr-2" />
-                            Edit Image
-                          </Button>
-                          <DeleteAlertModal
-                            isDeleting={isDeleting}
-                            onDelete={handleDelete}
-                            trigger={
-                              <Button type="button" variant="destructive">
-                                <Trash className="h-4 w-4 mr-2" />
-                                Delete
-                              </Button>
-                            }
+                      {!form.getValues("image") ? (
+                        <ImageDropzone value={field.value} onChange={uploadImageToStorage} />
+                      ) : (
+                        <div className="space-y-4">
+                          <img
+                            src={field.value || "/placeholder.svg"}
+                            alt="Product"
+                            width={200}
+                            height={300}
+                            className="rounded-lg border"
                           />
-                          <input
-                            id="image-upload"
-                            type="file"
-                            className="hidden"
-                            accept="image/*"
-                            onChange={(e) => {
-                              const file = e.target.files?.[0];
-                              if (file) handleImageUpload(file);
-                            }}
-                          />
+                          <div className="flex gap-2">
+                            <Button
+                              type="button"
+                              variant="outline"
+                              onClick={() => document.getElementById("image-upload")?.click()}
+                            >
+                              <Pencil className="h-4 w-4 mr-2" />
+                              Edit Image
+                            </Button>
+                            <DeleteAlertModal
+                              isDeleting={isDeleting}
+                              onDelete={handleImageDelete}
+                              trigger={
+                                <Button type="button" variant="destructive">
+                                  <Trash className="h-4 w-4 mr-2" />
+                                  Delete
+                                </Button>
+                              }
+                            />
+                            <input
+                              id="image-upload"
+                              type="file"
+                              className="hidden"
+                              accept="image/*"
+                              onChange={(e) => {
+                                const file = e.target.files?.[0];
+                                if (file) uploadImageToStorage(file);
+                              }}
+                            />
+                          </div>
                         </div>
-                      </div>
+                      )}
                     </FormControl>
                     <FormMessage />
                   </FormItem>

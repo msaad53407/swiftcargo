@@ -52,6 +52,12 @@ export const addOrderSchema = z.object({
   ),
 });
 
+export const updateOrderSchema = addOrderSchema.extend({
+  product: addOrderSchema.shape.product.omit({ weight: true }),
+});
+
+export type UpdateOrderType = z.infer<typeof updateOrderSchema>;
+
 export type AddOrderType = z.infer<typeof addOrderSchema>;
 
 export const addOrder = async (order: z.infer<typeof addOrderSchema>) => {
@@ -107,8 +113,8 @@ export const getTotalOrdersCount = async () => {
   }
 };
 
-export const updateOrder = async (id: string, order: z.infer<typeof addOrderSchema>) => {
-  const result = addOrderSchema.safeParse(order);
+export const updateOrder = async (id: string, order: z.infer<typeof updateOrderSchema>) => {
+  const result = updateOrderSchema.safeParse(order);
   if (!result.success) {
     return {
       success: false,

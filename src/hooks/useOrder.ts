@@ -1,4 +1,4 @@
-import { addOrderSchema, getOrder, updateOrder } from "@/utils/order";
+import { getOrder, updateOrder, updateOrderSchema } from "@/utils/order";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { z } from "zod";
 
@@ -16,7 +16,7 @@ export default function useOrder(id: string | undefined) {
   });
 
   const updateOrderMutation = useMutation({
-    mutationFn: (data: z.infer<typeof addOrderSchema>) => updateOrder(id!, data),
+    mutationFn: (data: z.infer<typeof updateOrderSchema>) => updateOrder(id!, data),
     onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: ["order", id],
