@@ -1,5 +1,4 @@
 import Loader from "@/components/Loader";
-import PrintOrder from "@/components/orders/PrintOrder";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { Input } from "@/components/ui/input";
@@ -85,14 +84,21 @@ export default function UpdateOrderPage() {
 
   return (
     <div className="p-6 container space-y-10 bg-card border shadow-sm rounded-xl">
-      <div className="flex items-center justify-between">
+      <div className="flex justify-between">
         <div>
           <h1 className="text-2xl font-semibold">Update Order</h1>
           <p className="text-muted-foreground">
             Update order for <b>{order?.product.name}</b>
           </p>
+          <img
+            src={order?.product?.image || "/placeholder.svg"}
+            alt={order?.product?.name}
+            className="rounded-lg border mt-5"
+            width={200}
+            height={300}
+          />
         </div>
-        {/* {order && <PrintOrder order={order} />} */}
+        {/* {order && <OrderPrintButton order={order} />} */}
       </div>
 
       <form onSubmit={handleSubmit(onSubmit, (errors) => console.log(errors))} className="space-y-6">
@@ -211,7 +217,7 @@ export default function UpdateOrderPage() {
 
         <div className="flex justify-end gap-4">
           <Button variant="outline" type="button" asChild>
-            <Link to="/ecommerce/products">Cancel</Link>
+            <Link to="/ecommerce/orders">Cancel</Link>
           </Button>
           <Button type="submit" className="w-fit " disabled={isUpdating}>
             {isUpdating ? "Updating..." : "Update Order"}

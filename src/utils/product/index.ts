@@ -132,7 +132,9 @@ export const getProducts = async (
           variations: variations.docs.map((variation) => ({
             id: variation.id,
             size: variation.data()?.size,
-            colors: variation.data()?.color,
+            colors: variation.data()?.colors.map((color: Color) => ({
+              name: color.name,
+            })),
           })),
           createdAt: doc.data()?.createdAt.toDate(),
           updatedAt: doc.data()?.updatedAt.toDate(),
@@ -334,7 +336,6 @@ export const updateProduct = async (
           },
         });
       });
-
     });
 
     const existingVariations: Variation[] = updatedVariations.filter((v): v is Variation => v.id !== "");

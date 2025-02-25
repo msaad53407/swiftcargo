@@ -136,8 +136,15 @@ export default function CreateOrderPage() {
       <div>
         <h1 className="text-2xl font-semibold">Create Order</h1>
         <p className="text-muted-foreground">
-          Create a new order for product <b>{product?.name}</b>
+          Create a new order for <b className="text-black text-xl">{product?.name}</b>
         </p>
+        <img
+          src={product?.image || "/placeholder.svg"}
+          alt={product?.name}
+          className="rounded-lg border mt-5"
+          width={200}
+          height={300}
+        />
       </div>
 
       <form

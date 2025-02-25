@@ -1,20 +1,22 @@
-import { Eye, EyeOff, Pencil, PlusIcon, Settings2, Trash2, Upload } from "lucide-react";
+import { Eye, EyeOff, Pencil, PlusIcon, Printer, Settings2, Trash2, Upload } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { useAuth } from "@/contexts/AuthContext";
 import { useProducts } from "@/hooks/useProducts";
 import { cn, generatePaginationNUmbers } from "@/lib/utils";
 import Papa from "papaparse";
+import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
-import DeleteAlertModal from "./DeleteAlertModal";
-import { TableSkeleton as ProductsTableSkeleton } from "./ProductsTableSkeleton";
-import { useAuth } from "@/contexts/AuthContext";
+import { Checkbox } from "../ui/checkbox";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuSeparator, DropdownMenuTrigger } from "../ui/dropdown-menu";
 import { Label } from "../ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuSeparator, DropdownMenuTrigger } from "../ui/dropdown-menu";
-import { useState } from "react";
+import { handleBulkPrint } from "./BulkPrintProduct";
+import DeleteAlertModal from "./DeleteAlertModal";
+import { TableSkeleton as ProductsTableSkeleton } from "./ProductsTableSkeleton";
 
 export function ProductsTable() {
   const {
@@ -40,7 +42,59 @@ export function ProductsTable() {
 
   const [showFilters, setShowFilters] = useState(false);
 
+  const [selectedProducts, setSelectedProducts] = useState<string[]>([]);
+
   const navigate = useNavigate();
+
+  const handleSelectAll = (checked: string | boolean) => {
+    if (checked) {
+      setSelectedProducts(filteredData.map((product) => product.id));
+    } else {
+      setSelectedProducts([]);
+    }
+  };
+
+  const handleSelectProduct = (checked: string | boolean, productId: string) => {
+    if (checked) {
+      setSelectedProducts([...selectedProducts, productId]);
+    } else {
+      setSelectedProducts(selectedProducts.filter((id) => id !== productId));
+    }
+  };
+
+  const handleBulkAction = async (action: "delete" | "print") => {
+    if (action !== "print" && action !== "delete") return;
+
+    if (currentUser && currentUser.userType === "manager" && action === "delete") {
+      toast.error("Unauthorized. Only Admins can delete products.");
+      return;
+    }
+
+    if (selectedProducts.length === 0) {
+      toast.error("Please select at least one product");
+      return;
+    }
+
+    switch (action) {
+      case "delete":
+        if (window.confirm(`Are you sure you want to delete ${selectedProducts.length} products?`)) {
+          try {
+            await Promise.all(selectedProducts.map((id) => deleteProduct(id)));
+            toast.success(`${selectedProducts.length} products deleted successfully`);
+            setSelectedProducts([]);
+          } catch (error) {
+            toast.error("Failed to delete products");
+          }
+        }
+        break;
+      case "print":
+        const selectedProductsData = filteredData.filter((product) => selectedProducts.includes(product.id));
+        handleBulkPrint(selectedProductsData);
+        break;
+      default:
+        break;
+    }
+  };
 
   if (isLoading) {
     return (
@@ -265,10 +319,41 @@ export function ProductsTable() {
         </DropdownMenu>
       </div>
 
+      <div className="flex items-center gap-2">
+        <Select onValueChange={handleBulkAction}>
+          <SelectTrigger className="w-[200px]">
+            <SelectValue placeholder="Bulk Actions" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="none" className="text-gray-500">
+              <div className="flex items-center gap-2">None</div>
+            </SelectItem>
+            {/* <SelectItem value="delete" className="text-red-500">
+              <div className="flex items-center gap-2">
+                <Trash2 className="h-4 w-4" />
+                Delete Selected
+              </div>
+            </SelectItem> */}
+            <SelectItem value="print">
+              <div className="flex items-center gap-2">
+                <Printer className="h-4 w-4" />
+                Print Selected
+              </div>
+            </SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+
       <div className="border rounded-lg">
         <Table>
           <TableHeader>
             <TableRow>
+              <TableHead className="w-12">
+                <Checkbox
+                  checked={filteredData?.length > 0 && selectedProducts.length === filteredData.length}
+                  onCheckedChange={handleSelectAll}
+                />
+              </TableHead>
               <TableHead>Date</TableHead>
               <TableHead>Product</TableHead>
               <TableHead>SKU</TableHead>
@@ -279,6 +364,12 @@ export function ProductsTable() {
             {filteredData.length > 0 ? (
               filteredData.map((product) => (
                 <TableRow key={product.id}>
+                  <TableCell>
+                    <Checkbox
+                      checked={selectedProducts.includes(product.id)}
+                      onCheckedChange={(checked) => handleSelectProduct(checked, product.id)}
+                    />
+                  </TableCell>
                   <TableCell>{new Date(product.createdAt).toDateString()}</TableCell>
                   <TableCell>
                     <div className="flex items-center gap-2">

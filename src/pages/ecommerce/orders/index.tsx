@@ -1,6 +1,5 @@
 import { OrdersTable } from "@/components/orders/OrdersTable";
 import { OrdersTableSKeleton } from "@/components/orders/OrdersTableSkeleton";
-import PrintOrders from "@/components/orders/PrintOrders";
 import ProductsSearchModal from "@/components/products/ProductsSearchModal";
 import { Button } from "@/components/ui/button";
 import {
@@ -152,7 +151,6 @@ export default function OrdersPage() {
               </div>
             </DropdownMenuContent>
           </DropdownMenu>
-          {filteredData && <PrintOrders orders={filteredData} />}
         </div>
       </div>
       {isLoading ? <OrdersTableSKeleton /> : <OrdersTable data={filteredData} />}
