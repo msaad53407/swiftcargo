@@ -26,6 +26,7 @@ type Props = {
 
 export function OrdersTable({ data: filteredData, showFooter = true, limit }: Props) {
   const { totalPages, currentPage, setCurrentPage, deleteOrder, isDeleting } = useOrders(limit);
+  const [selectedAction, setSelectedAction] = useState<"delete" | "print" | "none">("none");
   const { currentUser } = useAuth();
 
   const [selectedOrders, setSelectedOrders] = useState<Order["id"][]>([]);
@@ -47,7 +48,7 @@ export function OrdersTable({ data: filteredData, showFooter = true, limit }: Pr
     }
   };
 
-  const handleBulkAction = async (action: "delete" | "print") => {
+  const handleBulkAction = async (action: "delete" | "print" | "none") => {
     if (action !== "print" && action !== "delete") return;
 
     if (currentUser?.userType !== "admin" && action === "delete") {
@@ -83,6 +84,8 @@ export function OrdersTable({ data: filteredData, showFooter = true, limit }: Pr
       default:
         break;
     }
+
+    setSelectedAction(action);
   };
 
   // const handleStatusChange = async (orderId: string, status: OrderStatus) => {
@@ -142,6 +145,9 @@ export function OrdersTable({ data: filteredData, showFooter = true, limit }: Pr
             </SelectItem>
           </SelectContent>
         </Select>
+        <Button variant="outline" size="sm" onClick={() => handleBulkAction(selectedAction)} disabled={!selectedAction}>
+          Apply
+        </Button>
       </div>
       <div className="border rounded-lg">
         <Table>

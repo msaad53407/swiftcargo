@@ -44,6 +44,8 @@ export function ProductsTable() {
 
   const [selectedProducts, setSelectedProducts] = useState<string[]>([]);
 
+  const [selectedAction, setSelectedAction] = useState<"delete" | "print" | "none">("none");
+
   const navigate = useNavigate();
 
   const handleSelectAll = (checked: string | boolean) => {
@@ -62,7 +64,7 @@ export function ProductsTable() {
     }
   };
 
-  const handleBulkAction = async (action: "delete" | "print") => {
+  const handleBulkAction = async (action: "delete" | "print" | "none") => {
     if (action !== "print" && action !== "delete") return;
 
     if (currentUser && currentUser.userType === "manager" && action === "delete") {
@@ -94,6 +96,7 @@ export function ProductsTable() {
       default:
         break;
     }
+    setSelectedAction(action);
   };
 
   if (isLoading) {
@@ -342,6 +345,9 @@ export function ProductsTable() {
             </SelectItem>
           </SelectContent>
         </Select>
+        <Button variant="outline" size="sm" onClick={() => handleBulkAction(selectedAction)} disabled={!selectedAction}>
+          Apply
+        </Button>
       </div>
 
       <div className="border rounded-lg">
