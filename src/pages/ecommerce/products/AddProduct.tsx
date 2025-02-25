@@ -52,6 +52,9 @@ export default function AddProduct() {
           exact: true,
         });
         queryClient.invalidateQueries({
+          queryKey: ["products", 1, ""],
+        });
+        queryClient.invalidateQueries({
           queryKey: ["productsCount"],
           exact: true,
         });

@@ -49,6 +49,10 @@ export function useProducts(searchTerm?: string) {
         exact: true,
       });
       queryClient.invalidateQueries({
+        queryKey: ["products", currentPage, searchTerm || ""],
+        exact: true,
+      });
+      queryClient.invalidateQueries({
         queryKey: ["productsCount"],
         exact: true,
       });
