@@ -323,7 +323,7 @@ export function ProductsTable() {
       </div>
 
       <div className="flex items-center gap-2">
-        <Select onValueChange={handleBulkAction}>
+        <Select onValueChange={(value) => setSelectedAction(value as "none" | "print")}>
           <SelectTrigger className="w-[200px]">
             <SelectValue placeholder="Bulk Actions" />
           </SelectTrigger>

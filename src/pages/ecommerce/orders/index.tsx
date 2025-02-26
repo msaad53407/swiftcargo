@@ -17,8 +17,11 @@ import { cn } from "@/lib/utils";
 import { Settings2, Upload } from "lucide-react";
 import Papa from "papaparse";
 import { useState } from "react";
+import { useLocation } from "react-router-dom";
 
 export default function OrdersPage() {
+  const location = useLocation();
+  const isCompletedOrdersPage = location.pathname === "/ecommerce/orders/completed";
   const {
     setFilters,
     filters,
@@ -29,7 +32,7 @@ export default function OrdersPage() {
     searchQuery,
     setSearchQuery,
     orders,
-  } = useOrders();
+  } = useOrders(undefined, isCompletedOrdersPage);
 
   const [showFilters, setShowFilters] = useState(false);
 
@@ -61,15 +64,14 @@ export default function OrdersPage() {
     <div className="container py-10 px-4 space-y-4">
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-2xl font-semibold">Order Management</h1>
-          <p className="text-sm text-muted-foreground">Departmental Member's Information Details</p>
+          <h1 className="text-2xl font-semibold">{isCompletedOrdersPage ? "Completed Orders" : "Order Management"}</h1>
         </div>
         <div className="flex gap-2">
           <Button variant="outline" size="icon" className="flex gap-2 w-fit px-2" onClick={exportToCSV}>
             <Upload className="h-6 w-6" />
             <span>Export</span>
           </Button>
-          {currentUser?.userType === "admin" && <ProductsSearchModal />}
+          {currentUser?.userType === "admin" && !isCompletedOrdersPage && <ProductsSearchModal />}
         </div>
       </div>
 
@@ -153,7 +155,11 @@ export default function OrdersPage() {
           </DropdownMenu>
         </div>
       </div>
-      {isLoading ? <OrdersTableSKeleton /> : <OrdersTable data={filteredData} />}
+      {isLoading ? (
+        <OrdersTableSKeleton />
+      ) : (
+        <OrdersTable data={filteredData} isCompletedOrdersData={isCompletedOrdersPage} />
+      )}
     </div>
   );
 }

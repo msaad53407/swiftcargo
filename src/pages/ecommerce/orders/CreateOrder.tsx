@@ -9,11 +9,11 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useOrders } from "@/hooks/useOrders";
 import useProduct from "@/hooks/useProduct";
 import { cn } from "@/lib/utils";
-import { OrderStatus, Size } from "@/types/order";
+import { OrderStatus } from "@/types/order";
 import { Color } from "@/types/product";
 import { addOrderSchema } from "@/utils/order";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { format } from "date-fns";
+import { format, parse } from "date-fns";
 import { CalendarIcon, Plus, Trash2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Controller, useFieldArray, useForm } from "react-hook-form";
@@ -28,7 +28,7 @@ export default function CreateOrderPage() {
   const { currentUser, loading: authLoading } = useAuth();
 
   const [addModalOpen, setAddModalOpen] = useState(false);
-  const [selectedSize, setSelectedSize] = useState<Size | null>(null);
+  const [selectedSize, setSelectedSize] = useState<string | null>(null);
   const [selectedColor, setSelectedColor] = useState<Color | null>(null);
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [selectedQuantity, setSelectedQuantity] = useState("");
@@ -110,6 +110,7 @@ export default function CreateOrderPage() {
       size: selectedSize,
       color: selectedColor,
       date: format(selectedDate, "dd-MM-yyyy"),
+      dispatchDate: "",
       shippedQuantity: "0",
       comments: "",
       quantity: parseInt(selectedQuantity),
@@ -189,7 +190,7 @@ export default function CreateOrderPage() {
                             size="icon"
                             className="h-4 w-4 absolute -top-2 -right-2 rounded-full flex items-center justify-center"
                             onClick={() => {
-                              setSelectedSize(size as Size);
+                              setSelectedSize(size);
                               setSelectedColor(color);
                               setAddModalOpen(true);
                             }}
@@ -208,16 +209,22 @@ export default function CreateOrderPage() {
         {fields.length > 0 && (
           <div className="w-fit grid gap-4 md:grid-cols-2 lg:grid-cols-3">
             {fields.map((field, index) => {
-              // const parsedDate = parse(field.date, "dd-MM-yyyy", new Date());
+              const parsedDate = parse(field.date, "dd-MM-yyyy", new Date());
               return (
                 <div key={field.id} className="border rounded-lg p-4 space-y-4">
                   <div className="flex items-center justify-between flex-wrap">
                     <div className="flex items-center gap-4 flex-wrap">
-                      <span className="text-sm">Size: {field.size}</span>
-                      <span className="text-sm">Color: {field.color.name}</span>
-                      <span>Quantity: {field.quantity}</span>
-                      {/* <div className="flex gap-1 items-center">
-                        <p>Dispatch Date: </p>
+                      <p>
+                        Size: <span className="font-extrabold">{field.size}</span>
+                      </p>
+                      <p>
+                        Color: <span className="font-extrabold">{field.color.name}</span>
+                      </p>
+                      <p>
+                        Quantity: <span className="font-extrabold">{field.quantity}</span>
+                      </p>
+                      <div className="flex gap-1 items-center">
+                        <p>Order Date: </p>
                         <span
                           className={cn(
                             `px-2 py-1 border rounded-lg`,
@@ -228,7 +235,7 @@ export default function CreateOrderPage() {
                         >
                           {field.date}
                         </span>
-                      </div> */}
+                      </div>
                     </div>
                     <div className="flex items-center gap-2">
                       {currentUser?.userType === "admin" && (
@@ -305,7 +312,7 @@ export default function CreateOrderPage() {
               />
             </div>
             <div className="space-y-2">
-              <Label className="text-sm font-medium">Select Date</Label>
+              <Label className="text-sm font-medium">Select Order Date</Label>
               <Popover>
                 <PopoverTrigger asChild>
                   <Button

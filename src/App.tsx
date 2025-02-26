@@ -122,6 +122,7 @@ function App() {
                     <Route path="products/add" element={<AddProduct />} />
                     <Route path="products/update/:id" element={<EditProductPage />} />
                     <Route path="orders" element={<OrdersPage />} />
+                    <Route path="orders/completed" element={<OrdersPage />} />
                     <Route path="orders/add" element={<CreateOrderPage />} />
                     <Route path="orders/update/:id" element={<UpdateOrderPage />} />
                     <Route path="notifications" element={<EcommerceNotificationsPage />} />

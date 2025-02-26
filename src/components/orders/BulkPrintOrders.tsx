@@ -1,241 +1,483 @@
 import { Button } from "@/components/ui/button";
-import { Order, OrderVariation } from "@/types/order";
+
+import { Order } from "@/types/order";
+
 import { Printer } from "lucide-react";
 
-// Single order print layout
-const generateOrderHTML = (order: Order, currentDate: string) => `
-  <div class="page-container" style="page-break-after: always;">
-    <div class="header">
-      <div class="logo-section">
-        <div>
-          <div class="logo">Bazar Al Haya Management</div>
-        </div>
-        <div class="document-type">
-          <div>Order Details</div>
-          <div style="font-size: 14px; color: #6b7280;">Date: ${currentDate}</div>
-        </div>
-      </div>
-    </div>
+type Props = {
+  order: Order;
+  completedOrders: boolean;
+};
 
-    <div class="barcode">*${order.numericalId}*</div>
-
-    <div class="main-grid">
-      <div class="section">
-        <div class="section-title">Product Information</div>
-        <div class="details-grid">
-          <div class="label">Name:</div>
-          <div class="value">${order.product.name}</div>
-          <div class="label">SKU:</div>
-          <div class="value">#${order.product.sku}</div>
-          ${
-            order.product.image
-              ? `<div class="label">Image:</div>
-          <div class="value">
-            <img src="${order.product.image}" alt="${order.product.name}" style="max-width: 100px; max-height: 100px; object-fit: cover; border-radius: 5px;" />
-          </div>`
-              : ""
-          }
-        </div>
-      </div>
-
-      <div class="section">
-        <div class="section-title">Order Details</div>
-        <div class="details-grid">
-          <div class="label">Order ID:</div>
-          <div class="value">#${order.numericalId}</div>
-        </div>
-      </div>
-    </div>
-
-    ${
-      order.orderVariations.length > 0
-        ? `<div class="section">
-      <div class="section-title">Order Variations</div>
-      <div class="variations-grid">
-        ${order.orderVariations
-          .map(
-            (variation: OrderVariation) => `
-          <div class="variation-item">
-            <div class="details-grid" style="grid-template-columns: repeat(2, 1fr);">
-              <div>
-                <div class="label">Size:</div>
-                <div class="value">${variation.size}</div>
-              </div>
-              <div>
-                <div class="label">Color:</div>
-                <div class="value">${variation.color.name}</div>
-              </div>
-              <div>
-                <div class="label">Ordered:</div>
-                <div class="value">${variation.quantity}</div>
-              </div>
-              <div>
-                <div class="label">Shipped:</div>
-                <div class="value">${variation.shippedQuantity || "0"}</div>
-              </div>
-            </div>
-          </div>
-        `,
-          )
-          .join("")}
-      </div>
-    </div>`
-        : `<div class="section">
-      <div class="section-title">Order Variations</div>
-      <div class="details-grid">
-        <div class="label">No variations found</div>
-      </div>
-    </div>
-      `
-    }
-
-    <div class="footer">
-      <div>Order ID: #${order.numericalId} • Generated on ${currentDate}</div>
-      <div style="margin-top: 5px;">Bazar Al Haya Management</div>
-    </div>
-  </div>
-`;
-
-// Common styles for both single and bulk printing
-const getCommonStyles = () => `
-  @page { margin: 0; }
-  body { 
-    font-family: Arial, sans-serif;
-    margin: 0;
-    padding: 0;
-    color: #333;
-  }
-  .page-container {
-    padding: 40px;
-    max-width: 800px;
-    margin: 0 auto;
-  }
-  .header {
-    border-bottom: 2px solid #1e3a8a;
-    padding-bottom: 20px;
-    margin-bottom: 30px;
-  }
-  .logo-section {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 20px;
-  }
-  .logo {
-    font-size: 32px;
-    font-weight: bold;
-    color: #1e3a8a;
-  }
-  .document-type {
-    font-size: 24px;
-    color: #1e3a8a;
-    text-align: right;
-  }
-  .barcode {
-    font-family: 'Courier New', monospace;
-    font-size: 14px;
-    letter-spacing: 5px;
-    margin-top: 10px;
-    text-align: center;
-    padding: 10px;
-    background: #f8fafc;
-    border: 1px solid #e2e8f0;
-  }
-  .main-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 30px;
-    margin-bottom: 30px;
-  }
-  .section {
-    background: white;
-    padding: 20px;
-    border-radius: 6px;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-    margin-bottom: 20px;
-  }
-  .section-title {
-    font-size: 16px;
-    font-weight: bold;
-    color: #1e3a8a;
-    margin-bottom: 15px;
-    padding-bottom: 5px;
-    border-bottom: 1px solid #e2e8f0;
-  }
-  .details-grid {
-    display: grid;
-    grid-template-columns: 120px 1fr;
-    gap: 8px;
-    font-size: 14px;
-  }
-  .variations-grid {
-    display: grid;
-    gap: 16px;
-  }
-  .variation-item {
-    padding: 12px;
-    background: #f8fafc;
-    border-radius: 4px;
-  }
-  .label {
-    font-weight: 600;
-    color: #4b5563;
-  }
-  .value {
-    color: #111827;
-  }
-  .footer {
-    margin-top: 40px;
-    padding-top: 20px;
-    border-top: 1px solid #e2e8f0;
-    font-size: 12px;
-    color: #6b7280;
-    text-align: center;
-  }
-  @media print {
-    .no-print { display: none; }
-    body { print-color-adjust: exact; -webkit-print-color-adjust: exact; }
-  }
-`;
-
-// Function to handle bulk printing
-export const handleBulkPrint = (orders: Order[]) => {
+export const handleBulkPrint = (orders: Order[], completedOrders: boolean) => {
   const printWindow = window.open("", "_blank");
+
   const currentDate = new Date().toLocaleDateString();
 
   const printContent = `
+
+
     <!DOCTYPE html>
+
+
     <html>
+
+
       <head>
-        <title>Bazar Al Haya Management - Bulk Order Details</title>
-        <style>${getCommonStyles()}</style>
+
+
+        <title>Bazar Al Haya Management - ${completedOrders ? "Completed" : "Pending"} Orders List</title>
+
+
+        <style>
+
+
+          @page { margin: 0; }
+
+
+          body { 
+
+
+            font-family: Arial, sans-serif;
+
+
+            margin: 0;
+
+
+            padding: 20px;
+
+
+            color: #333;
+
+
+            -webkit-print-color-adjust: exact !important;
+
+
+            print-color-adjust: exact !important;
+
+
+          }
+
+
+          .page-container {
+
+
+            padding: 40px;
+
+
+            max-width: 800px;
+
+
+            margin: 0 auto;
+
+
+          }
+
+
+          .header {
+
+
+            text-align: center;
+
+
+            margin-bottom: 30px;
+
+
+            padding-bottom: 20px;
+
+
+            border-bottom: 2px solid #1e3a8a;
+
+
+          }
+
+
+          .logo {
+
+
+            font-size: 24px;
+
+
+            font-weight: bold;
+
+
+            color: #1e3a8a;
+
+
+            margin-bottom: 5px;
+
+
+          }
+
+
+          .date {
+
+
+            font-size: 14px;
+
+
+            color: #666;
+
+
+          }
+
+
+          table {
+
+
+            width: 100%;
+
+
+            border-collapse: collapse;
+
+
+            margin-bottom: 30px;
+
+
+          }
+
+
+          th, td {
+
+
+            border: 1px solid #e2e8f0;
+
+
+            padding: 12px;
+
+
+            text-align: left;
+
+
+            font-size: 14px;
+
+
+          }
+
+
+          th {
+
+
+            background-color: #f8fafc;
+
+
+            font-weight: 600;
+
+
+            color: #1e3a8a;
+
+
+          }
+
+
+          .product-cell {
+
+
+            display: flex;
+
+
+            align-items: center;
+
+
+            gap: 10px;
+
+
+          }
+
+
+          .product-image {
+
+
+            width: 40px;
+
+
+            height: 40px;
+
+
+            border-radius: 50%;
+
+
+            object-fit: cover;
+
+
+          }
+
+
+          .status {
+
+
+            display: inline-block;
+
+
+            padding: 4px 8px;
+
+
+            border-radius: 4px;
+
+
+            font-size: 12px;
+
+
+            font-weight: 500;
+
+
+          }
+
+
+          .status-completed { background: #dcfce7; color: #166534; }
+
+
+          .status-pending { background: #fef9c3; color: #854d0e; }
+
+
+          .status-cancelled { background: #fee2e2; color: #991b1b; }
+
+
+          .variations {
+
+
+            font-size: 12px;
+
+
+            color: #666;
+
+
+            margin-top: 4px;
+
+
+          }
+
+          .variation-item {
+            display: inline-block;
+            margin-top: 2px;
+          }
+
+
+          .footer {
+
+
+            text-align: center;
+
+
+            font-size: 12px;
+
+
+            color: #666;
+
+
+            margin-top: 40px;
+
+
+            padding-top: 20px;
+
+
+            border-top: 1px solid #e2e8f0;
+
+
+          }
+
+
+          @media print {
+
+
+            .no-print { display: none; }
+
+
+            body { print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+
+
+          }
+
+
+        </style>
+
+
       </head>
-      <body>
-        ${orders.map((order) => generateOrderHTML(order, currentDate)).join("")}
+
+
+      <body class="page-container">
+
+
+        <div class="header">
+
+
+          <div class="logo">BAZAR AL HAYA MANAGEMENT</div>
+
+
+          <div class="date"><span style="font-weight: bold; text-transform: uppercase; color: ${completedOrders ? "#4CAF50;" : "#FFC107;"}">${completedOrders ? "Completed" : "Pending"}</span> Orders List - Generated on ${currentDate}</div>
+
+
+        </div>
+
+
+
+
+
+        <table>
+
+
+          <thead>
+
+
+            <tr>
+
+
+              <th>Order ID</th>
+
+
+              <th>Product Details</th>
+
+
+              <th>SKU</th>
+
+
+              <th>Ordered Quantities</th>
+
+
+              <th>Status</th>
+
+
+              <th>Order Date</th>
+
+
+            </tr>
+
+
+          </thead>
+
+
+          <tbody>
+
+
+            ${orders
+
+              .map(
+                (order) => `
+
+
+              <tr>
+
+
+                <td>#${order.numericalId}</td>
+
+
+                <td>
+
+
+                  <div class="product-cell">
+
+
+                    ${order.product.image ? `<img src="${order.product.image}" alt="" class="product-image" />` : ""}
+
+
+                    <div>
+
+
+                      <div style="font-weight: semibold;">${order.product.name}</div>
+
+
+                      <div class="variations">
+                        ${
+                          order.orderVariations
+                            ?.map(
+                              (v) =>
+                                `<span class="variation-item">${v.size} - ${v.color.name} (Ordered Quantity: ${v.quantity} / Shipped Quantity: ${v.shippedQuantity})</span>`,
+                            )
+                            .join("") || "No variations"
+                        }
+                      </div>
+
+
+                    </div>
+
+
+                  </div>
+
+
+                </td>
+
+
+                <td>#${order.product.sku}</td>
+
+
+                <td>${order.orderVariations.reduce((total, variation) => total + variation.quantity, 0)}</td>
+
+
+                <td>
+
+
+                  ${order.orderVariations.reduce((total, variation) => total + Number(variation.shippedQuantity), 0)} pieces shipped
+
+
+                </td>
+
+
+                <td>${new Date(order.createdAt).toLocaleDateString()}</td>
+
+
+              </tr>
+
+
+            `,
+              )
+
+              .join("")}
+
+
+          </tbody>
+
+
+        </table>
+
+
+
+
+
+        <div class="footer">
+
+
+          <div>Total Orders: ${orders.length}</div>
+
+
+          <div>Bazar Al Haya Management</div>
+
+
+        </div>
+
+
+
+
+
         <script>
+
+
           window.onload = function() { window.print(); };
+
+
         </script>
+
+
       </body>
+
+
     </html>
+
+
   `;
 
-  if (printWindow) {
-    printWindow.document.open();
-    printWindow.document.write(printContent);
-    printWindow.document.close();
-  }
+  printWindow?.document.write(printContent);
+
+  printWindow?.document.close();
 };
 
-// Single order print component
-const OrderPrintButton = ({ order }: { order: Order }) => {
-  const handlePrint = () => handleBulkPrint([order]);
-
+const PrintOrder = ({ order, completedOrders }: Props) => {
+  const handlePrint = () => handleBulkPrint([order], completedOrders);
   return (
-    <Button onClick={handlePrint} className="flex items-center gap-2">
+    <Button onClick={handlePrint}>
       <Printer className="h-4 w-4" />
-      <span>Print Order Details</span>
+      <span>Print</span>
     </Button>
   );
 };
 
-export default OrderPrintButton;
+export default PrintOrder;

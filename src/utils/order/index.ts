@@ -1,5 +1,5 @@
 import { db } from "@/firebase/config";
-import { Order, OrderStatus, SIZES } from "@/types/order";
+import { Order, OrderStatus } from "@/types/order";
 import {
   collection,
   deleteDoc,
@@ -17,6 +17,7 @@ import {
   serverTimestamp,
   startAfter,
   updateDoc,
+  where,
 } from "firebase/firestore";
 import { z } from "zod";
 import {
@@ -40,12 +41,13 @@ export const addOrderSchema = z.object({
   status: z.nativeEnum(OrderStatus),
   orderVariations: z.array(
     z.object({
-      size: z.enum([...SIZES]),
+      size: z.string(),
       color: z.object({
         name: z.string(),
       }),
       quantity: z.number(),
       date: z.string(),
+      dispatchDate: z.string().optional(),
       shippedQuantity: z.string().optional(),
       comments: z.string().optional(),
     }),
@@ -166,6 +168,7 @@ export const getOrder = async (id: string): Promise<Order | null> => {
 export const getOrders = async (
   maxLimit: number = 10,
   pageNumber: number = 1,
+  completedOrders = false,
 ): Promise<{ orders: Order[]; total: number }> => {
   try {
     // First get total count
@@ -173,13 +176,18 @@ export const getOrders = async (
     const total = totalSnapshot.data().count;
 
     // Base query
-    let queryConstraints: any[] = [orderBy("createdAt", "desc"), limit(maxLimit)];
+    let queryConstraints: any[] = [
+      where("status", "==", completedOrders ? OrderStatus.COMPLETED : OrderStatus.PENDING),
+      orderBy("createdAt", "desc"),
+      limit(maxLimit),
+    ];
 
     // If it's not the first page, we need all previous pages' last docs
     if (pageNumber > 1) {
       // Get the last doc of the previous page
       const previousPageQuery = query(
         collection(db, "orders"),
+        where("status", "==", completedOrders ? OrderStatus.COMPLETED : OrderStatus.PENDING),
         orderBy("createdAt", "desc"),
         limit(maxLimit * (pageNumber - 1)),
       );
@@ -246,6 +254,34 @@ export const changeOrderStatus = async (orderId: string, status: OrderStatus) =>
     return true;
   } catch (error) {
     console.error("Error updating order status:", error);
+    return false;
+  }
+};
+
+export const changeBulkOrderStatus = async (orderIds: string[], status: OrderStatus) => {
+  try {
+    await Promise.all(
+      orderIds.map(async (orderId) => {
+        await changeOrderStatus(orderId, status);
+      }),
+    );
+    return true;
+  } catch (error) {
+    console.error("Error updating order status:", error);
+    return false;
+  }
+};
+
+export const deleteBulkOrders = async (orderIds: string[]) => {
+  try {
+    await Promise.all(
+      orderIds.map(async (orderId) => {
+        await deleteOrder(orderId);
+      }),
+    );
+    return true;
+  } catch (error) {
+    console.error("Error deleting orders:", error);
     return false;
   }
 };

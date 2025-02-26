@@ -2,7 +2,9 @@ import type { Order, OrderFilters, OrderStatus } from "@/types/order";
 import {
   addOrder,
   addOrderSchema,
+  changeBulkOrderStatus,
   changeOrderStatus,
+  deleteBulkOrders,
   deleteOrder,
   getOrders,
   getTotalOrdersCount,
@@ -11,7 +13,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 import { z } from "zod";
 
-export function useOrders(limit: number = 10) {
+export function useOrders(limit: number = 10, completedOrders = false) {
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [filters, setFilters] = useState<OrderFilters>({
@@ -31,8 +33,8 @@ export function useOrders(limit: number = 10) {
   });
 
   const { data, isLoading, error } = useQuery({
-    queryKey: ["orders", currentPage],
-    queryFn: () => getOrders(limit, currentPage),
+    queryKey: ["orders", currentPage, completedOrders],
+    queryFn: () => getOrders(limit, currentPage, completedOrders),
   });
 
   const filteredData = useMemo(
@@ -55,7 +57,26 @@ export function useOrders(limit: number = 10) {
     mutationFn: ({ orderId, status }: { orderId: string; status: OrderStatus }) => changeOrderStatus(orderId, status),
     onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: ["orders", currentPage],
+        queryKey: ["orders", currentPage, true],
+        exact: true,
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["orders", currentPage, false],
+        exact: true,
+      });
+    },
+  });
+
+  const changeBulkOrderStatusMutation = useMutation({
+    mutationFn: ({ orderIds, status }: { orderIds: string[]; status: OrderStatus }) =>
+      changeBulkOrderStatus(orderIds, status),
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ["orders", currentPage, true],
+        exact: true,
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["orders", currentPage, false],
         exact: true,
       });
     },
@@ -65,7 +86,7 @@ export function useOrders(limit: number = 10) {
     mutationFn: (data: z.infer<typeof addOrderSchema>) => addOrder(data),
     onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: ["orders", currentPage],
+        queryKey: ["orders", currentPage, completedOrders],
         exact: true,
       });
       queryClient.invalidateQueries({
@@ -79,7 +100,29 @@ export function useOrders(limit: number = 10) {
     mutationFn: async (id: string) => await deleteOrder(id),
     onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: ["orders", currentPage],
+        queryKey: ["orders", currentPage, true],
+        exact: true,
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["orders", currentPage, false],
+        exact: true,
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["ordersCount"],
+        exact: true,
+      });
+    },
+  });
+
+  const deleteBulkOrdersMutation = useMutation({
+    mutationFn: (ids: string[]) => deleteBulkOrders(ids),
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ["orders", currentPage, true],
+        exact: true,
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["orders", currentPage, false],
         exact: true,
       });
       queryClient.invalidateQueries({
@@ -121,10 +164,14 @@ export function useOrders(limit: number = 10) {
     resetFilters,
     filterMetadata,
     changeOrderStatus: changeStatusMutation.mutate,
+    changeBulkOrderStatus: changeBulkOrderStatusMutation.mutate,
     deleteOrder: deleteOrderMutation.mutate,
+    deleteBulkOrders: deleteBulkOrdersMutation.mutate,
     addOrder: addOrderMutation.mutate,
     isChangingStatus: changeStatusMutation.isPending,
+    isChangingBulkOrderStatus: changeBulkOrderStatusMutation.isPending,
     isDeleting: deleteOrderMutation.isPending,
+    isDeletingBulkOrders: deleteBulkOrdersMutation.isPending,
     isAdding: addOrderMutation.isPending,
   };
 }

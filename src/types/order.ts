@@ -29,6 +29,7 @@ export type OrderVariation = {
   color: Color;
   quantity: number;
   date: string;
+  dispatchDate?: string;
   shippedQuantity?: string;
   comments?: string;
 };

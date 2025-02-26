@@ -74,7 +74,7 @@ export default function UpdateOrderPage() {
     }
     update(index, {
       ...field,
-      date: format(day, "dd-MM-yyyy"),
+      dispatchDate: format(day, "dd-MM-yyyy"),
     });
   };
 
@@ -121,7 +121,8 @@ export default function UpdateOrderPage() {
         {fields.length > 0 && (
           <div className="space-y-4">
             {fields.map((field, index) => {
-              const parsedDate = parse(field.date, "dd-MM-yyyy", new Date());
+              const parsedOrderDate = parse(field.date, "dd-MM-yyyy", new Date());
+              const parsedDispatchDate = field.dispatchDate && parse(field.dispatchDate, "dd-MM-yyyy", new Date());
               return (
                 <div key={field.id} className="border rounded-lg p-4 space-y-4">
                   <div className="flex items-center justify-between flex-wrap">
@@ -136,17 +137,38 @@ export default function UpdateOrderPage() {
                         Quantity: <span className="font-extrabold">{field.quantity}</span>
                       </p>
                       <div className="flex gap-2 items-center">
-                        <p>Dispatch Date: </p>
+                        <p>Order Date: </p>
                         <span
                           className={cn(
                             `p-2 border rounded-lg text-sm`,
-                            parsedDate <= new Date() || parsedDate <= new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
+                            parsedOrderDate <= new Date() ||
+                              parsedOrderDate <= new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
                               ? "bg-red-500 text-white"
                               : "bg-green-500 text-white",
                           )}
                         >
                           {field.date}
                         </span>
+                      </div>
+                      <div className="flex gap-2 items-center">
+                        <p>Dispatch Date: </p>
+                        {parsedDispatchDate ? (
+                          <span
+                            className={cn(
+                              `p-2 border rounded-lg text-sm`,
+                              parsedDispatchDate <= new Date() ||
+                                parsedDispatchDate <= new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
+                                ? "bg-red-500 text-white"
+                                : "bg-green-500 text-white",
+                            )}
+                          >
+                            {field.dispatchDate}
+                          </span>
+                        ) : (
+                          <span className="p-2 border rounded-lg text-sm bg-gray-300 text-gray-700">
+                            Not Dispatched
+                          </span>
+                        )}
                         <Popover>
                           <PopoverTrigger asChild>
                             <Button variant="outline" className={cn("w-fit text-left font-normal")}>
@@ -156,7 +178,7 @@ export default function UpdateOrderPage() {
                           <PopoverContent className="w-auto p-0">
                             <Calendar
                               mode="single"
-                              today={parsedDate}
+                              today={parsedDispatchDate || new Date()}
                               onSelect={(day) => handleDateUpdate(day, index, field)}
                               initialFocus
                             />

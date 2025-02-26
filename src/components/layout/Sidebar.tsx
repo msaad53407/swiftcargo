@@ -1,6 +1,7 @@
 import { useAuth } from "@/contexts/AuthContext";
 import {
   Bell,
+  CheckCircle,
   CreditCard,
   LayoutDashboard,
   LogOut,
@@ -31,6 +32,7 @@ const ECommerceMenuItems = [
   { icon: Package, label: "Product Management", path: "/ecommerce/products" },
   { icon: Plus, label: "Add Product", path: "/ecommerce/products/add" },
   { icon: CreditCard, label: "Order Management", path: "/ecommerce/orders" },
+  { icon: CheckCircle, label: "Completed Orders", path: "/ecommerce/orders/completed" },
   { icon: Plus, label: "Add Order", path: "/ecommerce/orders/add" },
   { icon: Bell, label: "Notification", path: "/ecommerce/notifications" },
   {
