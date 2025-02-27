@@ -268,6 +268,38 @@ export const addProduct = async (
   }
 };
 
+export const bulkDuplicateProducts = async (productIds: string[], copies: number = 1) => {
+  try {
+    const products = await Promise.all(productIds.map((id) => getProduct(id)));
+    const validProducts = products.filter((p): p is Product => p !== null);
+
+    for (const product of validProducts) {
+      for (let i = 0; i < copies; i++) {
+        const productData = {
+          name: `${product.name} (Copy ${i + 1})`,
+          description: product.description,
+          image: product.image,
+          sku: product.sku,
+          weight: product.weight,
+          visibility: product.visibility,
+        };
+
+        const variations = product.variations.map((v) => ({
+          size: v.size,
+          colors: v.colors,
+        }));
+
+        await addProduct(productData, variations);
+      }
+    }
+
+    return true;
+  } catch (error) {
+    console.error("Error duplicating products:", error);
+    return false;
+  }
+};
+
 export const updateProduct = async (
   id: string,
   product: Omit<Product, "id" | "createdAt" | "updatedAt" | "variations">,

@@ -331,7 +331,7 @@ export const handleBulkPrint = (orders: Order[], completedOrders: boolean) => {
               <th>SKU</th>
 
 
-              <th>Ordered Quantities</th>
+              <th>Ordered QTY</th>
 
 
               <th>Status</th>
@@ -381,7 +381,16 @@ export const handleBulkPrint = (orders: Order[], completedOrders: boolean) => {
                           order.orderVariations
                             ?.map(
                               (v) =>
-                                `<span class="variation-item">${v.size} - ${v.color.name} (Ordered Quantity: ${v.quantity} / Shipped Quantity: ${v.shippedQuantity})</span>`,
+                                `
+                                <div class="variation-item">
+                                <span>
+                                <b>${v.size}</b> - <b>${v.color.name}</b> (Ordered Quantity: <b>${v.quantity}</b> / Shipped Quantity: <b>${v.shippedQuantity}</b>)
+                                </span>
+                                ${v?.comments ? `<span class="variation-item">Comments: <b>${v.comments}</b></span>` : ""}
+                                <br/>
+                                <br/>
+                                </div>
+                              `,
                             )
                             .join("") || "No variations"
                         }
@@ -406,7 +415,7 @@ export const handleBulkPrint = (orders: Order[], completedOrders: boolean) => {
                 <td>
 
 
-                  ${order.orderVariations.reduce((total, variation) => total + Number(variation.shippedQuantity), 0)} pieces shipped
+                  ${order.orderVariations.reduce((total, variation) => total + Number(variation.shippedQuantity), 0)} pcs shipped
 
 
                 </td>

@@ -43,7 +43,7 @@ export default function Variations({ colors, onChange }: VariationsProps) {
               </Button>
             </DropdownMenuTrigger>
           </div>
-          <DropdownMenuContent className="w-[400px] p-4 max-h-[400px] overflow-y-auto" align="end" sideOffset={8}>
+          <DropdownMenuContent className="min-w-[300px] max-w-[400px] p-4 max-h-[400px] overflow-y-auto" align="end" sideOffset={8}>
             <div className="space-y-4">
               <div className="flex items-center justify-between gap-2">
                 <h4 className="text-sm text-muted-foreground">Add a New Variation</h4>
@@ -89,7 +89,12 @@ export default function Variations({ colors, onChange }: VariationsProps) {
                   </div>
                 ))}
               </div>
-              <Button onClick={addColor}>Add</Button>
+              <div className="flex items-center justify-between gap-4">
+                <Button onClick={addColor}>Add</Button>
+                <Button variant="outline" onClick={() => setOpen(false)}>
+                  Close
+                </Button>
+              </div>
             </div>
           </DropdownMenuContent>
         </DropdownMenu>

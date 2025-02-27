@@ -14,10 +14,10 @@ import { Color } from "@/types/product";
 import { addOrderSchema } from "@/utils/order";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { format, parse } from "date-fns";
-import { CalendarIcon, Plus, Trash2 } from "lucide-react";
+import { CalendarIcon, Trash2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Controller, useFieldArray, useForm } from "react-hook-form";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
 import { z } from "zod";
 
@@ -182,22 +182,19 @@ export default function CreateOrderPage() {
                     <div className="w-12 border p-2 rounded-lg text-center font-medium bg-gray-200">{size}</div>
                     <div className="flex gap-4 flex-wrap">
                       {sizeColors.map((color, index) => (
-                        <div key={index} className="relative group">
-                          <p className="px-2 py-1 border rounded-lg">{color.name}</p>
-                          <Button
-                            type="button"
-                            variant="outline"
-                            size="icon"
-                            className="h-4 w-4 absolute -top-2 -right-2 rounded-full flex items-center justify-center"
-                            onClick={() => {
-                              setSelectedSize(size);
-                              setSelectedColor(color);
-                              setAddModalOpen(true);
-                            }}
-                          >
-                            <Plus className="h-3 w-3" />
-                          </Button>
-                        </div>
+                        <Button
+                          key={index}
+                          type="button"
+                          variant="outline"
+                          className="relative group"
+                          onClick={() => {
+                            setSelectedSize(size);
+                            setSelectedColor(color);
+                            setAddModalOpen(true);
+                          }}
+                        >
+                          {color.name}
+                        </Button>
                       ))}
                     </div>
                   </div>
@@ -280,9 +277,14 @@ export default function CreateOrderPage() {
           </div>
         )}
 
-        <Button type="submit" className="w-fit mx-auto" disabled={isAdding}>
-          {isAdding ? "Creating..." : "Create Order"}
-        </Button>
+        <div className="flex justify-end gap-4">
+          <Button variant="outline" type="button" asChild>
+            <Link to="/ecommerce/orders">Cancel</Link>
+          </Button>
+          <Button type="submit" className="w-fit" disabled={isAdding}>
+            {isAdding ? "Creating..." : "Create Order"}
+          </Button>
+        </div>
       </form>
 
       <Dialog open={addModalOpen} onOpenChange={setAddModalOpen}>

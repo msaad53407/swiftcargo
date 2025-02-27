@@ -115,6 +115,7 @@ export const handleBulkPrint = (products: Product[]) => {
               <th>Product ID</th>
               <th>Product Details</th>
               <th>SKU</th>
+              <th>Weight</th>
               <th>Created Date</th>
             </tr>
           </thead>
@@ -134,7 +135,7 @@ export const handleBulkPrint = (products: Product[]) => {
                           product.variations
                             ?.map(
                               (v) =>
-                                `<span class="variation-item">${v.size} - ${v.colors.map((c) => c.name).join(", ")}</span>`,
+                                `<span class="variation-item"><b>${v.size}</b> - <b>${v.colors.map((c) => c.name).join(", ")}</b></span>`,
                             )
                             .join("") || "No variations"
                         }
@@ -143,6 +144,7 @@ export const handleBulkPrint = (products: Product[]) => {
                   </div>
                 </td>
                 <td>#${product.sku}</td>
+                <td>${product.weight.value}${product.weight.unit}</td>
                 <td>${new Date(product.createdAt).toLocaleDateString()}</td>
               </tr>
             `,

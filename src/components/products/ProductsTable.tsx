@@ -1,4 +1,4 @@
-import { Eye, EyeOff, Pencil, PlusIcon, Printer, Settings2, Trash2, Upload } from "lucide-react";
+import { CopyPlus, Eye, EyeOff, Pencil, PlusIcon, Printer, Settings2, Trash2, Upload } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -6,6 +6,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { useAuth } from "@/contexts/AuthContext";
 import { useProducts } from "@/hooks/useProducts";
 import { cn, generatePaginationNUmbers } from "@/lib/utils";
+import { bulkDuplicateProducts } from "@/utils/product";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import Papa from "papaparse";
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
@@ -14,9 +16,12 @@ import { Checkbox } from "../ui/checkbox";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuSeparator, DropdownMenuTrigger } from "../ui/dropdown-menu";
 import { Label } from "../ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
+import { Separator } from "../ui/separator";
 import { handleBulkPrint } from "./BulkPrintProduct";
 import DeleteAlertModal from "./DeleteAlertModal";
 import { TableSkeleton as ProductsTableSkeleton } from "./ProductsTableSkeleton";
+
+type BulkOptions = "none" | "print" | "duplicate" | "delete";
 
 export function ProductsTable() {
   const {
@@ -44,9 +49,31 @@ export function ProductsTable() {
 
   const [selectedProducts, setSelectedProducts] = useState<string[]>([]);
 
-  const [selectedAction, setSelectedAction] = useState<"delete" | "print" | "none">("none");
+  const [selectedAction, setSelectedAction] = useState<BulkOptions>("none");
 
   const navigate = useNavigate();
+
+  const queryClient = useQueryClient();
+
+  const bulkDuplicateMutation = useMutation({
+    mutationKey: ["duplicate-products"],
+    mutationFn: (ids: string[]) => bulkDuplicateProducts(ids),
+    onSuccess: (data) => {
+      if (data) {
+        queryClient.invalidateQueries({
+          queryKey: ["products", 1, null],
+          exact: true,
+        });
+        queryClient.invalidateQueries({
+          queryKey: ["products", 1, ""],
+        });
+        queryClient.invalidateQueries({
+          queryKey: ["productsCount"],
+          exact: true,
+        });
+      }
+    },
+  });
 
   const handleSelectAll = (checked: string | boolean) => {
     if (checked) {
@@ -64,11 +91,11 @@ export function ProductsTable() {
     }
   };
 
-  const handleBulkAction = async (action: "delete" | "print" | "none") => {
-    if (action !== "print" && action !== "delete") return;
+  const handleBulkAction = async (action: BulkOptions) => {
+    if (action === "none") return;
 
-    if (currentUser && currentUser.userType === "manager" && action === "delete") {
-      toast.error("Unauthorized. Only Admins can delete products.");
+    if (currentUser && currentUser.userType === "manager" && action !== "print") {
+      toast.error("Unauthorized. Only Admins can perform this operation.");
       return;
     }
 
@@ -92,6 +119,25 @@ export function ProductsTable() {
       case "print":
         const selectedProductsData = filteredData.filter((product) => selectedProducts.includes(product.id));
         handleBulkPrint(selectedProductsData);
+        break;
+
+      case "duplicate":
+        if (window.confirm(`Are you sure you want to duplicate ${selectedProducts.length} products?`)) {
+          try {
+            toast.promise(bulkDuplicateMutation.mutateAsync(selectedProducts), {
+              loading: "Duplicating products...",
+              success: (data) => {
+                if (data) {
+                  setSelectedProducts([]);
+                  return `${selectedProducts.length} products duplicated successfully`;
+                }
+              },
+              error: "Failed to duplicate products",
+            });
+          } catch (error) {
+            toast.error("Failed to duplicate products");
+          }
+        }
         break;
       default:
         break;
@@ -193,21 +239,6 @@ export function ProductsTable() {
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
-  };
-
-  const handleToggleVisibility = (id: string) => {
-    try {
-      toggleProductVisibility(id, {
-        onSuccess: () => {
-          toast.success("Product visibility updated successfully!");
-        },
-        onError: () => {
-          toast.error("Failed to update product visibility!");
-        },
-      });
-    } catch (error) {
-      toast.error("Failed to update product visibility!");
-    }
   };
 
   return (
@@ -337,6 +368,12 @@ export function ProductsTable() {
                 Delete Selected
               </div>
             </SelectItem> */}
+            <SelectItem value="duplicate">
+              <div className="flex items-center gap-2">
+                <CopyPlus className="h-4 w-4" />
+                Duplicate Selected
+              </div>
+            </SelectItem>
             <SelectItem value="print">
               <div className="flex items-center gap-2">
                 <Printer className="h-4 w-4" />
@@ -363,6 +400,7 @@ export function ProductsTable() {
               <TableHead>Date</TableHead>
               <TableHead>Product</TableHead>
               <TableHead>SKU</TableHead>
+              <TableHead>Weight</TableHead>
               {currentUser && currentUser.userType === "admin" && <TableHead className="text-right">Action</TableHead>}
             </TableRow>
           </TableHeader>
@@ -377,15 +415,51 @@ export function ProductsTable() {
                     />
                   </TableCell>
                   <TableCell>{new Date(product.createdAt).toDateString()}</TableCell>
-                  <TableCell>
-                    <div className="flex items-center gap-2">
+                  <TableCell className="max-w-64 min-w-64">
+                    <div className="flex items-center gap-2 ml-2">
                       {product?.image && (
                         <img src={product.image} alt={product.name} className="w-8 h-8 rounded-full" />
                       )}
-                      {product.name}
+                      <span className="text-xl">{product.name}</span>
+                    </div>
+                    <div className="p-2">
+                      <h4 className="font-semibold mb-4">Product Variations</h4>
+                      <div className="space-y-4">
+                        {product.variations.length > 0 ? (
+                          product.variations.map((variation, index) => (
+                            <>
+                              <Separator />
+                              <div key={index} className="grid grid-cols-4 gap-4 text-sm mb-2">
+                                <div>
+                                  Size:<span className="font-bold"> {variation.size} </span>
+                                </div>
+                              </div>
+                              {variation.colors.length ? (
+                                <div>
+                                  <div className=" text-sm mb-2">
+                                    <div>
+                                      Colors:
+                                      <span className="font-bold">
+                                        {" "}
+                                        {variation.colors.map((c) => c.name).join(", ")}{" "}
+                                      </span>
+                                    </div>
+                                  </div>
+                                </div>
+                              ) : null}
+                            </>
+                          ))
+                        ) : (
+                          <p className="text-sm text-muted-foreground">No variations found</p>
+                        )}
+                      </div>
                     </div>
                   </TableCell>
                   <TableCell>#{product.sku}</TableCell>
+                  <TableCell>
+                    {product.weight.value}
+                    {product.weight.unit}
+                  </TableCell>
                   {currentUser && currentUser.userType === "admin" && (
                     <TableCell>
                       <div className="flex justify-end gap-2">
@@ -399,7 +473,17 @@ export function ProductsTable() {
                               toast.error("Unauthorized. Only Admins can toggle product visibility.");
                               return;
                             }
-                            handleToggleVisibility(product.id);
+                            toast.promise(toggleProductVisibility(product.id), {
+                              loading: "Toggling product visibility...",
+                              success: (data) => {
+                                if (data.success) {
+                                  return "Product visibility toggled successfully!";
+                                }
+                              },
+                              error: (error) => {
+                                return `Failed to toggle product visibility: ${error.message}`;
+                              },
+                            });
                           }}
                         >
                           {product.visibility ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
@@ -422,12 +506,13 @@ export function ProductsTable() {
                         <DeleteAlertModal
                           isDeleting={isDeleting}
                           onDelete={async () => {
-                            deleteProduct(product.id, {
-                              onSuccess: () => {
-                                toast.success("Product deleted successfully!");
+                            toast.promise(deleteProduct(product.id), {
+                              loading: "Deleting product...",
+                              success: (success) => {
+                                if (success) return "Product deleted successfully!";
                               },
-                              onError: () => {
-                                toast.error("Failed to delete product!");
+                              error: (error) => {
+                                return `Failed to delete product: ${error.message}`;
                               },
                             });
                           }}

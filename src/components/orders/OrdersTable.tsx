@@ -86,17 +86,18 @@ export function OrdersTable({ data: filteredData, showFooter = true, limit, isCo
     switch (action) {
       case "delete":
         if (window.confirm(`Are you sure you want to delete ${selectedOrders.length} orders?`)) {
-          deleteBulkOrders(selectedOrders, {
-            onSuccess: (success) => {
-              if (success) {
-                toast.success(`Successfully deleted ${selectedOrders.length} orders`);
+          toast.promise(deleteBulkOrders(selectedOrders), {
+            loading: "Deleting orders...",
+            success: (data) => {
+              if (data) {
                 setSelectedOrders([]);
+                return `${selectedOrders.length} orders deleted successfully`;
               } else {
-                toast.error("Failed to delete orders");
+                return "Failed to delete orders";
               }
             },
-            onError: () => {
-              toast.error("Failed to delete orders");
+            error: () => {
+              return "Failed to delete orders";
             },
           });
         }
@@ -107,22 +108,20 @@ export function OrdersTable({ data: filteredData, showFooter = true, limit, isCo
         break;
       case "changeStatus":
         if (window.confirm(`Are you sure you want to mark all selected orders as completed?`)) {
-          changeBulkOrderStatus(
-            { orderIds: selectedOrders, status: OrderStatus.COMPLETED },
-            {
-              onSuccess: (success) => {
-                if (success) {
-                  toast.success(`Successfully changed status`);
-                  setSelectedOrders([]);
-                } else {
-                  toast.error("Failed to change status of orders");
-                }
-              },
-              onError: () => {
-                toast.error("Failed to change status of orders");
-              },
+          toast.promise(changeBulkOrderStatus({ orderIds: selectedOrders, status: OrderStatus.COMPLETED }), {
+            loading: "Marking orders as completed...",
+            success: (data) => {
+              if (data) {
+                setSelectedOrders([]);
+                return `${selectedOrders.length} orders marked as completed successfully`;
+              } else {
+                return "Failed to mark orders as completed";
+              }
             },
-          );
+            error: () => {
+              return "Failed to mark orders as completed";
+            },
+          });
         }
         break;
       default:
@@ -134,15 +133,19 @@ export function OrdersTable({ data: filteredData, showFooter = true, limit, isCo
 
   const handleStatusChange = async (orderId: string, status: OrderStatus) => {
     try {
-      changeOrderStatus(
-        { orderId, status },
-        {
-          onSuccess: (success) => {
-            if (success) toast.success("Order status updated successfully!");
-            else toast.error("Failed to update order status");
-          },
+      toast.promise(changeOrderStatus({ orderId, status }), {
+        loading: "Updating order status...",
+        success: (data) => {
+          if (data) {
+            return "Order status updated successfully";
+          } else {
+            return "Failed to update order status";
+          }
         },
-      );
+        error: () => {
+          return "Failed to update order status";
+        },
+      });
     } catch (error) {
       toast.error("Failed to update order status");
     }
@@ -150,14 +153,16 @@ export function OrdersTable({ data: filteredData, showFooter = true, limit, isCo
 
   const handleDeleteOrder = async (id: string) => {
     try {
-      deleteOrder(id, {
-        onSuccess: (success) => {
-          if (success) toast.success("Order deleted successfully!");
-          else toast.error("Failed to delete order");
+      toast.promise(deleteOrder(id), {
+        loading: "Deleting order...",
+        success: (data) => {
+          if (data) {
+            return "Order deleted successfully";
+          } else {
+            return "Failed to delete order";
+          }
         },
-        onError: () => {
-          toast.error("Failed to delete order");
-        },
+        error: "Failed to delete order",
       });
     } catch (error) {
       toast.error("Failed to delete order");
@@ -175,18 +180,22 @@ export function OrdersTable({ data: filteredData, showFooter = true, limit, isCo
             <SelectItem value="none" className="text-gray-500">
               <div className="flex items-center gap-2">None</div>
             </SelectItem>
-            <SelectItem value="delete" className="text-red-500">
-              <div className="flex items-center gap-2">
-                <Trash2 className="h-4 w-4" />
-                Delete Selected
-              </div>
-            </SelectItem>
-            <SelectItem value="changeStatus" className="text-green-500">
-              <div className="flex items-center gap-2">
-                <CheckCircle className="h-4 w-4" />
-                Mark as Completed
-              </div>
-            </SelectItem>
+            {!isCompletedOrdersData && (
+              <SelectItem value="delete" className="text-red-500">
+                <div className="flex items-center gap-2">
+                  <Trash2 className="h-4 w-4" />
+                  Delete Selected
+                </div>
+              </SelectItem>
+            )}
+            {!isCompletedOrdersData && (
+              <SelectItem value="changeStatus" className="text-green-500">
+                <div className="flex items-center gap-2">
+                  <CheckCircle className="h-4 w-4" />
+                  Mark as Completed
+                </div>
+              </SelectItem>
+            )}
             <SelectItem value="print">
               <div className="flex items-center gap-2">
                 <Printer className="h-4 w-4" />
@@ -212,7 +221,7 @@ export function OrdersTable({ data: filteredData, showFooter = true, limit, isCo
               <TableHead>Order Id.</TableHead>
               <TableHead>Product</TableHead>
               <TableHead>SKU</TableHead>
-              <TableHead>Ordered Quantities</TableHead>
+              <TableHead>Ordered QTY</TableHead>
               <TableHead>Status</TableHead>
               {!isCompletedOrdersData ? <TableHead className="text-right">Action</TableHead> : null}
             </TableRow>
@@ -227,11 +236,11 @@ export function OrdersTable({ data: filteredData, showFooter = true, limit, isCo
                   />
                 </TableCell>
                 <TableCell className="font-medium text-blue-600">#{order.numericalId}</TableCell>
-                <TableCell className="min-w-80">
+                <TableCell className="min-w-80 max-w-96">
                   <div className="flex items-center gap-2 ml-2">
-                    {order.product.image && (
+                    {order.product.image ? (
                       <img src={order.product.image} alt={order.product.name} className="w-8 h-8 rounded-full" />
-                    )}
+                    ) : null}
                     <span className="text-xl">{order.product.name}</span>
                   </div>
                   <div className="p-2">
@@ -241,7 +250,7 @@ export function OrdersTable({ data: filteredData, showFooter = true, limit, isCo
                         order.orderVariations.map((variation, index) => (
                           <>
                             <Separator />
-                            <div key={index} className="grid grid-cols-4 gap-4 text-sm">
+                            <div key={index} className="grid grid-cols-4 gap-4 text-sm mb-2">
                               <div>
                                 Size:<span className="font-bold"> {variation.size} </span>
                               </div>
@@ -249,12 +258,17 @@ export function OrdersTable({ data: filteredData, showFooter = true, limit, isCo
                                 Color:<span className="font-bold"> {variation.color.name} </span>
                               </div>
                               <div>
-                                Order: <span className="font-bold"> {variation.quantity} </span>
+                                Ordered: <span className="font-bold"> {variation.quantity} </span>
                               </div>
                               <div>
                                 Shipped: <span className="font-bold"> {variation.shippedQuantity || "0"} </span>
                               </div>
                             </div>
+                            {variation.comments ? (
+                              <div>
+                                Comments: <span className="font-bold"> {variation.comments} </span>
+                              </div>
+                            ) : null}
                           </>
                         ))
                       ) : (
@@ -268,8 +282,8 @@ export function OrdersTable({ data: filteredData, showFooter = true, limit, isCo
                   {order.orderVariations.reduce((total, variation) => total + variation.quantity, 0)}
                 </TableCell>
                 <TableCell>
-                  {order.orderVariations.reduce((total, { shippedQuantity }) => total + Number(shippedQuantity), 0)}{" "}
-                  pieces shipped
+                  {order.orderVariations.reduce((total, { shippedQuantity }) => total + Number(shippedQuantity), 0)} pcs
+                  shipped
                 </TableCell>
                 {!isCompletedOrdersData ? (
                   <TableCell>

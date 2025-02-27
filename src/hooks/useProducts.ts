@@ -109,9 +109,9 @@ export function useProducts(searchTerm?: string) {
     totalProducts: data?.total || 0,
     totalPages: Math.ceil((data?.total || 0) / limit),
     filteredData,
-    toggleProductVisibility: toggleVisibilityMutation.mutate,
+    toggleProductVisibility: toggleVisibilityMutation.mutateAsync,
     isToggling: toggleVisibilityMutation.isPending,
-    deleteProduct: deleteMutation.mutate,
+    deleteProduct: deleteMutation.mutateAsync,
     isDeleting: deleteMutation.isPending,
   };
 }
