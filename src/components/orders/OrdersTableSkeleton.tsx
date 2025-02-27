@@ -3,14 +3,14 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 
 export function OrdersTableSKeleton() {
   return (
-    <div className="border rounded-lg">
+    <div className="rounded-lg">
       <Table>
         <TableHeader>
           <TableRow>
             <TableHead>Order Id.</TableHead>
             <TableHead>Product</TableHead>
             <TableHead>SKU</TableHead>
-            <TableHead>Quantity</TableHead>
+            <TableHead>Ordered QTY</TableHead>
             <TableHead>Status</TableHead>
             <TableHead className="text-right">Action</TableHead>
           </TableRow>

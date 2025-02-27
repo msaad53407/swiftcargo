@@ -38,7 +38,7 @@ function DashboardLayout({ type, children }: { type?: "default" | "ecommerce"; c
       <Sidebar open={sidebarOpen} setOpen={setSidebarOpen} type={type} />
       <div className="flex-1 flex flex-col overflow-hidden">
         <Header toggleSidebar={() => setSidebarOpen(!sidebarOpen)} />
-        <main className="flex-1 overflow-y-auto p-4 ">{children}</main>
+        <main className="flex-1 overflow-y-auto py-4 px-2">{children}</main>
       </div>
     </div>
   );

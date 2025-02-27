@@ -208,7 +208,7 @@ export function OrdersTable({ data: filteredData, showFooter = true, limit, isCo
           Apply
         </Button>
       </div>
-      <div className="border rounded-lg">
+      <div className="rounded-lg">
         <Table>
           <TableHeader>
             <TableRow>
@@ -244,7 +244,7 @@ export function OrdersTable({ data: filteredData, showFooter = true, limit, isCo
                     <span className="text-xl">{order.product.name}</span>
                   </div>
                   <div className="p-2">
-                    <h4 className="font-semibold mb-4">Order Variations</h4>
+                    <h4 className="font-semibold my-2">Order Variations</h4>
                     <div className="space-y-4">
                       {order.orderVariations.length > 0 ? (
                         order.orderVariations.map((variation, index) => (

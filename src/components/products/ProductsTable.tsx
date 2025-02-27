@@ -108,9 +108,16 @@ export function ProductsTable() {
       case "delete":
         if (window.confirm(`Are you sure you want to delete ${selectedProducts.length} products?`)) {
           try {
-            await Promise.all(selectedProducts.map((id) => deleteProduct(id)));
-            toast.success(`${selectedProducts.length} products deleted successfully`);
-            setSelectedProducts([]);
+            toast.promise(Promise.all(selectedProducts.map((id) => deleteProduct(id))), {
+              loading: "Deleting products...",
+              success: (data) => {
+                if (data) {
+                  setSelectedProducts([]);
+                  return `${selectedProducts.length} products deleted successfully`;
+                }
+              },
+              error: "Failed to delete products",
+            });
           } catch (error) {
             toast.error("Failed to delete products");
           }
@@ -362,12 +369,12 @@ export function ProductsTable() {
             <SelectItem value="none" className="text-gray-500">
               <div className="flex items-center gap-2">None</div>
             </SelectItem>
-            {/* <SelectItem value="delete" className="text-red-500">
+            <SelectItem value="delete" className="text-red-500">
               <div className="flex items-center gap-2">
                 <Trash2 className="h-4 w-4" />
                 Delete Selected
               </div>
-            </SelectItem> */}
+            </SelectItem>
             <SelectItem value="duplicate">
               <div className="flex items-center gap-2">
                 <CopyPlus className="h-4 w-4" />
@@ -387,7 +394,7 @@ export function ProductsTable() {
         </Button>
       </div>
 
-      <div className="border rounded-lg">
+      <div className="rounded-lg">
         <Table>
           <TableHeader>
             <TableRow>
@@ -423,7 +430,7 @@ export function ProductsTable() {
                       <span className="text-xl">{product.name}</span>
                     </div>
                     <div className="p-2">
-                      <h4 className="font-semibold mb-4">Product Variations</h4>
+                      <h4 className="font-semibold my-2">Product Variations</h4>
                       <div className="space-y-4">
                         {product.variations.length > 0 ? (
                           product.variations.map((variation, index) => (
