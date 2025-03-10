@@ -63,7 +63,7 @@ export default function useProduct(id: string | undefined) {
           (acc, variation) => ({ ...acc, [variation.size]: variation.colors }),
           {},
         ),
-      ).sort((a, b) => b[0].localeCompare(a[0])),
+      ),
     );
   };
 

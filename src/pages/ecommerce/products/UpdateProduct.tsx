@@ -1,5 +1,5 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Pencil, Trash } from "lucide-react";
+import { Loader2, Pencil, Trash } from "lucide-react";
 import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 
@@ -291,7 +291,7 @@ export default function EditProductPage() {
                   <Link to="/ecommerce/products">Cancel</Link>
                 </Button>
                 <Button type="submit" disabled={isUpdating || isDeleting}>
-                  Update Product
+                  {isUpdating ? <Loader2 className="h-4 w-4 animate-spin" /> : "Update Product"}
                 </Button>
               </div>
             </form>

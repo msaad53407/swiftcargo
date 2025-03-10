@@ -14,7 +14,7 @@ import { Color } from "@/types/product";
 import { addOrderSchema } from "@/utils/order";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { format, parse } from "date-fns";
-import { CalendarIcon, Trash2 } from "lucide-react";
+import { CalendarIcon, Loader2, Trash2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Controller, useFieldArray, useForm } from "react-hook-form";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
@@ -282,7 +282,7 @@ export default function CreateOrderPage() {
             <Link to="/ecommerce/orders">Cancel</Link>
           </Button>
           <Button type="submit" className="w-fit" disabled={isAdding}>
-            {isAdding ? "Creating..." : "Create Order"}
+            {isAdding ? <Loader2 className="h-4 w-4 animate-spin" /> : "Create Order"}
           </Button>
         </div>
       </form>

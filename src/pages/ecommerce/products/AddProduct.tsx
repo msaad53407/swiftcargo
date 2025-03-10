@@ -12,7 +12,7 @@ import { Color, Variation } from "@/types/product";
 import { addProduct, addProductSchema, ProductFormValues, uploadImage } from "@/utils/product";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { Pencil, Trash } from "lucide-react";
+import { Loader2, Pencil, Trash } from "lucide-react";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
@@ -267,7 +267,7 @@ export default function AddProduct() {
 
             <div className="flex justify-end gap-4">
               <Button type="submit" disabled={addProductMutation.isPending}>
-                Create Product
+                {addProductMutation.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : "Create Product"}
               </Button>
             </div>
           </form>

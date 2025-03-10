@@ -17,6 +17,7 @@ import {
   query,
   runTransaction,
   serverTimestamp,
+  setDoc,
   startAfter,
   updateDoc,
   where,
@@ -46,6 +47,15 @@ export const getProduct = async (id: string): Promise<Product | null> => {
     const docSnap = await getDoc(doc(db, "products", id));
     if (docSnap.exists()) {
       const variations = await getDocs(collection(db, "products", id, "variations"));
+      const productMetadata = await getDoc(doc(db, "products", id, "metadata", "variationOrder"));
+      const productVariationsOrder: string[] = productMetadata.exists() ? productMetadata.data()?.order : [];
+
+      const variationsWithOrder = variations.docs.sort((a, b) => {
+        const aIndex = productVariationsOrder.indexOf(a.data()?.size);
+        const bIndex = productVariationsOrder.indexOf(b.data()?.size);
+        return aIndex - bIndex;
+      });
+
       return {
         id: docSnap.id,
         name: docSnap.data()?.name,
@@ -56,7 +66,7 @@ export const getProduct = async (id: string): Promise<Product | null> => {
         numericalId: docSnap.data()?.numericalId,
         visibility: docSnap.data()?.visibility,
         searchableFields: docSnap.data()?.searchableFields,
-        variations: variations.docs.map((variation) => ({
+        variations: (productVariationsOrder.length > 0 ? variationsWithOrder : variations.docs).map((variation) => ({
           id: variation.id,
           size: variation.data()?.size,
           colors: variation.data()?.colors,
@@ -117,27 +127,36 @@ export const getProducts = async (
     const querySnapshot = await getDocs(paginatedQuery);
 
     const products = await Promise.all(
-      querySnapshot.docs.map(async (doc) => {
-        const variations = await getDocs(collection(db, "products", doc.id, "variations"));
+      querySnapshot.docs.map(async (document) => {
+        const variations = await getDocs(collection(db, "products", document.id, "variations"));
+        const productMetadata = await getDoc(doc(db, "products", document.id, "metadata", "variationOrder"));
+        const productVariationsOrder: string[] = productMetadata.exists() ? productMetadata.data()?.order : [];
+
+        const variationsWithOrder = variations.docs.sort((a, b) => {
+          const aIndex = productVariationsOrder.indexOf(a.data()?.size);
+          const bIndex = productVariationsOrder.indexOf(b.data()?.size);
+          return aIndex - bIndex;
+        });
+
         return {
-          id: doc.id,
-          name: doc.data()?.name,
-          description: doc.data()?.description,
-          image: doc.data()?.image,
-          sku: doc.data()?.sku,
-          weight: doc.data()?.weight,
-          numericalId: doc.data()?.numericalId,
-          visibility: doc.data()?.visibility,
-          searchableFields: doc.data()?.searchableFields,
-          variations: variations.docs.map((variation) => ({
+          id: document.id,
+          name: document.data()?.name,
+          description: document.data()?.description,
+          image: document.data()?.image,
+          sku: document.data()?.sku,
+          weight: document.data()?.weight,
+          numericalId: document.data()?.numericalId,
+          visibility: document.data()?.visibility,
+          searchableFields: document.data()?.searchableFields,
+          variations: (productVariationsOrder.length > 0 ? variationsWithOrder : variations.docs).map((variation) => ({
             id: variation.id,
             size: variation.data()?.size,
             colors: variation.data()?.colors.map((color: Color) => ({
               name: color.name,
             })),
           })),
-          createdAt: doc.data()?.createdAt.toDate(),
-          updatedAt: doc.data()?.updatedAt.toDate(),
+          createdAt: document.data()?.createdAt.toDate(),
+          updatedAt: document.data()?.updatedAt.toDate(),
         };
       }),
     );
@@ -230,7 +249,13 @@ export const addProduct = async (
       productRef = doc(productsColRef); // auto-generated ID
       const metadataRef = doc(db, "metadata", "metadata");
 
+      const productMetadataRef = doc(db, "products", productRef.id, "metadata", "variationOrder");
+
       const metadataResult = await transaction.get(metadataRef);
+
+      transaction.set(productMetadataRef, {
+        order: variations.map((variation) => variation.size) || [],
+      });
 
       // Set the product document with its data and timestamps
       transaction.set(productRef, {
@@ -341,12 +366,8 @@ export const updateProduct = async (
         throw new Error("Product not found");
       }
 
-      // Bring each order document into the transaction’s read set.
-      const orderDocs = [];
-      for (const orderSnap of ordersSnapshot.docs) {
-        const orderDoc = await transaction.get(orderSnap.ref);
-        orderDocs.push(orderDoc);
-      }
+      const orderDocPromises = ordersSnapshot.docs.map((orderSnap) => transaction.get(orderSnap.ref));
+      const orderDocs = await Promise.all(orderDocPromises);
 
       // Update the product document.
       transaction.update(productRef, {
@@ -370,26 +391,41 @@ export const updateProduct = async (
       });
     });
 
-    const existingVariations: Variation[] = updatedVariations.filter((v): v is Variation => v.id !== "");
-
+    // Group variations for deletion, update, and addition
+    const existingVariations = updatedVariations.filter((v): v is Variation => !!v.id);
     const variationsToDelete = existingVariations.filter((v) => v.colors.length === 0);
-
-    const variationsLeftAfterDeletion = existingVariations.filter((v) => v.colors.length > 0);
-
-    for (const variation of variationsToDelete) {
-      await deleteDoc(doc(db, "products", id, "variations", variation.id));
-    }
-
-    // update existing variations
-    for (const variation of variationsLeftAfterDeletion) {
-      await updateDoc(doc(db, "products", id, "variations", variation.id), variation);
-    }
-
+    const variationsToUpdate = existingVariations.filter((v) => v.colors.length > 0);
     const newVariations = updatedVariations.filter((v) => !v.id);
-    // add new variations
-    for (const variation of newVariations) {
-      // TODO fix ids not appearing in new variations added from update page
-      await addDoc(collection(db, "products", id, "variations"), variation);
+
+    // Run deletions and updates in parallel
+    await Promise.all([
+      ...variationsToDelete.map((variation) => deleteDoc(doc(db, "products", id, "variations", variation.id))),
+      ...variationsToUpdate.map((variation) =>
+        updateDoc(doc(db, "products", id, "variations", variation.id), variation),
+      ),
+    ]);
+
+    // Add new variations in parallel
+    await Promise.all(
+      newVariations.map((variation) => addDoc(collection(db, "products", id, "variations"), variation)),
+    );
+
+    // Updating the order of stored variations of that particular order
+    const orderDocRef = doc(db, "products", id, "metadata", "variationOrder");
+    const orderDoc = await getDoc(orderDocRef);
+    if (orderDoc.exists()) {
+      const currentOrder: string[] = orderDoc.data().order || [];
+      const validSizes = updatedVariations.filter((v) => v.colors.length > 0).map((v) => v.size);
+
+      const newOrder: string[] = currentOrder
+        .filter((size: string) => validSizes.includes(size))
+        .concat(validSizes.filter((size) => !currentOrder.includes(size)))
+        .sort((a, b) => {
+          return validSizes.indexOf(a) - validSizes.indexOf(b);
+        });
+
+      // Update the order document
+      await setDoc(orderDocRef, { order: newOrder }, { merge: true });
     }
 
     const updatedProduct = await getProduct(id);
@@ -456,6 +492,9 @@ export const deleteProduct = async (id: string) => {
         variationsBatch.delete(variationDoc.ref);
       });
       await variationsBatch.commit();
+
+      const productMetadataRef = doc(productRef, "metadata", "variationOrder");
+      await deleteDoc(productMetadataRef);
 
       const ordersRef = collection(db, "orders");
       const ordersQuery = query(ordersRef, where("product.id", "==", id));
