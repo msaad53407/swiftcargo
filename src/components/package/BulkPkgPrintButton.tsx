@@ -54,7 +54,7 @@ const generatePackageHTML = (pkg, currentDate) => `
         </div>
         <div>
           <div class="label">Package Weight:</div>
-          <div class="value">${pkg.pkgWeight}</div>
+          <div class="value">${pkg.packageWeight}</div>
         </div>
         <div>
           <div class="label">Date Accepted:</div>
@@ -237,7 +237,7 @@ const getCommonStyles = () => `
 export const handleBulkPrint = (packages) => {
   const printWindow = window.open("", "_blank");
   const currentDate = new Date().toLocaleDateString();
-
+  console.log(packages);
   const printContent = `
     <!DOCTYPE html>
     <html>
